@@ -1,0 +1,2 @@
+/usr/bin/ar qc libtrack_resolution_lib.a CMakeFiles/track_resolution_lib.dir/track_resolution.cpp.o
+/usr/bin/ranlib libtrack_resolution_lib.a

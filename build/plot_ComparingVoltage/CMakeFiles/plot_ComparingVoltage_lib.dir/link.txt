@@ -1,0 +1,2 @@
+/usr/bin/ar qc libplot_ComparingVoltage_lib.a CMakeFiles/plot_ComparingVoltage_lib.dir/plot_ComparingVoltage.cpp.o
+/usr/bin/ranlib libplot_ComparingVoltage_lib.a
