@@ -97,6 +97,7 @@ ce65_model_EXTERNAL_OBJECTS =
 ../ce65_model: track_resolution/libtrack_resolution_lib.a
 ../ce65_model: plot_MobilityModel/libplot_MobilityModel_lib.a
 ../ce65_model: plot_ComparingVoltage/libplot_ComparingVoltage_lib.a
+../ce65_model: Messenger/libMessenger_lib.a
 ../ce65_model: /home/quark_hu/package/root/install/lib/libCore.so
 ../ce65_model: /home/quark_hu/package/root/install/lib/libImt.so
 ../ce65_model: /home/quark_hu/package/root/install/lib/libRIO.so

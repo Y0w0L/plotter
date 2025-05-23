@@ -2,6 +2,18 @@
 #include "tools/langaus.C"
 #include "tools/twogaus.C"
 
+// // constructor
+// plot_histogram::plot_histogram() {
+//     std::cout << "plot_histogram object is created" << std::endl;
+// }
+
+plot_histogram::plot_histogram() {
+    // constructor
+}
+plot_histogram::~plot_histogram() {
+    // destructor
+}
+
 // set histogram style for ROOT
 void plot_histogram::set_rootStyle() {
     std::cout << "-------------------------------------------------------------------------" << std::endl;
@@ -293,7 +305,8 @@ std::pair<double, double> plot_histogram::estimate_fwhm(TH1D* hist) {
     center = (hist->GetBinCenter(half_left) + hist->GetBinCenter(half_right))/2;
     fwhm = hist->GetBinCenter(half_right) - hist->GetBinCenter(half_left);
     if (fwhm < 2 * hist->GetBinWidth(1)) {
-        print_message("FWHM is less than 2 times bin width", RED);
+        //print_message("FWHM is less than 2 times bin width", RED);
+        LOG_WARNING.source("plot_histogram::estimate_fwhm()") << "FWHM is less than 2 times bin width.";
         return {rms, mean};
     }
     return {fwhm, center};
@@ -330,13 +343,16 @@ TF1* plot_histogram::optimise_hist_langaus(TH1D* hist, int color) {
     }
 
     std::cout << "-------------------------------------------------------------------------" << std::endl;
-    std::cout << BLUE << "Hist name: " << hist->GetName() << RESET << std::endl;
-    std::cout << BLUE << "Fit name: " << fitname << RESET << std::endl;
-    std::cout << "Fit range: " << fit_range[0] << " - " << fit_range[1] << std::endl;
+    //std::cout << BLUE << "Hist name: " << hist->GetName() << RESET << std::endl;
+    //std::cout << BLUE << "Fit name: " << fitname << RESET << std::endl;
+    //std::cout << "Fit range: " << fit_range[0] << " - " << fit_range[1] << std::endl;
+    LOG_STATUS.source("plot_histogram::optimise_hist_langaus") << "Hist name is " << hist->GetName() << "/Fit name is " << fitname;
+    LOG_STATUS.source("plot_histogram::optimise_hist_langaus") << "Fit range: " << fit_range[0] << " -> " << fit_range[1]; 
     hist->Fit(fit, "RL", "", fit_range[0], fit_range[1]);
     std::cout << "Chi2/ndf: " << fit->GetChisquare() << "/" << fit->GetNDF() << std::endl;
     if(fit->GetChisquare() / fit->GetNDF() > 10) {
-        print_message("Chi2/ndf is large, check the fitting!", RED);
+        //print_message("Chi2/ndf is large, check the fitting!", RED);
+        LOG_WARNING.source("plot_histogram::optimise_hist_langaus()") << "Chi2/ndf is larger than 10.";
     }
     std::cout << "-------------------------------------------------------------------------" << std::endl;
     return fit;
@@ -364,9 +380,12 @@ TF1* plot_histogram::optimise_hist_gaus(TH1D* hist, int color) {
     fit_range_max = center + fit_range;
 
     std::cout << "-------------------------------------------------------------------------" << std::endl;
-    std::cout << BLUE << "Hist name: " << hist->GetName() << RESET << std::endl;
-    std::cout << BLUE << "Fit name: " << fit_name << RESET << std::endl;
-    std::cout << "Fit range: " << fit_range_min << " - " << fit_range_max << std::endl;
+    //std::cout << BLUE << "Hist name: " << hist->GetName() << RESET << std::endl;
+    //std::cout << BLUE << "Fit name: " << fit_name << RESET << std::endl;
+    //std::cout << "Fit range: " << fit_range_min << " - " << fit_range_max << std::endl;
+    LOG_STATUS.source("plot_histogram::optimise_hist_gaus") << "Hist name is " << hist->GetName() << "/Fit name is " << fit_name;
+    LOG_STATUS.source("plot_histogram::optimise_hist_gaus") << "Fit range: " << fit_range_min << " -> " << fit_range_max; 
+    
     TF1* fit = new TF1(fit_name.c_str(), "gaus", -60, 60);
     set_tf1Style(fit, color);
     hist->Fit(fit, "RL", "", fit_range_min, fit_range_max);
@@ -756,10 +775,10 @@ void plot_histogram::run() {
     output_file->Close();
 }
 
-// constructor
-plot_histogram::plot_histogram() {
-    std::cout << "plot_histogram object is created" << std::endl;
-}
+// // constructor
+// plot_histogram::plot_histogram() {
+//     std::cout << "plot_histogram object is created" << std::endl;
+// }
 
 void plot_histogram::set_gausHist_range(TH1D* hist, int min, int max) {
     hist->GetXaxis()->SetRangeUser(min, max);

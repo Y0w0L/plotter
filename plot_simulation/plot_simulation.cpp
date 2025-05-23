@@ -449,5 +449,5 @@ void plot_simulation::run() {
 }
 
 plot_simulation::plot_simulation() {
-    std::cout << "plot_simulation object is created" << std::endl;
+    LOG_DEBUG.source("plot_simulation::plot_simulation()") << "Initialize plot_simulation.";
 }

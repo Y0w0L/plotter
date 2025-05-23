@@ -63,6 +63,7 @@ ADD_SUBDIRECTORY(plot_simulation)
 ADD_SUBDIRECTORY(track_resolution)
 ADD_SUBDIRECTORY(plot_MobilityModel)
 ADD_SUBDIRECTORY(plot_ComparingVoltage)
+ADD_SUBDIRECTORY(Messenger)
 
 ADD_EXECUTABLE(ce65_model
     ce65.cpp)
@@ -82,6 +83,7 @@ TARGET_LINK_LIBRARIES(ce65_model
                         track_resolution_lib
                         plot_MobilityModel_lib
                         plot_ComparingVoltage_lib
+                        Messenger_lib
                         ${ROOT_LIBRARIES})
 
 MESSAGE(STATUS "Compiler Flags for ce65_model: $<TARGET_PROPERTY:ce65_model,COMPILE_OPTIONS>")

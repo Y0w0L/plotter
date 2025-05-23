@@ -59,9 +59,9 @@ class plot_MobilityModel : public plot_histogram {
         * @param y_max Maximum value of y-axis
         **/
         static void write_clSizePlots(std::vector<TH1D*> hists, 
-                                      std::vector<std::string> names,
-                                      int x_max,
-                                      int y_max);
+                                      const std::vector<std::string>& names,
+                                      const int& x_max,
+                                      const int& y_max);
 
         /**
         * @brief Write charge plots

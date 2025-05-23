@@ -15,6 +15,8 @@
 
 int main() {
     clock_t start = clock();
+    
+    gErrorIgnoreLevel = kWarning;
 
     plot_simulation plot;
     track_resolution track;
@@ -23,7 +25,7 @@ int main() {
     plot_Mobility.run();
     plot_voltage.voltage_run();
 
-    std::cout << "Main function is executed" << std::endl;
+    LOG_STATUS.source("ce65.cpp/main") << "Main process  is complete.";
 
     clock_t end = clock();
     const double time = static_cast<double>(end - start) / CLOCKS_PER_SEC * 1000.0;

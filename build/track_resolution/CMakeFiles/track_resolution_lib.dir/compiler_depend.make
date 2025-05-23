@@ -429,7 +429,8 @@ track_resolution/CMakeFiles/track_resolution_lib.dir/track_resolution.cpp.o: ../
   /usr/include/c++/11/numeric \
   /usr/include/c++/11/bits/stl_numeric.h \
   /usr/include/c++/11/pstl/glue_numeric_defs.h \
-  /home/quark_hu/package/root/install/include/TKey.h
+  /home/quark_hu/package/root/install/include/TKey.h \
+  ../Messenger/Messenger.h
 
 
 /home/quark_hu/package/root/install/include/TKey.h:
@@ -859,6 +860,8 @@ track_resolution/CMakeFiles/track_resolution_lib.dir/track_resolution.cpp.o: ../
 /usr/include/c++/11/bits/alloc_traits.h:
 
 /usr/include/stdc-predef.h:
+
+../Messenger/Messenger.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h:
 

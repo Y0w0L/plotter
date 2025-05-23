@@ -194,6 +194,19 @@ plot_ComparingVoltage_lib/fast:
 	$(MAKE) $(MAKESILENT) -f plot_ComparingVoltage/CMakeFiles/plot_ComparingVoltage_lib.dir/build.make plot_ComparingVoltage/CMakeFiles/plot_ComparingVoltage_lib.dir/build
 .PHONY : plot_ComparingVoltage_lib/fast
 
+#=============================================================================
+# Target rules for targets named Messenger_lib
+
+# Build rule for target.
+Messenger_lib: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Messenger_lib
+.PHONY : Messenger_lib
+
+# fast build rule for target.
+Messenger_lib/fast:
+	$(MAKE) $(MAKESILENT) -f Messenger/CMakeFiles/Messenger_lib.dir/build.make Messenger/CMakeFiles/Messenger_lib.dir/build
+.PHONY : Messenger_lib/fast
+
 ce65.o: ce65.cpp.o
 .PHONY : ce65.o
 
@@ -226,6 +239,7 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... Messenger_lib"
 	@echo "... ce65_model"
 	@echo "... plot_ComparingVoltage_lib"
 	@echo "... plot_MobilityModel_lib"

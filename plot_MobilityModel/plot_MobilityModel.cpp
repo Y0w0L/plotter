@@ -78,77 +78,80 @@ std::vector<TH1D*> plot_MobilityModel::get_hists(
 std::vector<TF1*> plot_MobilityModel::get_fits(std::vector<TH1D*> hists) {
     std::cout << "Start plot_MobilityModel::get_fits" << std::endl;
     std::vector<TF1*> fits;
+    fits.reserve(hists.size());
+
     for(int i=0; i<hists.size(); ++i) {
+        if(hists[i] == nullptr) {
+            std::cout << "INFO: Histogram is nullptr in plot_MobilityModel::get_fits()" << std::endl;
+            fits.push_back(nullptr);
+            continue;
+        }
+
         if(scaling_residual & plot_histogram::search_word(hists[i]->GetName(), "residual")) {
             double max_amplitude = hists[i]->GetMaximum();
             hists[i]->Scale(1/max_amplitude);
         }
-        if(hists[i] == nullptr) {
-            std::cout << "Histogram is nullptr :" << std::endl;
-            for(int j=0; j<hists.size(); ++j) {
-                std::cout << hists[j]->GetName() << std::endl;
-            }
-            plot_histogram::print_message("[Warning] Histogram is nullptr", RED);
-            break;
-        }
+
         if(i == 0) {
             TF1* fit = plot_histogram::optimise_hist_gaus(hists[i], 1);
             fits.push_back(fit);
         }
-        else {
-            if(i == 2) {
-                TF1* fit = plot_histogram::optimise_hist_gaus(hists[i], kGreen+2);
-                fits.push_back(fit);
-            }
-            if(i == 4) {
-                TF1* fit = plot_histogram::optimise_hist_gaus(hists[i], kCyan);
-                fits.push_back(fit);
-            }
-            else{
-                TF1* fit = plot_histogram::optimise_hist_gaus(hists[i], i+1);
-                fits.push_back(fit);
-            }
+        if(i == 2) {
+            TF1* fit = plot_histogram::optimise_hist_gaus(hists[i], kGreen+2);
+            fits.push_back(fit);
+        }
+        if(i == 4) {
+            TF1* fit = plot_histogram::optimise_hist_gaus(hists[i], kCyan);
+            fits.push_back(fit);
+        } else {
+            TF1* fit = plot_histogram::optimise_hist_gaus(hists[i], i+1);
+            fits.push_back(fit);
         }
     }
+
     return fits;
 }
 
 std::vector<TF1*> plot_MobilityModel::get_landauFits(std::vector<TH1D*> hists) {
     std::cout << "Start plot_MobilityModel::get_landauFits" << std::endl;
     std::vector<TF1*> fits;
+    fits.reserve(hists.size());
+
     for(int i=0; i<hists.size(); ++i) {
         if(hists[i] == nullptr) {
             std::cout << "Histogram is nullptr" << std::endl;
-            plot_histogram::print_message("[Warning] Histogram is nullptr", RED);
-            break;
+            plot_histogram::print_message("INFO: Histogram is nullptr in plot_MobilityModel::get_landauFits()", RED);
+            continue;
         }
+
         if(i == 0) {
             TF1* fit = plot_histogram::optimise_hist_langaus(hists[i], 1);
             fits.push_back(fit);
         }
-        else {
-            if(i == 2) {
-                TF1* fit = plot_histogram::optimise_hist_langaus(hists[i], kGreen+2);
-                fit->SetLineColor(kGreen+2);
-                fits.push_back(fit);
-            }
-            if(i == 4) {
-                TF1* fit = plot_histogram::optimise_hist_langaus(hists[i], kCyan);
-                fit->SetLineColor(kCyan);
-                fits.push_back(fit);
-            }
-            else{
-                TF1* fit = plot_histogram::optimise_hist_langaus(hists[i], i+1);
-                fits.push_back(fit);
-            }
+        if(i == 2) {
+            TF1* fit = plot_histogram::optimise_hist_langaus(hists[i], kGreen+2);
+            fits.push_back(fit);
+        }
+        if(i == 4) {
+            TF1* fit = plot_histogram::optimise_hist_langaus(hists[i], kCyan);
+            fits.push_back(fit);
+        } else {
+            TF1* fit = plot_histogram::optimise_hist_langaus(hists[i], i+1);
+            fits.push_back(fit);
         }
     }
+
     return fits;
 }
 
-void plot_MobilityModel::write_clSizePlots(std::vector<TH1D*> hists, std::vector<std::string> names, int x_max, int y_max) {
+void plot_MobilityModel::write_clSizePlots(std::vector<TH1D*> hists, const std::vector<std::string>& names, const int& x_max, const int& y_max) {
     std::cout << "Write cluster size plots" << std::endl;
+
     for(int i=0; i<hists.size(); ++i) {
+        if(hists[i] == nullptr) {
+            continue;
+        }
+        
         if(scaling_clSize) {
             hists[i]->Scale(1/hists[i]->Integral());
         }

@@ -49,6 +49,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("/home/towa/alice3/plotter/build/track_resolution/cmake_install.cmake")
   include("/home/towa/alice3/plotter/build/plot_MobilityModel/cmake_install.cmake")
   include("/home/towa/alice3/plotter/build/plot_ComparingVoltage/cmake_install.cmake")
+  include("/home/towa/alice3/plotter/build/Messenger/cmake_install.cmake")
 
 endif()
 
