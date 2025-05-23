@@ -17,37 +17,61 @@ void plot_MobilityModel::clSizeStyle(TH1D* hist, const int color, const int mark
     //hist->SetLineWidth(1.0);
 }
 
-TH1D* plot_MobilityModel::get_hist(TFile* file, const std::string hist_name) {
-    TH1D* hist = (TH1D*)file->Get(hist_name.c_str());
-    if(hist == nullptr) {
-        std::cout << "Histogram is nullptr" << std::endl;
+TH1D* plot_MobilityModel::get_hist(TFile* file, const std::string& hist_name) {
+    if(file == nullptr) {
+        std::cerr << "ERROR: TFile pointer is null in get_hist for histogram" << std::endl;
+        return nullptr;
     }
+
+    // get TObject from file
+    TObject* obj = file->Get(hist_name.c_str());
+    if(obj == nullptr) {
+        std::cout << "INFO: Object with name " << hist_name
+        << " not found in " << file->GetName() << std::endl;
+        return nullptr;
+    }
+
+    TH1D* hist = dynamic_cast<TH1D*>(obj);
+    // found object but it isn't TH1D type
+    if(hist == nullptr) {
+        std::cerr << "ERROR: Object with name " << hist_name
+        << " in file " << file->GetName() << std::endl;
+        return nullptr;
+    }
+
     return hist;
 }
 
-std::vector<TFile*> plot_MobilityModel::get_TFiles(const std::vector<std::string> filenames) {
+std::vector<TFile*> plot_MobilityModel::get_TFiles(const std::vector<std::string>& filenames) {
     std::vector<TFile*> files;
-    for(int i=0; i<filenames.size(); ++i) {
-        TFile* file = TFile::Open((filenames[i]).c_str(), "READ");
+    files.reserve(filenames.size());
+
+    for(const std::string& filename : filenames) {
+        TFile* file = TFile::Open(filename.c_str(), "READ");
         if (!file || file->IsZombie()) {
-            std::cerr << "Error: Cannot open file " << filenames[i] << std::endl;
+            std::cerr << "ERROR: Cannot open file " << filename << std::endl;
             delete file;
-            continue;
+            files.push_back(nullptr);
+        } else {
+            files.push_back(file);
         }
-        files.push_back(file);
     }
+
     return files;
 }
 
-std::vector<TH1D*> plot_MobilityModel::get_hists(std::vector<TFile*> files, std::string hist_name) {
+std::vector<TH1D*> plot_MobilityModel::get_hists(
+    std::vector<TFile*>& files,
+    const std::string& hist_name) {
+    
     std::vector<TH1D*> hists;
-    for(int i=0; i<files.size(); ++i) {
-        TH1D* hist = (TH1D*)files[i]->Get(hist_name.c_str());
-        if(hist == nullptr) {
-            std::cout << "Histogram is nullptr" << std::endl;
-        }
+    hists.reserve(files.size());
+
+    for(TFile*& file : files) {
+        TH1D* hist = plot_MobilityModel::get_hist(file, hist_name);
         hists.push_back(hist);
     }
+
     return hists;
 }
 

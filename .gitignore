@@ -3,5 +3,3 @@ gmon.out
 *.pdf
 *.png
 *.raw
-build
-ce65_model

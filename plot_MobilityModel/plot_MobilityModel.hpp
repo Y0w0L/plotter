@@ -24,20 +24,20 @@ class plot_MobilityModel : public plot_histogram {
         * @param file Pointer to TFile object
         * @param hist_name Name of the histogram
         **/
-        static TH1D* get_hist(TFile* file, const std::string hist_name);
+        static TH1D* get_hist(TFile* file, const std::string& hist_name);
 
         /**
         * @brief Get TFile objects from the list of filenames
         * @param filenames List of filenames
         **/
-        static std::vector<TFile*> get_TFiles(const std::vector<std::string> filenames);
+        static std::vector<TFile*> get_TFiles(const std::vector<std::string>& filenames);
 
         /**
         * @brief Get TH1D objects from the list of TFile objects
         * @param files List of TFile objects
         * @param hist_name Name of the histogram
         **/
-        static std::vector<TH1D*> get_hists(std::vector<TFile*> files, std::string hist_name);
+        static std::vector<TH1D*> get_hists(std::vector<TFile*>& files, const std::string& hist_name);
 
         /**
         * @brief Get fits from the list of TH1D objects
