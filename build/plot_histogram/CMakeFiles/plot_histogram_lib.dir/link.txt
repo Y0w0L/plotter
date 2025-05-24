@@ -1,2 +1,0 @@
-/usr/bin/ar qc libplot_histogram_lib.a CMakeFiles/plot_histogram_lib.dir/plot_histogram.cpp.o
-/usr/bin/ranlib libplot_histogram_lib.a
