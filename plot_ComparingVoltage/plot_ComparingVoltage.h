@@ -1,8 +1,8 @@
-#ifndef PLOT_COMPARINGVOLTAGE_HPP
-#define PLOT_COMPARINGVOLTAGE_HPP
+#ifndef PLOT_COMPARINGVOLTAGE_H
+#define PLOT_COMPARINGVOLTAGE_H
 
-#include "plot_histogram/plot_histogram.hpp"
-#include "plot_MobilityModel/plot_MobilityModel.hpp"
+#include "plot_histogram/plot_histogram.h"
+#include "plot_MobilityModel/plot_MobilityModel.h"
 
 class plot_ComparingVoltage : public plot_MobilityModel {
     public:

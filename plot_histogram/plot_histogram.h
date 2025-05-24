@@ -1,5 +1,5 @@
-#ifndef PLOT_HISTOGRAM_HPP
-#define PLOT_HISTOGRAM_HPP
+#ifndef PLOT_HISTOGRAM_H
+#define PLOT_HISTOGRAM_H
 
 #include <TFile.h>
 #include <TStyle.h>
@@ -298,4 +298,4 @@ private:
     TDirectory *hitmap, *correlation, *analysisRef, *track, *analysisCE65;
 };
 
-#endif // PLOT_HISTOGRAM_HPP
+#endif // PLOT_HISTOGRAM_H

@@ -1,4 +1,4 @@
-#include "plot_ComparingVoltage.hpp"
+#include "plot_ComparingVoltage.h"
 
 const std::vector<std::string> chip_type_ = {"std", "gap"};
 const std::vector<std::string> pixel_pitch_ = {"15", "22p5"};

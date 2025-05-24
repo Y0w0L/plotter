@@ -1,7 +1,7 @@
-#ifndef PLOT_MOBILITYMODEL_HPP
-#define PLOT_MOBILITYMODEL_HPP
+#ifndef PLOT_MOBILITYMODEL_H
+#define PLOT_MOBILITYMODEL_H
 
-#include "plot_histogram/plot_histogram.hpp"
+#include "plot_histogram/plot_histogram.h"
 
 class plot_MobilityModel : public plot_histogram {
     public:

@@ -1,12 +1,13 @@
-#include "plot_MobilityModel.hpp"
+#include "plot_MobilityModel.h"
 
 const int judge = 0;
 const bool scaling_residual = false;
 const bool scaling_clSize = true;
 std::string voltage_model;
 
-plot_MobilityModel::plot_MobilityModel() {
-    std::cout << "plot_MobilityModel object is created" << std::endl;
+plot_MobilityModel::plot_MobilityModel()
+{
+    LOG_INFO.source("plot_MobilityModel::plot_MobilityModel") << "Initialize plot_MobilityModel.";
 }
 
 void plot_MobilityModel::clSizeStyle(TH1D* hist, const int color, const int marker_style) {

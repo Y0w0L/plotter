@@ -1,7 +1,7 @@
 #ifndef TRACK_RESOLUTION_HPP
 #define TRACK_RESOLUTION_HPP
 
-#include "plot_histogram/plot_histogram.hpp"
+#include "plot_histogram/plot_histogram.h"
 
 struct detector_information {
     std::string detector_name;
@@ -37,7 +37,7 @@ class track_resolution : public plot_histogram {
         * @param ref_position Vector of reference position
         * @param dut_position Position of DUT
         **/
-        double calculate_trackResolution(std::vector<double> ref_resolution, std::vector<double> ref_position, double dut_position);
+        double calculate_trackResolution(const std::vector<double>& ref_resolution, std::vector<double>& ref_position, double dut_position);
 
         /**
         * @brief Open .conf file

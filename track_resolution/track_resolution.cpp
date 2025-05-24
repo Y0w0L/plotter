@@ -1,4 +1,4 @@
-#include "track_resolution.hpp"
+#include "track_resolution.h"
 
 track_resolution::track_resolution() {
     std::cout << "track_resolution object is created" << std::endl;
@@ -51,7 +51,7 @@ double track_resolution::calculate_extrapolationResolution(const std::vector<dou
     return extr_resolution;
 }
 
-double track_resolution::calculate_trackResolution(std::vector<double> ref_resolution, std::vector<double> ref_position, double dut_position) {
+double track_resolution::calculate_trackResolution(const std::vector<double>& ref_resolution, std::vector<double>& ref_position, double dut_position) {
     double mean_position;
     double mean_resolution;
     double exp_mean_position;

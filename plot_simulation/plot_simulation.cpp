@@ -1,4 +1,7 @@
-#include "plot_simulation.hpp"
+#ifndef PLOT_SIMULATION_H
+#define PLOT_SIMULATION_H
+
+#include "plot_simulation.h"
 
 // set histogram style for ROOT
 void plot_simulation::set_rootStyle() {
@@ -451,3 +454,5 @@ void plot_simulation::run() {
 plot_simulation::plot_simulation() {
     LOG_DEBUG.source("plot_simulation::plot_simulation()") << "Initialize plot_simulation.";
 }
+
+#endif // PLOT_SIMULATION_H

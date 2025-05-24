@@ -7,11 +7,26 @@
 //     std::cout << "plot_histogram object is created" << std::endl;
 // }
 
-plot_histogram::plot_histogram() {
+plot_histogram::plot_histogram()
+    : hitmap(nullptr), correlation(nullptr), analysisRef(nullptr), track(nullptr), analysisCE65(nullptr),
+      input_file(nullptr), output_file(nullptr),
+      hHitmapLocal(nullptr), hHitmapGlobal(nullptr), hClusterPositionLocal(nullptr),
+      hProjectionX(nullptr), hProjectionY(nullptr),
+      hCorrelationX(nullptr), hCorrelationY(nullptr), hCorrelationX_2D(nullptr), hCorrelationY_2D(nullptr),
+      hTrackChi2(nullptr), hTrackChi2ndof(nullptr), hTrackAngleX(nullptr), hTrackAngleY(nullptr),
+      hClusterSize(nullptr), hClusterSize_SeedCut(nullptr), hClusterSeedCharge(nullptr), hClusterCharge(nullptr), hClusterNeighborCharge(nullptr), hClusterNeighborChargeSum(nullptr),
+      hCutHisto(nullptr), hClusterMultiplicity(nullptr),
+      hResidualsX(nullptr), hResidualsY(nullptr),
+      fProjectionX(nullptr), fProjectionY(nullptr),
+      fCorrelationX(nullptr), fCorrelationY(nullptr),
+      fTrackAngleX(nullptr), fTrackAngleY(nullptr),
+      fResidualsX(nullptr), fResidualsY(nullptr), fClusterCharge(nullptr)
+{
     // constructor
 }
 plot_histogram::~plot_histogram() {
     // destructor
+    LOG_INFO << "plot_histogram object destroyed.";
 }
 
 // set histogram style for ROOT

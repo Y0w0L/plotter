@@ -6,5 +6,5 @@ CXX_DEFINES =
 
 CXX_INCLUDES = -I/home/towa/alice3/plotter -I/home/towa/alice3/plotter/plot_simulation -I/home/quark_hu/package/root/install/include
 
-CXX_FLAGS = -g3 -O0 -pg -std=c++17
+CXX_FLAGS = -O2 -s -DNDEBUG -march=native -std=c++17
 
