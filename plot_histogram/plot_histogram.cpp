@@ -1,4 +1,4 @@
-#include "plot_histogram.hpp"
+#include "plot_histogram.h"
 #include "tools/langaus.C"
 #include "tools/twogaus.C"
 
@@ -31,9 +31,9 @@ plot_histogram::~plot_histogram() {
 
 // set histogram style for ROOT
 void plot_histogram::set_rootStyle() {
-    std::cout << "-------------------------------------------------------------------------" << std::endl;
-    std::cout << "---------------------------- Set ROOT style -----------------------------" << std::endl;
-    std::cout << "-------------------------------------------------------------------------" << std::endl;
+    LOG_INFO.source("plot_histogram::set_rootStyle") << "-------------------------------------------------------------------------";
+    LOG_INFO.source("plot_histogram::set_rootStyle") << "---------------------------- Set ROOT style -----------------------------";
+    LOG_INFO.source("plot_histogram::set_rootStyle") << "-------------------------------------------------------------------------";
     gStyle->SetCanvasColor(10);
     gStyle->SetCanvasBorderMode(0);
     gStyle->SetFrameLineWidth(1);
@@ -73,7 +73,7 @@ void plot_histogram::set_rootStyle() {
 
 // set TH1D histogram style
 void plot_histogram::set_th1dStyle(TH1D* hist, int color) {
-    std::cout << "Set TH1D style -" << hist->GetName() << std::endl;
+    LOG_DEBUG.source("plot_histogram::set_th1dStyle") << "Set TH1D style -" << hist->GetName();
     hist->SetStats(0);
     hist->SetMarkerColor(color);
     hist->SetLineColor(color);
@@ -83,13 +83,13 @@ void plot_histogram::set_th1dStyle(TH1D* hist, int color) {
 
 // set TH2D histogram style
 void plot_histogram::set_th2dStyle(TH2D* hist) {
-    std::cout << "Set TH2D style -" << hist->GetName() << std::endl;
+    LOG_DEBUG.source("plot_histogram::set_th2dStyle") << "Set TH2D style -" << hist->GetName();
     hist->SetStats(0);
 }
 
 // set TF1 fit function style
 void plot_histogram::set_tf1Style(TF1* fit, int color) {
-    std::cout << "Set TF1 style -" << fit->GetName() << std::endl;
+    LOG_DEBUG.source("plot_histogram::set_tf1Style") << "Set TF1 style -" << fit->GetName();
     fit->SetLineColor(color);
 }
 
@@ -163,11 +163,11 @@ std::string plot_histogram::format_uncertainty(double value, double error) {
 
 // write histogram to ROOT file
 void plot_histogram::write_plot(std::variant<TH1D*, TH2D*> hist, const std::string& hist_name) {
-    std::cout << "Write plot : " << hist_name << std::endl;
+    LOG_INFO.source("plot_histogram::write_plot") << "Write plot : " << hist_name;
     std::visit([&hist_name](auto* hist) {
-        if (!hist) {
-            print_message("Histogram is not found", RED);
-            return;
+        if(!hist) {
+            LOG_ERROR.source("plot_histogram::write_plot") << "Histogram is not found";
+            throw std::invalid_argument("Input histogram class is empty.");
         }
         hist->Write(hist_name.c_str());
     }, hist);
@@ -199,8 +199,8 @@ std::string plot_histogram::get_chi2ndfParameter(TF1* fit) {
 }
 
 void plot_histogram::draw_th1d_result(TH1D* hist) {
-    std::cout << "Start print th1d result" << std::endl;
-    std::cout << "Hist name: " << hist->GetName() << std::endl;
+    LOG_DEBUG.source("plot_histogram::draw_th1d_result") << "Start print th1d result";
+    LOG_INFO.source("plot_histogram::drwa_th1d_result") << "Hist name: " << hist->GetName();
 
     TLatex* latex = new TLatex();
     set_tlatexStyle(latex);
@@ -228,10 +228,17 @@ void plot_histogram::draw_th1d_result(TH1D* hist) {
     latex->DrawLatexNDC(0.63, 0.72, rms_text.c_str());
 }
 
+void plot_histogram::print_fitResult(TF1* fit) {
+    for(int i=0; i<fit->GetNpar();i++) {
+        LOG_INFO.source("plot_histogram::print_TFitResult") << fit->GetParName(i) << ": " 
+                                                            << fit->GetParameter(i) << " +/- " << fit->GetParError(i);
+    }
+}
+
 void plot_histogram::draw_gausFit_result(TH1D* hist, TF1* fit) {
-    std::cout << "Start print_gausFit_result" << std::endl;
-    std::cout << "Hist name: " << hist->GetName() << std::endl;
-    std::cout << "Fit name: " << fit->GetName() << std::endl;
+    LOG_DEBUG.source("plot_histogram::draw_gausFit_result") << "Start draw_gausFit_result";
+    LOG_INFO.source("plot_histogram::draw_gausFit_result") << "Hist name: " << hist->GetName();
+    LOG_INFO.source("plot_histogram::draw_gausFit_result") << "Fit name: " << fit->GetName();
     
     TLatex* latex = new TLatex();
     set_tlatexStyle(latex);
@@ -264,9 +271,9 @@ void plot_histogram::draw_gausFit_result(TH1D* hist, TF1* fit) {
 }
 
 void plot_histogram::draw_langausFit_result(TH1D* hist, TF1* fit) {
-    std::cout << "Start print_langausFit_result" << std::endl;
-    std::cout << "Hist name: " << hist->GetName() << std::endl;
-    std::cout << "Fit name: " << fit->GetName() << std::endl;
+    LOG_DEBUG.source("plot_histogram::draw_langauFit_result") << "Start print_langausFit_result";
+    LOG_INFO.source("plot_histogram::draw_langauFit_result") << "Hist name: " << hist->GetName();
+    LOG_INFO.source("plot_histogram::draw_langauFit_result") << "Fit name: " << fit->GetName();
     
     TLatex* latex = new TLatex();
     set_tlatexStyle(latex);
@@ -357,19 +364,15 @@ TF1* plot_histogram::optimise_hist_langaus(TH1D* hist, int color) {
         fit->SetParLimits(i, parlimitlow[i], parlimithigh[i]);
     }
 
-    std::cout << "-------------------------------------------------------------------------" << std::endl;
-    //std::cout << BLUE << "Hist name: " << hist->GetName() << RESET << std::endl;
-    //std::cout << BLUE << "Fit name: " << fitname << RESET << std::endl;
-    //std::cout << "Fit range: " << fit_range[0] << " - " << fit_range[1] << std::endl;
-    LOG_STATUS.source("plot_histogram::optimise_hist_langaus") << "Hist name is " << hist->GetName() << "/Fit name is " << fitname;
-    LOG_STATUS.source("plot_histogram::optimise_hist_langaus") << "Fit range: " << fit_range[0] << " -> " << fit_range[1]; 
-    hist->Fit(fit, "RL", "", fit_range[0], fit_range[1]);
-    std::cout << "Chi2/ndf: " << fit->GetChisquare() << "/" << fit->GetNDF() << std::endl;
+    LOG_INFO.source("plot_histogram::optimise_hist_langaus") << "Hist name is " << hist->GetName() << "/Fit name is " << fitname;
+    LOG_INFO.source("plot_histogram::optimise_hist_langaus") << "Fit range: " << fit_range[0] << " -> " << fit_range[1]; 
+    hist->Fit(fit, "RLQ", "", fit_range[0], fit_range[1]);
+    print_fitResult(fit);
+    LOG_INFO.source("plot_histogram::optimise_hist_langaus") << "Chi2/ndf: " << fit->GetChisquare() << "/" << fit->GetNDF();
     if(fit->GetChisquare() / fit->GetNDF() > 10) {
         //print_message("Chi2/ndf is large, check the fitting!", RED);
-        LOG_WARNING.source("plot_histogram::optimise_hist_langaus()") << "Chi2/ndf is larger than 10.";
+        LOG_WARNING.source("plot_histogram::optimise_hist_langaus()") << "Chi2/ndf in [" << hist->GetName() << "] is larger than 10.";
     }
-    std::cout << "-------------------------------------------------------------------------" << std::endl;
     return fit;
 }
 
@@ -394,21 +397,17 @@ TF1* plot_histogram::optimise_hist_gaus(TH1D* hist, int color) {
     fit_range_min = center - fit_range;
     fit_range_max = center + fit_range;
 
-    std::cout << "-------------------------------------------------------------------------" << std::endl;
-    //std::cout << BLUE << "Hist name: " << hist->GetName() << RESET << std::endl;
-    //std::cout << BLUE << "Fit name: " << fit_name << RESET << std::endl;
-    //std::cout << "Fit range: " << fit_range_min << " - " << fit_range_max << std::endl;
-    LOG_STATUS.source("plot_histogram::optimise_hist_gaus") << "Hist name is " << hist->GetName() << "/Fit name is " << fit_name;
-    LOG_STATUS.source("plot_histogram::optimise_hist_gaus") << "Fit range: " << fit_range_min << " -> " << fit_range_max; 
+    LOG_INFO.source("plot_histogram::optimise_hist_gaus") << "Hist name is " << hist->GetName() << "/Fit name is " << fit_name;
+    LOG_INFO.source("plot_histogram::optimise_hist_gaus") << "Fit range: " << fit_range_min << " -> " << fit_range_max; 
     
     TF1* fit = new TF1(fit_name.c_str(), "gaus", -60, 60);
     set_tf1Style(fit, color);
-    hist->Fit(fit, "RL", "", fit_range_min, fit_range_max);
-    std::cout << "Chi2/ndf: " << fit->GetChisquare() << "/" << fit->GetNDF() << std::endl;
+    hist->Fit(fit, "RLQ", "", fit_range_min, fit_range_max);
+    print_fitResult(fit);
+    LOG_INFO.source("plot_histogram::optimise_hist_gaus") << "Chi2/ndf: " << fit->GetChisquare() << "/" << fit->GetNDF();
     if(fit->GetChisquare() / fit->GetNDF() > 10) {
-        print_message("Chi2/ndf is large, check the fitting!", RED);
+        LOG_WARNING.source("plot_histogram::optimise_hist_gaus()") << "Chi2/ndf in [" << hist->GetName() << "] is larger than 10.";
     }
-    std::cout << "-------------------------------------------------------------------------" << std::endl;
     return fit;
 }
 
@@ -471,20 +470,19 @@ TF1* plot_histogram::optimise_hist_doublegaus(TH1D* hist, int color) {
 }
 
 // draw histogram from clusteringSpatial module as reference plots
-void plot_histogram::draw_ref_clusteringSpatial(std::string refname, TFile* input_file, TFile* output_file) {
-    std::cout << "=========================================================================" << std::endl;
-    print_message("Start draw_ref_clusteringSpatial", GREEN);
-    print_message("refname: " + refname, GREEN);
+void plot_histogram::draw_ref_clusteringSpatial(const std::string& refname, TFile* input_file, TFile* output_file) {
+    LOG_DEBUG.source("plot_histogram::draw_ref_clusteringSpatial") << "Start draw_ref_clusteringSpatial";
+    LOG_INFO.source("plot_histogram::draw_ref_clusteringSpatial") << "refname: " + refname;
     
     input_dirName = "ClusteringSpatial/" + refname + "/";
     output_dirName = "Hitmap/" + refname + "/";
 
-    std::cout << "Inport histogram from " << input_dirName << std::endl;
+    LOG_STATUS.source("plot_histogram::draw_ref_clusteringSpatial") << "Inport histogram from " << input_dirName;
     hHitmapLocal = (TH2D*)input_file->Get((input_dirName + "clusterPositionLocal").c_str());
     hHitmapGlobal = (TH2D*)input_file->Get((input_dirName + "clusterPositionGlobal").c_str());
     if (hHitmapLocal == nullptr || hHitmapGlobal == nullptr) {
-        print_message(Form("Histogram is not found at %s", input_dirName.c_str()), RED);
-        return;
+        LOG_ERROR.source("plot_histogram::draw_ref_clusteringSpatial") << "Histogram is not found at " << input_dirName;
+        throw std::invalid_argument("Histogram is not found");
     }
     hProjectionX = hHitmapLocal->ProjectionX("hProjectionX");
     hProjectionY = hHitmapLocal->ProjectionY("hProjectionY");
@@ -494,38 +492,33 @@ void plot_histogram::draw_ref_clusteringSpatial(std::string refname, TFile* inpu
     set_th1dStyle(hProjectionX, kRed);
     set_th1dStyle(hProjectionY, kRed);
 
-    std::cout << "Optimise fitting" << std::endl;
+    LOG_STATUS.source("plot_histogram::draw_ref_clusteringSpatial") << "Optimise fitting";
     fProjectionX = optimise_hist_gaus(hProjectionX, kBlue);
     fProjectionY = optimise_hist_gaus(hProjectionY, kBlue);
 
-    std::cout << "Write histogram to " << output_dirName << std::endl;
+    LOG_STATUS.source("plot_histogram::draw_ref_clusteringSpatial") << "Write histogram to " << output_dirName;
     output_file->cd(output_dirName.c_str());
     write_plot(hHitmapLocal, "hHitmapLocal");
     write_plot(hHitmapGlobal, "hHitmapGlobal");
     write_plot(hProjectionX, "hProjectionX");
     write_plot(hProjectionY, "hProjectionY");
     output_file->cd();
-
-    std::cout << "Finish draw_ref_clusteringSpatial" << std::endl;
-    std::cout << "refname: " << refname << std::endl;
-    std::cout << "-------------------------------------------------------------------------" << std::endl;
 }
 
 // draw histogram from clusteringAnalog module as DUT plots
-void plot_histogram::draw_dut_clusteringAnalog(std::string dutname, TFile* input_file, TFile* output_file) {
-    std::cout << "=========================================================================" << std::endl;
-    print_message("Start draw_dut_clusteringAnalog", GREEN);
-    print_message("dutname: " + dutname, GREEN);
+void plot_histogram::draw_dut_clusteringAnalog(const std::string& dutname, TFile* input_file, TFile* output_file) {
+    LOG_DEBUG.source("plot_histogram::draw_dut_clusteringAnalog") << "Start draw_dut_clusteringAnalog";
+    LOG_INFO.source("plot_histogram::draw_dut_clusteringAnalog") << "dutname: " + dutname;
 
     input_dirName = "ClusteringAnalog/" + dutname + "/";
     output_dirName = "Hitmap/" + dutname + "/";
 
-    std::cout << "Inport histogram from " << input_dirName << std::endl;
+    LOG_STATUS.source("plot_histogram::draw_dut_clusteringAnalog") << "Inport histogram from " << input_dirName;
     hHitmapLocal = (TH2D*)input_file->Get((input_dirName + "clusterPositionLocal").c_str());
     hHitmapGlobal = (TH2D*)input_file->Get((input_dirName + "clusterPositionGlobal").c_str());
     if (hHitmapLocal == nullptr || hHitmapGlobal == nullptr) {
-        print_message(Form("Histogram is not found at %s", input_dirName.c_str()), RED);
-        return;
+        LOG_ERROR.source("plot_histogram::draw_dut_clusteringAnalog") << "Histogram is not found at " << input_dirName;
+        throw std::invalid_argument("Histogram is not found");
     }
     hProjectionX = hHitmapLocal->ProjectionX("hProjectionX");
     hProjectionY = hHitmapLocal->ProjectionY("hProjectionY");
@@ -535,25 +528,21 @@ void plot_histogram::draw_dut_clusteringAnalog(std::string dutname, TFile* input
     set_th1dStyle(hProjectionX, kRed);
     set_th1dStyle(hProjectionY, kRed);
 
-    std::cout << "Optimise fitting" << std::endl;
+    LOG_STATUS.source("plot_histogram::draw_dut_clusteringAnalog") << "Optimise fitting";
     fProjectionX = optimise_hist_gaus(hProjectionX, kBlue);
     fProjectionY = optimise_hist_gaus(hProjectionY, kBlue);
 
-    std::cout << "Write histogram to " << output_dirName << std::endl;
+    LOG_STATUS.source("plot_histogram::draw_dut_clusteringAnalog") << "Write histogram to " << output_dirName;
     output_file->cd(output_dirName.c_str());
     write_plot(hHitmapLocal, "hHitmapLocal");
     write_plot(hHitmapGlobal, "hHitmapGlobal");
     write_plot(hProjectionX, "hProjectionX");
     write_plot(hProjectionY, "hProjectionY");
     output_file->cd();
-
-    std::cout << "Finish draw_dut_clusteringAnalog" << std::endl;
-    std::cout << "dutname: " << dutname << std::endl;
-    std::cout << "-------------------------------------------------------------------------" << std::endl;
 }
 
 // draw correlation histogram from Correlations module
-void plot_histogram::draw_correlation(std::string detector, TFile* input_file, TFile* output_file) {
+void plot_histogram::draw_correlation(const std::string& detector, TFile* input_file, TFile* output_file) {
     std::cout << "=========================================================================" << std::endl;
     print_message("Start draw_correlation", GREEN);
     print_message("detector: " + detector, GREEN);

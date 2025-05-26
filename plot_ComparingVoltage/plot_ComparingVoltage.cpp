@@ -23,7 +23,7 @@ const int y_Residual_min = 0;
 const int y_Residual_max = 800;
 
 plot_ComparingVoltage::plot_ComparingVoltage() {
-    std::cout << "plot_ComparingVoltage object is created" << std::endl;
+    LOG_STATUS.source("plot_ComparingVoltage::plot_ComparingVoltage") << "plot_ComparingVoltage object is created.";
 }
 
 void plot_ComparingVoltage::get_voltageClsize(std::vector<TFile*> input_ROOTFile, TFile* output_ROOTFile, std::vector<std::string> voltage) {
@@ -34,7 +34,7 @@ void plot_ComparingVoltage::get_voltageClsize(std::vector<TFile*> input_ROOTFile
     for (int i=0; i<input_ROOTFile.size(); ++i) {
         TH1D* hClsize = (TH1D*)input_ROOTFile[i]->Get(hClsize_path.c_str());
         if(hClsize == nullptr) {
-            std::cout << "Histogram is nullptr" << std::endl;
+            LOG_WARNING.source("plot_ComparingVoltage::get_voltageClsize") << "Histogram is nullptr";
             break;
         }
         hClsize->Scale(1/hClsize->Integral());
@@ -133,7 +133,7 @@ void plot_ComparingVoltage::get_voltageCharge(std::vector<TFile*> input_ROOTFile
         TH1D* hClusterCharge = (TH1D*)input_ROOTFile[i]->Get(hClusterCharge_path.c_str());
 
         if(hClusterCharge == nullptr) {
-            std::cout << "Histogram is nullptr" << std::endl;
+            LOG_WARNING.source("plot_ComparingVoltage::get_voltageCharge") << "Histogram is nullptr.";
             break;
         }
 
@@ -152,7 +152,7 @@ void plot_ComparingVoltage::get_voltageCharge(std::vector<TFile*> input_ROOTFile
     for(int i=0; i<voltage.size(); ++i) {
         TH1D* hSeedCharge = (TH1D*)input_ROOTFile[i]->Get(hSeedCharge_path.c_str());
         if(hSeedCharge == nullptr) {
-            std::cout << "Histogram is nullptr" << std::endl;
+            LOG_WARNING.source("plot_ComparingVoltage::get_voltageCharge") << "Histogram is nullptr.";
             break;
         }
 
@@ -189,6 +189,7 @@ void plot_ComparingVoltage::get_voltageCharge(std::vector<TFile*> input_ROOTFile
             vClusterCharge[i]->GetXaxis()->SetLabelSize(0.04);
             vClusterCharge[i]->GetYaxis()->SetLabelSize(0.04);
             vClusterCharge[i]->SetMarkerColor(1);
+            vClusterCharge[i]->SetLineColor(1);
             vClusterCharge[i]->Draw("PE");
         } else {
             vClusterCharge[i]->SetMarkerColor(i+1);
@@ -268,6 +269,7 @@ void plot_ComparingVoltage::get_voltageCharge(std::vector<TFile*> input_ROOTFile
             vSeedCharge[i]->GetXaxis()->SetLabelSize(0.04);
             vSeedCharge[i]->GetYaxis()->SetLabelSize(0.04);
             vSeedCharge[i]->SetMarkerColor(1);
+            vSeedCharge[i]->SetLineColor(1);
             vSeedCharge[i]->Draw("PE");
         } else {
             vSeedCharge[i]->SetMarkerColor(i+1);
@@ -341,7 +343,7 @@ void plot_ComparingVoltage::get_voltageResidual(std::vector<TFile*> input_ROOTFi
     for(int i=0; i<input_ROOTFile.size(); ++i) {
         TH1D* hResidualX = (TH1D*)input_ROOTFile[i]->Get("DetectorHistogrammer/CE65/residuals/residual_x");
         if(hResidualX == nullptr) {
-            std::cerr << "ERROR: Histogram is nullptr" << std::endl;
+            LOG_WARNING.source("plot_ComparingVoltage::get_voltageResidual") << "Histogram is nullptr.";
             break;
         }
         vResidualX.push_back(hResidualX);
@@ -350,23 +352,22 @@ void plot_ComparingVoltage::get_voltageResidual(std::vector<TFile*> input_ROOTFi
     for(int i=0; i<input_ROOTFile.size(); ++i) {
         TH1D* hResidualY = (TH1D*)input_ROOTFile[i]->Get("DetectorHistogrammer/CE65/residuals/residual_y");
         if(hResidualY == nullptr) {
-            std::cerr << "ERROR: Histogram is nullptr" << std::endl;
+            LOG_WARNING.source("plot_ComparingVoltage::get_voltageResidual") << "Histogram is nullptr.";
             break;
         }
         vResidualY.push_back(hResidualY);
     }
     
-    std::cout << "-------------------------" << std::endl;
     TCanvas* c_x = new TCanvas("c_x", "c_x", 800, 600);
     c_x->SetTopMargin(0.062);
     c_x->SetBottomMargin(0.14);
     c_x->SetLeftMargin(0.10);
     c_x->SetRightMargin(0.03);
 
-    std::cout << "Start drawing hist" << std::endl;
+    LOG_DEBUG.source("plot_ComparingVoltage::get_voltageResidual") << "Start drawing hist";
     for(int i=0; i<vResidualX.size(); ++i) {
         if(!vResidualX[i]) {
-            std::cerr << "ERROR: vResidualX[" << i << "] is nullptr! Skipping this entry." << std::endl;
+            LOG_WARNING.source("plot_ComparingVoltage::get_voltageResidual") << "vResidualX[" << i << "] is nullptr! Skipping this entry.";
             continue;
         }
         vResidualX[i]->SetMarkerSize(1.5);
@@ -397,10 +398,8 @@ void plot_ComparingVoltage::get_voltageResidual(std::vector<TFile*> input_ROOTFi
             vResidualX[i]->Draw("samePE");
         }
     }
-    std::cout << "Start Fit" << std::endl;
-    vFitResidualX = plot_MobilityModel::get_fits(vResidualX);
 
-    std::cout << "Start drawing legend" << std::endl;
+    vFitResidualX = plot_MobilityModel::get_fits(vResidualX);
 
     // Write TLegend on TCanvas
     const double y_legend_max = 0.72 - (0.06*vResidualX.size());
@@ -423,7 +422,6 @@ void plot_ComparingVoltage::get_voltageResidual(std::vector<TFile*> input_ROOTFi
     }
     fit_legend->Draw();
 
-    std::cout << "Start drawing TLatex" << std::endl;
     TLatex latex;
     latex.SetTextSize(0.04);
     latex.SetTextFont(62);

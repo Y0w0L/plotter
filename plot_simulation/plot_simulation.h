@@ -1,4 +1,4 @@
-#include "plot_histogram/plot_histogram.hpp"
+#include "plot_histogram/plot_histogram.h"
 
 class plot_simulation : public plot_histogram {
     public:

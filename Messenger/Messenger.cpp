@@ -4,7 +4,7 @@
 
 // Static member initialization
 std::map<std::string, Messenger> Messenger::instances_;
-LogLevel Messenger::globalDefaultLevel_ = LogLevel::INFO;
+LogLevel Messenger::globalDefaultLevel_ = LogLevel::WARNING; // change mode
 std::mutex Messenger::messengerMutex_;
 
 namespace LogColors {
@@ -180,16 +180,9 @@ bool Messenger::shouldLogN(const std::string& key, int n) {
     return false; // Limit reached
 }
 
-void Messenger::print(LogLevel level, const std::string& source, const std::string& message) {
-    if(reportLevel_ < level) {
-        return;
-    }
-
-    std::ostream& out_stream = (level == LogLevel::ERROR || level == LogLevel::FATAL) ? std::cerr : std::cout;
-    std::string levelStr = levelToString(level);
-    
-    std::string colorCode = "";
-    switch (level) {
+std::string Messenger::switch_Color(LogLevel level) {
+    std::string colorCode;
+    switch(level) {
         case LogLevel::FATAL:
             colorCode = LogColors::BOLD_RED;
             break;
@@ -215,7 +208,18 @@ void Messenger::print(LogLevel level, const std::string& source, const std::stri
             colorCode = "";
             break;
     }
+    return colorCode;
+}
 
+void Messenger::print(LogLevel level, const std::string& source, const std::string& message) {
+    if(reportLevel_ < level) {
+        return;
+    }
+
+    std::ostream& out_stream = (level == LogLevel::ERROR || level == LogLevel::FATAL) ? std::cerr : std::cout;
+    std::string levelStr = levelToString(level);
+    
+    std::string colorCode = switch_Color(level);
 
     // Simple multi-line handling: indent subsequent lines
     std::istringstream messageStream(message);
@@ -250,7 +254,7 @@ void Messenger::print(LogLevel level, const std::string& source, const std::stri
 std::string Messenger::getTimestamp() const {
     auto now = std::chrono::system_clock::now();
     auto now_c = std::chrono::system_clock::to_time_t(now);
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
+    //auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
 
     std::ostringstream oss;
     oss << LogColors::BOLD << std::put_time(std::localtime(&now_c), "[%Y-%m-%d %H:%M:%S]") << LogColors::RESET;

@@ -66,6 +66,7 @@ public:
     static Messenger& getInstance(const std::string& instanceName = "default");
     static void setDefaultLevel(LogLevel level);
     static LogLevel getDefaultLevel();
+    static std::string switch_Color(LogLevel level);
 
     void setReportLevel(LogLevel level);
     LogLevel getReportLevel() const;

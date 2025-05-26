@@ -2,6 +2,7 @@
 #define TRACK_RESOLUTION_HPP
 
 #include "plot_histogram/plot_histogram.h"
+#include "Messenger/Messenger.h"
 
 struct detector_information {
     std::string detector_name;
@@ -27,7 +28,7 @@ class track_resolution : public plot_histogram {
         * @brief Calculate mean value of the data
         * @param data Vector of data
         **/
-        double calculate_mean(std::vector<double> data);
+        double calculate_mean(const std::vector<double>& data);
 
         double calculate_extrapolationResolution(const std::vector<double>& ref_position, const std::vector<double>& ref_resolution, double extr_position);
 
@@ -37,17 +38,17 @@ class track_resolution : public plot_histogram {
         * @param ref_position Vector of reference position
         * @param dut_position Position of DUT
         **/
-        double calculate_trackResolution(const std::vector<double>& ref_resolution, std::vector<double>& ref_position, double dut_position);
+        double calculate_trackResolution(const std::vector<double>& ref_resolution, const std::vector<double>& ref_position, double dut_position);
 
         /**
         * @brief Open .conf file
         * @param filename Name of the configuration file
         **/
-        std::ifstream open_confFile(std::string filename);
+        std::ifstream open_confFile(const std::string& filename);
 
         /**
         **/
-        std::vector<detector_information> import_detectorInformation(std::ifstream& file);
+        // std::vector<detector_information> import_detectorInformation(std::ifstream& file);
 
         void run();
 

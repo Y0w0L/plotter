@@ -1,8 +1,8 @@
 //#include "plot_histogram.hpp"
-#include "plot_simulation.hpp"
-#include "track_resolution.hpp"
-#include "plot_MobilityModel.hpp"
-#include "plot_ComparingVoltage.hpp"
+#include "plot_simulation.h"
+#include "track_resolution.h"
+#include "plot_MobilityModel.h"
+#include "plot_ComparingVoltage.h"
 #include <time.h>
 
 // plot_histogram::plot_histogram() {

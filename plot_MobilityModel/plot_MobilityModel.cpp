@@ -6,6 +6,13 @@ const bool scaling_clSize = true;
 std::string voltage_model;
 
 plot_MobilityModel::plot_MobilityModel()
+    : input_fileDir(""), output_fileDir(""), output_file(""),
+      pixel_pitchs({}), chip_types({}), chip_variations({}), threshold_values({}), thresholds({}), model_names({}), models({}),
+      h_clSize(nullptr),
+      clSize_x_max(0), clSize_x_max_highThd(0), charge_x_max(0),
+      clSize_y_max(0), clSize_y_max_highThd(0), charge_y_max(0),
+      x_residual_max(0), y_residual_max(0),
+      y_inPixelResidual_max(0)
 {
     LOG_INFO.source("plot_MobilityModel::plot_MobilityModel") << "Initialize plot_MobilityModel.";
 }
@@ -20,23 +27,21 @@ void plot_MobilityModel::clSizeStyle(TH1D* hist, const int color, const int mark
 
 TH1D* plot_MobilityModel::get_hist(TFile* file, const std::string& hist_name) {
     if(file == nullptr) {
-        std::cerr << "ERROR: TFile pointer is null in get_hist for histogram" << std::endl;
+        LOG_WARNING.source("plot_MobilityModel::get_hist") << "TFile pointer is nullptr. Retrun value will be nullptr.";
         return nullptr;
     }
 
     // get TObject from file
     TObject* obj = file->Get(hist_name.c_str());
     if(obj == nullptr) {
-        std::cout << "INFO: Object with name " << hist_name
-        << " not found in " << file->GetName() << std::endl;
+        LOG_WARNING.source("plot_MobilityModel::get_hist") << "Object of " << hist_name << " is nullptr in " << file->GetName() << ". Return value will be nullptr.";
         return nullptr;
     }
 
     TH1D* hist = dynamic_cast<TH1D*>(obj);
     // found object but it isn't TH1D type
     if(hist == nullptr) {
-        std::cerr << "ERROR: Object with name " << hist_name
-        << " in file " << file->GetName() << std::endl;
+        LOG_WARNING.source("plot_MobilityModel::get_hist") << "TH1D object of " << hist_name << " is nullptr in " << file->GetName() << ". Return value will be nullptr.";
         return nullptr;
     }
 
@@ -50,14 +55,13 @@ std::vector<TFile*> plot_MobilityModel::get_TFiles(const std::vector<std::string
     for(const std::string& filename : filenames) {
         TFile* file = TFile::Open(filename.c_str(), "READ");
         if (!file || file->IsZombie()) {
-            std::cerr << "ERROR: Cannot open file " << filename << std::endl;
+            LOG_ERROR.source("plot_MobilityModel::get_TFiles") << "Cannot open file: " << filename << ". Return value will be nullptr";
             delete file;
             files.push_back(nullptr);
         } else {
             files.push_back(file);
         }
     }
-
     return files;
 }
 
@@ -77,13 +81,13 @@ std::vector<TH1D*> plot_MobilityModel::get_hists(
 }
 
 std::vector<TF1*> plot_MobilityModel::get_fits(std::vector<TH1D*> hists) {
-    std::cout << "Start plot_MobilityModel::get_fits" << std::endl;
+    LOG_DEBUG.source("plot_MobilityModel::get_fits") << "Start get_fits.";
     std::vector<TF1*> fits;
     fits.reserve(hists.size());
 
     for(int i=0; i<hists.size(); ++i) {
         if(hists[i] == nullptr) {
-            std::cout << "INFO: Histogram is nullptr in plot_MobilityModel::get_fits()" << std::endl;
+            LOG_WARNING.source("plot_MobilityModel::get_fits") << "Histogram is nullptr. Return value will be nullptr.";
             fits.push_back(nullptr);
             continue;
         }
@@ -114,14 +118,14 @@ std::vector<TF1*> plot_MobilityModel::get_fits(std::vector<TH1D*> hists) {
 }
 
 std::vector<TF1*> plot_MobilityModel::get_landauFits(std::vector<TH1D*> hists) {
-    std::cout << "Start plot_MobilityModel::get_landauFits" << std::endl;
+    LOG_DEBUG.source("plot_MobilityModel::get_landauFits") << "Start get_landauFits.";
     std::vector<TF1*> fits;
     fits.reserve(hists.size());
 
     for(int i=0; i<hists.size(); ++i) {
         if(hists[i] == nullptr) {
-            std::cout << "Histogram is nullptr" << std::endl;
-            plot_histogram::print_message("INFO: Histogram is nullptr in plot_MobilityModel::get_landauFits()", RED);
+            LOG_WARNING.source("plot_MobilityModel::get_landauFits") << "Histogram is nullptr. Return value will be nullptr.";
+            fits.push_back(nullptr);
             continue;
         }
 
@@ -141,23 +145,21 @@ std::vector<TF1*> plot_MobilityModel::get_landauFits(std::vector<TH1D*> hists) {
             fits.push_back(fit);
         }
     }
-
     return fits;
 }
 
 void plot_MobilityModel::write_clSizePlots(std::vector<TH1D*> hists, const std::vector<std::string>& names, const int& x_max, const int& y_max) {
-    std::cout << "Write cluster size plots" << std::endl;
+    LOG_DEBUG.source("plot_MobilityModel::write_clSizePlots") << "Write cluster size plots.";
 
     for(int i=0; i<hists.size(); ++i) {
         if(hists[i] == nullptr) {
             continue;
         }
-        
+        LOG_INFO.source("plot_MobilityModel.write_clSizePlots") << "Hist name is " << hists[i]->GetName() <<".";
         if(scaling_clSize) {
             hists[i]->Scale(1/hists[i]->Integral());
         }
         if(i == 0) {
-            std::cout << "Hist name: " << hists[i]->GetName() << std::endl;
             clSizeStyle(hists[i], 1, 20);
             hists[i]->SetTitle(";cluster size; clusters");
             if(scaling_clSize) {
@@ -174,7 +176,6 @@ void plot_MobilityModel::write_clSizePlots(std::vector<TH1D*> hists, const std::
             hists[i]->Draw("histE");
         } else {
             clSizeStyle(hists[i], i+1, 20);
-            std::cout << "Hist name: " << hists[i]->GetName() << std::endl;
             if(i == 2) {
                 hists[i]->SetLineColor(kGreen+2);
                 hists[i]->SetMarkerColor(kGreen+2);
@@ -199,7 +200,7 @@ void plot_MobilityModel::write_clSizePlots(std::vector<TH1D*> hists, const std::
 }
 
 std::vector<TH1D*> plot_MobilityModel::write_chargePlots(std::vector<TH1D*> hists, std::vector<std::string> names, int x_max, int y_max) {
-    std::cout << "Write charge plots" << std::endl;
+    LOG_DEBUG.source("plot_MobilityModel::write_chargePlots") << "Write charge plots.";
     //std::vector<TH1D*> scaledHists;
     for(int i=0; i<hists.size(); ++i) {
         int nBins = hists[i]->GetNbinsX();
@@ -208,9 +209,9 @@ std::vector<TH1D*> plot_MobilityModel::write_chargePlots(std::vector<TH1D*> hist
         hists[i] = new TH1D(hists[i]->GetName(), hists[i]->GetTitle(), nBins, 0, xMax);
         for(int j=1; j<=nBins; ++j) {
             hists[i]->SetBinContent(j, cloneHist->GetBinContent(j));
-        }  
+        } 
+        LOG_INFO.source("plot_MobilityModel::write_chargePlots") << "Hist name is " << hists[i]->GetName() << ".";
         if(i == 0) {
-            std::cout << "Hist name: " << hists[i]->GetName() << std::endl;
             clSizeStyle(hists[i], 1, 20);
             hists[i]->SetTitle(";charge [e]; events");
             hists[i]->GetXaxis()->SetRangeUser(0, x_max);
@@ -229,7 +230,6 @@ std::vector<TH1D*> plot_MobilityModel::write_chargePlots(std::vector<TH1D*> hist
             hists[i]->Draw("PE");
         } else {
             clSizeStyle(hists[i], i+1, 20);
-            std::cout << "Hist name: " << hists[i]->GetName() << std::endl;
             if(i == 2) {
                 hists[i]->SetLineColor(kGreen+2);
                 hists[i]->SetMarkerColor(kGreen+2);
@@ -265,7 +265,7 @@ std::vector<TH1D*> plot_MobilityModel::write_chargePlots(std::vector<TH1D*> hist
 }
 
 void plot_MobilityModel::write_residualPlots(std::vector<TH1D*> hists, std::vector<TF1*> fits, std::vector<std::string> names, int x_max, int y_max, std::string axis) {
-    std::cout << "Write residual plots" << std::endl;
+    LOG_DEBUG.source("plot_MobilityModel::write_residualPlots") << "Write residual plots.";
     for(int i=0; i<hists.size(); ++i) {
         // if(scaling_residual) {
         //     double max_amplitude = hists[i]->GetMaximum();
@@ -273,8 +273,8 @@ void plot_MobilityModel::write_residualPlots(std::vector<TH1D*> hists, std::vect
         //     plot_histogram::optimise_hist_gaus(hists[i], i+1);
         //     //fits[i]->Scale(1/max_amplitude);
         // }
+        LOG_INFO.source("plot_MobilityModel::write_residualPlots") << "Hist name is " << hists[i]->GetName() << ".";
         if(i == 0) {
-            std::cout << "Hist name: " << hists[i]->GetName() << std::endl;
             clSizeStyle(hists[i], 1, 20);
             hists[i]->SetTitle(Form(";%s_{MC} - %s_{cluster} [um]; events", axis.c_str(), axis.c_str()));
             hists[i]->GetXaxis()->SetRangeUser(-x_max, x_max);
@@ -288,7 +288,6 @@ void plot_MobilityModel::write_residualPlots(std::vector<TH1D*> hists, std::vect
             hists[i]->Draw("PE");
         } else {
             clSizeStyle(hists[i], i+1, 20);
-            std::cout << "Hist name: " << hists[i]->GetName() << std::endl;
             if(i == 2) {
                 hists[i]->SetLineColor(kGreen+2);
                 hists[i]->SetMarkerColor(kGreen+2);
@@ -322,10 +321,11 @@ void plot_MobilityModel::write_residualPlots(std::vector<TH1D*> hists, std::vect
 }
 
 void plot_MobilityModel::write_inPixelResidualPlots(std::vector<TH1D*> hists, std::vector<std::string> names, int x_max, int y_max, std::string axis) {
-    std::cout << "Write in-pixel residual plots" << std::endl;
+    LOG_DEBUG.source("plot_MobilityModel::write_inPixelResidualPlots") << "Write in-pixel residual plots.";
+    double y_legend_size = 0;
     for(int i=0; i<hists.size(); ++i) {
+        LOG_INFO.source("plot_MobilityModel::write_inPixelResidualPlots") << "Hist name is " << hists[i]->GetName() << ".";
         if(i==0) {
-            std::cout << "Hist name: " << hists[i]->GetName() << std::endl;
             clSizeStyle(hists[i], 1, 20);
             if(axis == "xx") {
                 hists[i]->SetTitle(";x in-pixel[um]; MAD(x_{MC}-x_{cluster})[um]");
@@ -351,7 +351,6 @@ void plot_MobilityModel::write_inPixelResidualPlots(std::vector<TH1D*> hists, st
             hists[i]->Draw("PE");
         } else {
             clSizeStyle(hists[i], i+1, 20);
-            std::cout << "Hist name: " << hists[i]->GetName() << std::endl;
             if(i == 2) {
                 hists[i]->SetLineColor(kGreen+2);
                 hists[i]->SetMarkerColor(kGreen+2);
@@ -362,7 +361,7 @@ void plot_MobilityModel::write_inPixelResidualPlots(std::vector<TH1D*> hists, st
             }
             hists[i]->Draw("samePE");
         }
-        double y_legend_size = 0.76 - (0.05*names.size());
+        y_legend_size = 0.76 - (0.05*names.size());
         TLegend* legend = new TLegend(0.7, 0.76, 0.88, y_legend_size);
         legend->SetFillStyle(0);
         legend->SetTextSize(0.04);
@@ -380,7 +379,7 @@ void plot_MobilityModel::save_clSizePlots(TFile* output_file, std::vector<std::s
 
     for(int i=0; i<hists.size(); ++i) {
         if(hists[i] == nullptr) {
-            std::cout << "Histogram is nullptr" << std::endl;
+            LOG_WARNING.source("plot_MobilityModel::save_clSizePlots") << "Histogram is nullptr";
         }
     }
 
@@ -393,7 +392,7 @@ void plot_MobilityModel::save_clSizePlots(TFile* output_file, std::vector<std::s
 
     std::string output_dir = "cluster_size/";
 
-    std::cout << "Save cluster size plots" << std::endl;
+    LOG_DEBUG.source("plot_MobilityModel::save_clSizePlots") << "Save cluster size plots.";
     TCanvas* canvas = new TCanvas("c", "c", 800, 600);
     canvas->SetTopMargin(0.062);
     canvas->SetBottomMargin(0.14);
@@ -421,7 +420,7 @@ void plot_MobilityModel::save_clSizePlots(TFile* output_file, std::vector<std::s
     output_file->cd();
     output_file->cd(output_dir.c_str());
     canvas->Write(save_name.c_str());
-    canvas->SaveAs("test.pdf");
+    // canvas->SaveAs("test.pdf");
     delete canvas;
 }
 
@@ -429,10 +428,11 @@ void plot_MobilityModel::save_chargePlots(TFile* output_file, std::vector<std::s
     std::vector<TFile*> files = get_TFiles(filenames);
     std::vector<TH1D*> hists = get_hists(files, "DetectorHistogrammer/CE65/charge/cluster_charge");
     std::vector<TH1D*> scaledHists;
+    scaledHists.reserve(hists.size());
 
     for(int i=0; i<hists.size(); ++i) {
         if(hists[i] == nullptr) {
-            std::cout << "Histogram is nullptr" << std::endl;
+            LOG_WARNING.source("plot_MobilityModel::save_chargePlots") << "Histogram is nullptr";
         }
     }
 
@@ -447,7 +447,7 @@ void plot_MobilityModel::save_chargePlots(TFile* output_file, std::vector<std::s
 
     std::string output_dir = "cluster_charge/";
 
-    std::cout << "Save charge plots" << std::endl;
+    LOG_DEBUG.source("plot_MobilityModel::save_chargePlots") << "Save charge plots.";
     TCanvas* canvas = new TCanvas("c", "c", 800, 600);
     if(judge == 1) {
         canvas->SetLogy();
@@ -491,7 +491,7 @@ void plot_MobilityModel::save_seedChargePlots(TFile* output_file, std::vector<st
 
     for(int i=0; i<hists.size(); ++i) {
         if(hists[i] == nullptr) {
-            std::cout << "Histogram is nullptr" << std::endl;
+            LOG_WARNING.source("plot_MobilityModel::save_seedChargePlots") << "Histogram is nullptr";
         }
     }
 
@@ -506,7 +506,6 @@ void plot_MobilityModel::save_seedChargePlots(TFile* output_file, std::vector<st
 
     std::string output_dir = "seed_charge/";
 
-    std::cout << "Save charge plots" << std::endl;
     TCanvas* canvas = new TCanvas("c", "c", 800, 600);
     if(judge == 1) {
         canvas->SetLogy();
@@ -551,11 +550,10 @@ void plot_MobilityModel::save_residualPlots(TFile* output_file, std::vector<std:
         std::vector<TF1*> fits = get_fits(hists);
         for(int i=0; i<hists.size(); ++i) {
             if(hists[i] == nullptr) {
-                std::cout << "Histogram is nullptr : " << hists[i]->GetName() << std::endl;
+                LOG_WARNING.source("plot_MobilityModel::save_residualPlots") << "Histogram is nullptr";
             }
         }
         std::string output_dir = "residuals/";
-        std::cout << "Save residual plots" << std::endl;
         TCanvas* canvas = new TCanvas("c", "c", 800, 600);
         canvas->SetTopMargin(0.065);
         canvas->SetBottomMargin(0.12);
@@ -608,7 +606,7 @@ void plot_MobilityModel::save_inPixelResidualPlots(TFile* output_file, std::vect
         }
         for(int i=0; i<hists.size(); ++i) {
             if(hists[i] == nullptr) {
-                std::cout << "Histogram is nullptr : " << hists[i]->GetName() << std::endl;
+                LOG_WARNING.source("plot_MobilityModel::save_inPixelResidualPlots") << "Histogram is nullptr.";
             }
         }
         TCanvas* canvas = new TCanvas("c", "c", 800, 600);
@@ -636,7 +634,7 @@ void plot_MobilityModel::save_inPixelResidualPlots(TFile* output_file, std::vect
 }
 // TODO need to be fixed 
 void plot_MobilityModel::save_suminPixelResidualPlots(TFile* output_file, std::vector<std::string> filenames, std::vector<std::string> names, std::string save_name, int x_max, int y_max) {
-    std::cout << "Save sum in-pixel residual plots" << std::endl;
+    LOG_WARNING.source("plot_MobilityModel::save_suminPixelResidualPlots") << "Save sum in-pixel residual plots";
     std::vector<TFile*> files = get_TFiles(filenames);
     std::vector<std::string> axes = {"xx", "xy", "yx", "yy"}; // "xx" x_vs_x (1st_vs_2nd)
     std::vector<TH1D*> hists;
@@ -650,16 +648,15 @@ void plot_MobilityModel::save_suminPixelResidualPlots(TFile* output_file, std::v
     for(int i=0; i<files.size(); ++i) {
         std::vector<TH1D*> inPixel_residuals_x = {};
         std::vector<TH1D*> inPixel_residuals_y = {};
-        std::cout << "File name: " << files[i]->GetName() << std::endl;
+        LOG_INFO.source("plot_MobilityModel::save_suminPixelResidualPlots") << "File name is " << files[i]->GetName() << ".";
         for(int j=0; j<axes.size(); ++j) {
-            std::cout << "Axes: " << axes[i] << std::endl;
             if(axes[j] == "xx") {
-                std::cout << "Get hist: " << "DetectorHistogrammer/CE65/residuals/residual_x_vs_x" << std::endl;
+                LOG_INFO.source("plot_MobilityModel::save_suminPixelResidualPlots") << "Get hist from DetectorHistogrammer/CE65/residuals/residual_x_vs_x";
                 TH1D* hist_xx = get_hist(files[i], "DetectorHistogrammer/CE65/residuals/residual_x_vs_x");
                 inPixel_residuals_x.push_back(hist_xx);
             }
             if(axes[j] == "xy") {
-                std::cout << "Get hist: " << "DetectorHistogrammer/CE65/residuals/residual_x_vs_y" << std::endl;
+                LOG_INFO.source("plot_MobilityModel::save_suminPixelResidualPlots") << "Get hist from DetectorHistogrammer/CE65/residuals/residual_x_vs_y";
                 TH1D* hist_xy = get_hist(files[i], "DetectorHistogrammer/CE65/residuals/residual_x_vs_y");
                 inPixel_residuals_x.push_back(hist_xy);
             }
@@ -673,17 +670,14 @@ void plot_MobilityModel::save_suminPixelResidualPlots(TFile* output_file, std::v
             //     TH1D* hist_yy = get_hist(files[i], "DetectorHistogrammer/CE65/residuals/residual_y_vs_y");
             //     inPixel_residuals_y.push_back(hist_yy);
             // }
-            std::cout << "Get hist done" << std::endl;
         }
         for(int j=0; j<inPixel_residuals_x.size(); ++j) {
             if(inPixel_residuals_x[j] == nullptr) {
-                std::cout << "Histogram is nullptr : " << std::endl;
+                LOG_WARNING.source("plot_MobilityModel::save_suminPixelResidualPlots") << "Histogram is nullptr.";
                 break;
             }
-            std::cout << "Hist name -suminPixel: " << inPixel_residuals_x[j]->GetName() << std::endl;
+            LOG_INFO.source("plot_MobilityModel::save_suminPixelResidualPlots") << "Hist name -suminPixel: " << inPixel_residuals_x[j]->GetName() << ".";
         }
-
-        std::cout << "Sum Histograms -in Pixel Resiudals" << std::endl;
         // sum x
         TH1D* sum_residual_x = new TH1D("sum_residual_x", ";x in-pixel[um]; MAD(r)[um]", inPixel_residuals_x[0]->GetNbinsX(), inPixel_residuals_x[0]->GetXaxis()->GetXmin(), inPixel_residuals_x[0]->GetXaxis()->GetXmax());
         for(int j=1; j<= inPixel_residuals_x[0]->GetNbinsX(); ++j) {
@@ -747,17 +741,18 @@ void plot_MobilityModel::save_suminPixelResidualPlots(TFile* output_file, std::v
 // }
 
 void plot_MobilityModel::run() {
+    LOG_STATUS.source("plot_MobilityModel::run") << "Starat Main process in plot_MobilityModel.";
     set_rootStyle();
 
     voltage_model = "10";
 
     if(judge == 0) {
-        std::cout << "Start run for 1chip simulation data" << std::endl;
+        LOG_STATUS.source("plot_MobilityModel.run") << "Start run for 1chip simulation data";
         input_fileDir = Form("/home/towa/alice3/hist/ce65_sim_202505/n%sv/", voltage_model.c_str());
         output_file = Form("ce65_model_1chip_n%sv.root", voltage_model.c_str());
     }
     if(judge == 1) {
-        std::cout << "Start run for lab test simulation data" << std::endl;
+        LOG_STATUS.source("plot_MobilityModel.run") << "Start run for lab simulation data";
         input_fileDir = "/home/towa/alice3/hist/lab_sim/";
         output_file = "ce65_model_lab.root";
     }
@@ -803,12 +798,8 @@ void plot_MobilityModel::run() {
             }
         }
     }
-    
-    // for(const auto& filename : filenames) {
-    //     std::cout << filename << std::endl;
-    // }
 
-    std::cout << "Start file filtering" << std::endl;
+    LOG_STATUS.source("plot_MobilityModel::run") << "Start file filtering.";
     std::vector<std::string> filenames_p15_std_Thd0e = plot_histogram::and_filter_filenames(filenames, {"p15", "std","Thd0e"});
     std::vector<std::string> filenames_p15_gap_Thd0e = plot_histogram::and_filter_filenames(filenames, {"p15", "gap","Thd0e"});
     std::vector<std::string> filenames_p22p5_std_Thd0e = plot_histogram::and_filter_filenames(filenames, {"p22p5", "std","Thd0e"});
@@ -1142,7 +1133,7 @@ void plot_MobilityModel::run() {
     save_suminPixelResidualPlots(output, filenames_p15_std_Thd0e, models, "p15_std_Thd0e", x_residual_max, y_inPixelResidual_max);
 
     output->Close();
-    std::cout << "Finish writing histograms to " << output_file << std::endl;
+    LOG_STATUS.source("plot_MobilityModel::run") << "Finish writing histograms to " << output_file << ".";
 
     if(judge == 0) {
         plot_histogram::saveCanvasesToPDF(output_file.c_str(), "cluster_size", Form("plot/ce65_model_1chip_n%sv_clSize.pdf", voltage_model.c_str()));

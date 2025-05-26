@@ -23,17 +23,23 @@ double langaufun(double *x, double *par) {
 
       // Control constants
       double np = 100.0;      // number of convolution steps
+      //double np_max_original = 100.0;
+      //int max_half_iterations = 50;
       double sc =   5.0;      // convolution extends to +-sc Gaussian sigmas
+
+      // Adaptive convergence parameters
+      // const double convergence_tolerance = 1e-6;
+      // const int min_half_iterations = 10;
 
       // Variables
       double xx;
       double mpc;
       double fland;
       double sum = 0.0;
+      //double previous_sum;
       double xlow,xupp;
       double step;
-      double i;
-
+      // double i;
 
       // MP shift correction
       mpc = par[1] - mpshift * par[0];
@@ -44,8 +50,13 @@ double langaufun(double *x, double *par) {
 
       step = (xupp-xlow) / np;
 
+      // double current_i_offset;
+      // double term1, term2;
+
+      int len = np/2;
+
       // Convolution integral of Landau and Gaussian by sum
-      for(i=1.0; i<=np/2; i++) {
+      for(int i=0; i<=len; i++) {
          xx = xlow + (i-.5) * step;
          fland = TMath::Landau(xx,mpc,par[0]) / par[0];
          sum += fland * TMath::Gaus(x[0],xx,par[3]);
@@ -54,6 +65,34 @@ double langaufun(double *x, double *par) {
          fland = TMath::Landau(xx,mpc,par[0]) / par[0];
          sum += fland * TMath::Gaus(x[0],xx,par[3]);
       }
+      //    previous_sum = sum;
+      //    term1 = 0.0;
+      //    term2 = 0.0;
+
+      //    current_i_offset = static_cast<double>(i) - 0.5;
+
+      //    xx = xlow + current_i_offset * step;
+      //    fland = TMath::Landau(xx,mpc,par[0]);
+      //    if(par[0] != 0) fland /= par[0]; else fland = 0;
+      //    term1 = fland * TMath::Gaus(x[0],xx,par[3]);
+      //    sum += term1;
+
+      //    xx = xupp - current_i_offset * step;
+      //    fland = TMath::Landau(xx,mpc,par[0]);
+      //    if(par[0] != 0) fland /= par[0]; else fland = 0;
+      //    term2 = fland * TMath::Gaus(x[0],xx,par[3]);
+      //    sum += term2;
+
+      //    if(i >= min_half_iterations) {
+      //       if(sum != 0 && previous_sum != 0) {
+      //          if(std::abs((sum - previous_sum) / sum) < convergence_tolerance) {
+      //             break;
+      //          }
+      //       } else if(sum == 0.0 && previous_sum == 0.0) {
+      //          break;
+      //       }
+      //    }
+      // }
 
       return (par[2] * step * sum * invsq2pi / par[3]);
 }

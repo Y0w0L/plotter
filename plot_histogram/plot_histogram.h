@@ -122,6 +122,9 @@ public:
     * @param hist Pointer to TH1D object
     * @param fit Pointer to TF1 object
     **/
+
+    static void print_fitResult(TF1* fit);
+    
     static void draw_gausFit_result(TH1D* hist, TF1* fit);
     /**
     * @brief Draw landau gaussian fitting result // from langaus.C
@@ -153,21 +156,21 @@ public:
     * @param input_file Pointer to the input ROOT file
     * @param output_file Pointer to the output ROOT file
     **/
-    void draw_ref_clusteringSpatial(std::string refname, TFile* input_file, TFile* output_file);
+    void draw_ref_clusteringSpatial(const std::string& refname, TFile* input_file, TFile* output_file);
     /**
     * @brief Draw histogram from clusteringAnalog module as DUT plots
     * @param dutname Name of the DUT module
     * @param input_file Pointer to the input ROOT file
     * @param output_file Pointer to the output ROOT file
     **/
-    void draw_dut_clusteringAnalog(std::string dutname, TFile* input_file, TFile* output_file);
+    void draw_dut_clusteringAnalog(const std::string& dutname, TFile* input_file, TFile* output_file);
     /**
     * @brief Draw correlation histogram from Correlations module
     * @param detector Name of the detector module
     * @param input_file Pointer to the input ROOT file
     * @param output_file Pointer to the output ROOT file
     **/
-    void draw_correlation(std::string detector, TFile* input_file, TFile* output_file);
+    void draw_correlation(const std::string& detector, TFile* input_file, TFile* output_file);
     /**
     * @brief Draw histogram from Tracking4D module
     * @param input_file Pointer to the input ROOT file
