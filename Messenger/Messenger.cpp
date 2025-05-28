@@ -4,7 +4,7 @@
 
 // Static member initialization
 std::map<std::string, Messenger> Messenger::instances_;
-LogLevel Messenger::globalDefaultLevel_ = LogLevel::WARNING; // change mode
+LogLevel Messenger::globalDefaultLevel_ = LogLevel::INFO; // change mode
 std::mutex Messenger::messengerMutex_;
 
 namespace LogColors {

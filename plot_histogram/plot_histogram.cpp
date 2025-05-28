@@ -378,22 +378,22 @@ TF1* plot_histogram::optimise_hist_langaus(TH1D* hist, int color) {
 
 // optimise fitting function with Gaussian and set TF1 style
 TF1* plot_histogram::optimise_hist_gaus(TH1D* hist, int color) {
-    double peak, mean, rms;
+    double peak, rms;
     double half_left, half_right;
     double center, fwhm;
     double fit_range, fit_range_min, fit_range_max;
     std::string fit_name;
 
     peak = hist->GetMaximum();
-    mean = hist->GetMean();
+    //mean= hist->GetMean();
     rms = hist->GetRMS();
-    half_left = hist->FindFirstBinAbove(peak/2);
-    half_right = hist->FindLastBinAbove(peak/2);
-    center = (hist->GetBinCenter(half_left) + hist->GetBinCenter(half_right))/2;
-    fwhm = hist->GetBinCenter(half_right) - hist->GetBinCenter(half_left);
+    half_left = hist->GetBinCenter(hist->FindFirstBinAbove(peak/2));
+    half_right = hist->GetBinCenter(hist->FindLastBinAbove(peak/2));
+    center = (half_left + half_right)/2;
+    fwhm = half_right - half_left;
 
     fit_name = std::string("fGaus_") + hist->GetName();
-    fit_range = std::min(2 * rms, 2 * fwhm);
+    fit_range = std::min(2 * rms, fwhm);
     fit_range_min = center - fit_range;
     fit_range_max = center + fit_range;
 
@@ -624,7 +624,7 @@ void plot_histogram::draw_Tracking4D(TFile* input_file, TFile* output_file) {
 }
 
 // draw histogram from some modules (ClusteringSpatial, Tracking4D) as reference plots
-void plot_histogram::draw_ref_analysis(std::string refname, TFile* input_file, TFile* output_file) {
+void plot_histogram::draw_ref_analysis(const std::string& refname, TFile* input_file, TFile* output_file) {
     std::cout << "=========================================================================" << std::endl;
     print_message("Start draw_ref_analysis", GREEN);
     print_message("refname: " + refname, GREEN);
@@ -674,7 +674,7 @@ void plot_histogram::draw_ref_analysis(std::string refname, TFile* input_file, T
 }
 
 // draw histogram from AnalysisCE65 module as DUT plots
-void plot_histogram::draw_AnalysisCE65(std::string dutname, TFile* input_file, TFile* output_file) {
+void plot_histogram::draw_AnalysisCE65(const std::string& dutname, TFile* input_file, TFile* output_file) {
     std::cout << "=========================================================================" << std::endl;
     print_message("Start draw_AnalysisCE65", GREEN);
     print_message("dutname: " + dutname, GREEN);

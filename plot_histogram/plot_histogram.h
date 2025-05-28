@@ -183,14 +183,14 @@ public:
     * @param input_file Pointer to the input ROOT file
     * @param output_file Pointer to the output ROOT file
     **/
-    void draw_ref_analysis(std::string refname, TFile* input_file, TFile* output_file);
+    void draw_ref_analysis(const std::string& refname, TFile* input_file, TFile* output_file);
     /**
     * @brief Draw histogram from AnalysisCE65 module as DUT plots
     * @param dutname Name of the DUT module
     * @param input_file Pointer to the input ROOT file
     * @param output_file Pointer to the output ROOT file
     **/
-    void draw_AnalysisCE65(std::string dutname, TFile* input_file, TFile* output_file);
+    void draw_AnalysisCE65(const std::string& dutname, TFile* input_file, TFile* output_file);
     void saveCanvasesToPDF(const char* rootFileName, const char* dirName, const char* outputPDF);
     std::vector<std::string> or_filter_filenames(std::vector<std::string> filenames, std::vector<std::string> filter);
     std::vector<std::string> and_filter_filenames(std::vector<std::string> filenames, std::vector<std::string> filter);
