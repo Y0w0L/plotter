@@ -235,6 +235,7 @@ void plot_ComparingVoltage::get_voltageCharge(std::vector<TFile*> input_ROOTFile
             vClusterCharge[i]->Draw("samePE");
         }
     }
+    vFitClusterCharge = plot_MobilityModel::get_landauFits(vClusterCharge);
 
     // Write TLegend on TCanvas
     const double y_legend_max = 0.72 - (0.06*vClusterCharge.size());
@@ -586,8 +587,8 @@ std::pair<double, double> plot_ComparingVoltage::get_resolution(TH1D* hist) {
     hist->Fit(fit, "RLQ", "", fit_range_min, fit_range_max);
 
     if(fit->GetChisquare()/fit->GetNDF() > 10) {
-        LOG_WARNING.source("plot_histogram::optimize_hist_gaus()") << "Chi2/ndf in " << hist->GetName() << " is larger than 10. Return value will be HWHM.";
-        return {fwhm/2, 0}; // とりあえず0
+        LOG_WARNING.source("plot_histogram::optimize_hist_gaus()") << "Chi2/ndf in " << hist->GetName() << " is larger than 10. Return value will be RMS.";
+        return {hist->GetRMS(), 0}; // とりあえず0
     }
 
     double sigma = fit->GetParameter(2);
@@ -599,18 +600,21 @@ std::pair<double, double> plot_ComparingVoltage::get_resolution(TH1D* hist) {
     return {sigma, sigmaError};
 }
 
-std::pair<TGraph*, TGraph*> plot_ComparingVoltage::get_thdTGraph(std::vector<TFile*> input_ROOTFile, TFile* output_ROOTFile, const std::vector<double>& threshold) {
+std::vector<TGraphErrors*> plot_ComparingVoltage::get_thdTGraph(std::vector<TFile*> input_ROOTFile, TFile* output_ROOTFile, const std::vector<double>& threshold) {
     LOG_DEBUG.source("plot_ComparingVoltage::get_thdTGraph") << "Start get TGraph : resolution vs threshold in x and y.";
 
     std::vector<std::vector<double>> resolution_thd(input_ROOTFile.size());
     std::vector<std::vector<double>> resoError_thd(input_ROOTFile.size());
+    std::vector<std::vector<double>> clSize_thd(input_ROOTFile.size());
+    std::vector<std::vector<double>> clSizeError_thd(input_ROOTFile.size());
     const std::vector<std::string> hists = {"DetectorHistogrammer/CE65/residuals/residual_x", "DetectorHistogrammer/CE65/residuals/residual_y"};
+    const std::vector<std::string> hClSize = {"DetectorHistogrammer/CE65/cluster_size/cluster_size"};
     
     const int size_ofVector = input_ROOTFile.size();
     resolution_thd.reserve(size_ofVector);
     resolution_thd.reserve(size_ofVector);
 
-        TH1D* hResidual = nullptr;
+    TH1D* hResidual = nullptr;
     std::pair<double, double> resolution_error;
     for(int i=0; i<hists.size(); i++) {
         for(int j=0; j<size_ofVector; j++) {
@@ -623,7 +627,19 @@ std::pair<TGraph*, TGraph*> plot_ComparingVoltage::get_thdTGraph(std::vector<TFi
         }
     }
 
-    TGraph* graph_x = new TGraph(threshold.size(), threshold.data(), resolution_thd[0].data());
+    TH1D* hClusterSize = nullptr;
+    //std::pair<double, double> clusterSize_error;
+    for(int i=0; i<hClSize.size();i++) {
+        for(int j=0; j<size_ofVector; j++) {
+            hClusterSize = (TH1D*)input_ROOTFile[j]->Get(hClSize[i].c_str());
+            clSize_thd[i].push_back(hClusterSize->GetMean());
+            clSizeError_thd[i].push_back(hClusterSize->GetMeanError());
+            delete hClusterSize;
+            hClusterSize = nullptr;
+        }
+    }
+
+    TGraphErrors* graph_x = new TGraphErrors(threshold.size(), threshold.data(), resolution_thd[0].data(), 0, resoError_thd[0].data());
     graph_x->SetTitle(";threshold[e];position resolution[um]");
     graph_x->SetMarkerStyle(20);
     graph_x->SetMarkerColor(kRed);
@@ -631,14 +647,17 @@ std::pair<TGraph*, TGraph*> plot_ComparingVoltage::get_thdTGraph(std::vector<TFi
     graph_x->SetLineColor(kRed);
     graph_x->SetLineWidth(2);
 
-    TGraph* graph_y = new TGraph(threshold.size(), threshold.data(), resolution_thd[1].data());
+    TGraphErrors* graph_y = new TGraphErrors(threshold.size(), threshold.data(), resolution_thd[1].data(), 0, resoError_thd[1].data());
     graph_y->SetMarkerStyle(22);
     graph_y->SetMarkerColor(kBlue);
     graph_y->SetMarkerSize(1.2);
     graph_y->SetLineColor(kBlue);
     graph_y->SetLineWidth(2);
 
-    return {graph_x, graph_y};
+    TGraphErrors* graph_clSize = new TGraphErrors(threshold.size(), threshold.data(), clSize_thd[0].data(), 0, clSizeError_thd[0].data());
+    graph_clSize->SetTitle(";threshold[e];cluster size");
+
+    return {graph_x, graph_y, graph_clSize};
 }
 
 void plot_ComparingVoltage::get_thdResolution(std::vector<TFile*> input_ROOTFile, TFile* output_ROOTFile, const std::vector<double>& threshold) {
@@ -741,14 +760,14 @@ void plot_ComparingVoltage::voltage_run() {
 
     // TODO
     input_ROOTFile = {};
-    const std::vector<double> threshold_double = {0, 10, 25, 50, 100, 200};
+    const std::vector<double> threshold_double = {0, 10, 25, 50, 100, 200, 300, 400};
     input_ROOTFile.reserve(threshold_.size());
     for(std::string threshold_var : threshold_) {
         TFile* input_file = TFile::Open(Form("%sn10v/ce65_p15_gap_Thd%se_masetti.root", hist_master_dir.c_str(), threshold_var.c_str()));
         input_ROOTFile.push_back(input_file);
     }
 
-    std::vector<std::vector<std::vector<std::vector<std::vector<std::pair<TGraph*, TGraph*>>>>>> thdTGraph;
+    std::vector<std::vector<std::vector<std::vector<std::vector<std::vector<TGraphErrors*>>>>>> thdTGraph;
     thdTGraph.resize(model_.size());
     for(int i=0; i<model_.size(); i++) {
         thdTGraph[i].resize(pixel_pitch_.size());
@@ -778,6 +797,7 @@ void plot_ComparingVoltage::voltage_run() {
     bool isFirstGraph = true;
     std::string legend_entry;
     int markerColor = 0;
+    std::vector<std::string> nameTGraph = {"resolution_x", "resolution_y", "cluster_size"};
 
     //TCanvas* c = new TCanvas("c", "c", 800, 600);
     for(int i=0; i<model_.size();i++) {
@@ -785,7 +805,7 @@ void plot_ComparingVoltage::voltage_run() {
         // output->cd(model_[i].c_str());
         markerColor = 0;
         TCanvas* c = new TCanvas("c", "c", 800, 600);
-        TLegend* legend = new TLegend(0.65, 0.55, 0.89, 0.89);
+        TLegend* legend = new TLegend(0.65, 0.50, 0.89, 0.92);
         legend->SetFillStyle(0);
         legend->SetTextSize(0.04);
         legend->SetBorderSize(0);
@@ -793,32 +813,166 @@ void plot_ComparingVoltage::voltage_run() {
         for(int j=0; j<pixel_pitch_.size();j++) {
             for(int k=0; k<chip_type_.size();k++) {
                 for(int l=0; l<voltage_.size();l++) {
-                    TGraph* graph = thdTGraph[i][j][k][l][0].first;
-                    graph->SetMarkerColor(MyROOTColors[markerColor]);
-                    if(j+k+l==11) {
-                        graph->SetMarkerColor(63);
+                    //TGraphErrors* graph = thdTGraph[i][j][k][l][0].first;
+                    TGraphErrors* graph = thdTGraph[i][j][k][l][0][0];
+                    graph->SetLineWidth(1);
+                    graph->SetMarkerSize(1.2);
+                    graph->GetXaxis()->SetTitleOffset(0.8);
+                    if(l ==0 ) {
+                        graph->SetMarkerColor(1);
+                        graph->SetLineColor(1);
+                        graph->SetLineStyle(3);
+                        if(j == 0) {
+                            graph->SetMarkerStyle(20);
+                            if(k == 0) {
+                                graph->SetMarkerStyle(53);
+                            }
+                        } else { // j == 1
+                            graph->SetMarkerStyle(22);
+                            if(k == 0) {
+                                graph->SetMarkerStyle(55);
+                            }
+                        }
+                    } else if (l == 1) {
+                        graph->SetMarkerColor(2);
+                        graph->SetLineColor(2);
+                        graph->SetLineStyle(2);
+                        if(j == 0) {
+                            graph->SetMarkerStyle(20);
+                            if(k == 0) {
+                                graph->SetMarkerStyle(53);
+                            }
+                        } else { // j == 1
+                            graph->SetMarkerStyle(22);
+                            if(k == 0) {
+                                graph->SetMarkerStyle(55);
+                            }
+                        }
+                    } else { // l == 2
+                        graph->SetMarkerColor(4);
+                        graph->SetLineColor(4);
+                        graph->SetLineStyle(4);
+                        if(j == 0) {
+                            graph->SetMarkerStyle(20);
+                            if(k == 0) {
+                                graph->SetMarkerStyle(53);
+                            }
+                        } else { // j == 1
+                            graph->SetMarkerStyle(22);
+                            if(k == 0) {
+                                graph->SetMarkerStyle(55);
+                            }
+                        }
                     }
+
                     if(isFirstGraph) {
-                        graph->Draw("AP");
+                        graph->Draw("ALP");
                         isFirstGraph = false;
-                        graph->GetYaxis()->SetRangeUser(0, 15);
-                        graph->GetXaxis()->SetRangeUser(-10, 210);
-                        graph->SetMarkerColor(46);
+                        graph->GetYaxis()->SetRangeUser(0, 10);
+                        graph->GetXaxis()->SetRangeUser(-10, 410);
                     } else {
-                        graph->Draw("sameP");
+                        graph->Draw("sameLP");
                     }
                     legend_entry = Form("p%s/%s/%s V", pixel_pitch_[j].c_str(), chip_type_[k].c_str(), voltage_[l].c_str());
                     legend->AddEntry(graph, legend_entry.c_str(), "p");
-                    markerColor++;
+                    //markerColor++;
                 }
             }
         }
         legend->Draw();
         output->cd();
         output->cd(model_[i].c_str());
-        c->Write("resolution_thd");
+        c->Write("resolution_thd_x");
         delete c;
     }
+
+    //TCanvas* c = new TCanvas("c", "c", 800, 600);
+    for(int i=0; i<model_.size();i++) {
+        // output->cd();
+        // output->cd(model_[i].c_str());
+        markerColor = 0;
+        TCanvas* c = new TCanvas("c", "c", 800, 600);
+        TLegend* legend = new TLegend(0.65, 0.50, 0.89, 0.92);
+        legend->SetFillStyle(0);
+        legend->SetTextSize(0.04);
+        legend->SetBorderSize(0);
+        isFirstGraph = true;
+        for(int j=0; j<pixel_pitch_.size();j++) {
+            for(int k=0; k<chip_type_.size();k++) {
+                for(int l=0; l<voltage_.size();l++) {
+                    //TGraphErrors* graph = thdTGraph[i][j][k][l][0].first;
+                    TGraphErrors* graph = thdTGraph[i][j][k][l][0][2];
+                    graph->SetLineWidth(1);
+                    graph->SetMarkerSize(1.2);
+                    graph->GetXaxis()->SetTitleOffset(0.8);
+                    if(l ==0 ) {
+                        graph->SetMarkerColor(1);
+                        graph->SetLineColor(1);
+                        graph->SetLineStyle(3);
+                        if(j == 0) {
+                            graph->SetMarkerStyle(20);
+                            if(k == 0) {
+                                graph->SetMarkerStyle(53);
+                            }
+                        } else { // j == 1
+                            graph->SetMarkerStyle(22);
+                            if(k == 0) {
+                                graph->SetMarkerStyle(55);
+                            }
+                        }
+                    } else if (l == 1) {
+                        graph->SetMarkerColor(2);
+                        graph->SetLineColor(2);
+                        graph->SetLineStyle(2);
+                        if(j == 0) {
+                            graph->SetMarkerStyle(20);
+                            if(k == 0) {
+                                graph->SetMarkerStyle(53);
+                            }
+                        } else { // j == 1
+                            graph->SetMarkerStyle(22);
+                            if(k == 0) {
+                                graph->SetMarkerStyle(55);
+                            }
+                        }
+                    } else { // l == 2
+                        graph->SetMarkerColor(4);
+                        graph->SetLineColor(4);
+                        graph->SetLineStyle(4);
+                        if(j == 0) {
+                            graph->SetMarkerStyle(20);
+                            if(k == 0) {
+                                graph->SetMarkerStyle(53);
+                            }
+                        } else { // j == 1
+                            graph->SetMarkerStyle(22);
+                            if(k == 0) {
+                                graph->SetMarkerStyle(55);
+                            }
+                        }
+                    }
+
+                    if(isFirstGraph) {
+                        graph->Draw("ALP");
+                        isFirstGraph = false;
+                        graph->GetYaxis()->SetRangeUser(0, 6);
+                        graph->GetXaxis()->SetRangeUser(-10, 410);
+                    } else {
+                        graph->Draw("sameLP");
+                    }
+                    legend_entry = Form("p%s/%s/%s V", pixel_pitch_[j].c_str(), chip_type_[k].c_str(), voltage_[l].c_str());
+                    legend->AddEntry(graph, legend_entry.c_str(), "p");
+                    //markerColor++;
+                }
+            }
+        }
+        legend->Draw();
+        output->cd();
+        output->cd(model_[i].c_str());
+        c->Write("clusterSize_thd");
+        delete c;
+    }
+
 
     //c->SaveAs("test.pdf");
 
