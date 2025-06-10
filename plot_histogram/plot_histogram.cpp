@@ -101,6 +101,15 @@ void plot_histogram::set_tlatexStyle(TLatex* latex) {
     latex->SetTextAlign(13);
 }
 
+std::string plot_histogram::currentDateTime() {
+    std::time_t t = std::time(nullptr);
+    std::tm* now = std::localtime(&t);
+
+    char buffer[128];
+    strftime(buffer, sizeof(buffer), "%d/%m/%Y", now);
+    return buffer;
+}
+
 void plot_histogram::remove_whiteSpace(std::string& word) {
     word.erase(std::remove_if(word.begin(), word.end(), ::isspace), word.end());
 }

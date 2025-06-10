@@ -3,6 +3,8 @@
 #include "track_resolution.h"
 #include "plot_MobilityModel.h"
 #include "plot_ComparingVoltage.h"
+#include "plot_DriftTime.h"
+#include "plot_inPixel.h"
 #include <time.h>
 
 // plot_histogram::plot_histogram() {
@@ -22,8 +24,12 @@ int main() {
     track_resolution track;
     plot_MobilityModel plot_Mobility;
     plot_ComparingVoltage plot_voltage;
-    plot_Mobility.run();
-    plot_voltage.voltage_run();
+    plot_DriftTime plot_driftTime;
+    plot_inPixel plot_inPixel;
+    // plot_Mobility.run();
+    // plot_voltage.voltage_run();
+    plot_driftTime.run_driftTime();
+    plot_inPixel.run_inPixel();
 
     LOG_STATUS.source("ce65.cpp/main") << "Main process  is complete.";
 

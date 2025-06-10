@@ -744,7 +744,7 @@ void plot_MobilityModel::run() {
     LOG_STATUS.source("plot_MobilityModel::run") << "Starat Main process in plot_MobilityModel.";
     set_rootStyle();
 
-    voltage_model = "10";
+    voltage_model = "4";
 
     if(judge == 0) {
         LOG_STATUS.source("plot_MobilityModel.run") << "Start run for 1chip simulation data";

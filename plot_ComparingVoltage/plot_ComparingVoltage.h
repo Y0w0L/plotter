@@ -7,6 +7,7 @@
 class plot_ComparingVoltage : public plot_MobilityModel {
     public:
         plot_ComparingVoltage();
+        std::string currentDateTime();
         void get_voltageClsize(std::vector<TFile*> input_ROOTFile, TFile* output_ROOTFile, const std::vector<std::string>& voltage);
         void get_voltageCharge(std::vector<TFile*> input_ROOTFile, TFile* output_ROOTFile, const std::vector<std::string>& voltage);
         void get_voltageResidual(std::vector<TFile*> input_ROOTFile, TFile* output, const std::vector<std::string>& voltage);

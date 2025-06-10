@@ -9,6 +9,7 @@
 #include <TF1.h>
 #include <TDirectory.h>
 #include <TGraphErrors.h>
+#include <TProfile2D.h>
 #include <TLatex.h>
 #include <TProfile.h>
 #include <TLegend.h>
@@ -67,6 +68,9 @@ public:
     * @brief Remove white space in the string
     * @param word String to remove white space
     **/
+
+    static std::string currentDateTime();
+
     static void remove_whiteSpace(std::string& word);
     /**
     * @brief Replace string in the string

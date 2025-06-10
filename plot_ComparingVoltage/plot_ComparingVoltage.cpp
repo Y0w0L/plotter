@@ -42,6 +42,15 @@ plot_ComparingVoltage::plot_ComparingVoltage() {
     LOG_STATUS.source("plot_ComparingVoltage::plot_ComparingVoltage") << "plot_ComparingVoltage object is created.";
 }
 
+std::string plot_ComparingVoltage::currentDateTime() {
+    std::time_t t = std::time(nullptr);
+    std::tm* now = std::localtime(&t);
+
+    char buffer[128];
+    strftime(buffer, sizeof(buffer), "%d/%m/%Y", now);
+    return buffer;
+}
+
 void plot_ComparingVoltage::get_voltageClsize(std::vector<TFile*> input_ROOTFile, TFile* output_ROOTFile, const std::vector<std::string>& voltage) {
     const std::string hClsize_path = "DetectorHistogrammer/CE65/cluster_size/cluster_size";
     std::vector<TH1D*> vClsize = {};
@@ -717,6 +726,8 @@ void plot_ComparingVoltage::get_thdResolution(std::vector<TFile*> input_ROOTFile
 void plot_ComparingVoltage::voltage_run() {
     set_rootStyle();
 
+    std::string time = currentDateTime();
+
     const std::string hist_master_dir = "/home/towa/alice3/hist/ce65_sim_202505/";
     std::vector<TFile*> input_ROOTFile = {};
 
@@ -799,13 +810,18 @@ void plot_ComparingVoltage::voltage_run() {
     int markerColor = 0;
     std::vector<std::string> nameTGraph = {"resolution_x", "resolution_y", "cluster_size"};
 
-    //TCanvas* c = new TCanvas("c", "c", 800, 600);
+    TCanvas* c = nullptr;
+    TLegend* legend = nullptr;
     for(int i=0; i<model_.size();i++) {
         // output->cd();
         // output->cd(model_[i].c_str());
         markerColor = 0;
-        TCanvas* c = new TCanvas("c", "c", 800, 600);
-        TLegend* legend = new TLegend(0.65, 0.50, 0.89, 0.92);
+        c = new TCanvas("c", "c", 800, 600);
+        legend = new TLegend(0.65, 0.50, 0.89, 0.92);
+        c->SetTopMargin(0.06); // 0.04
+        c->SetBottomMargin(0.13); //0.16
+        c->SetLeftMargin(0.10); //0.13
+        c->SetRightMargin(0.04); // 0.03
         legend->SetFillStyle(0);
         legend->SetTextSize(0.04);
         legend->SetBorderSize(0);
@@ -880,10 +896,22 @@ void plot_ComparingVoltage::voltage_run() {
             }
         }
         legend->Draw();
+
+        TLatex title;
+        title.SetTextSize(0.04);
+        title.SetTextFont(62);
+        title.DrawLatexNDC(0.13, 0.88, "Position resolution: x");
+        TLatex condition;
+        condition.SetTextSize(0.02);
+        condition.SetTextFont(62);
+        condition.DrawLatexNDC(0.13, 0.85, "Electron:3GeV/c");
+        condition.DrawLatexNDC(0.13, 0.83, Form("Plotted on %s", time.c_str()));
+
         output->cd();
         output->cd(model_[i].c_str());
         c->Write("resolution_thd_x");
         delete c;
+        c = nullptr;
     }
 
     //TCanvas* c = new TCanvas("c", "c", 800, 600);
@@ -893,10 +921,24 @@ void plot_ComparingVoltage::voltage_run() {
         markerColor = 0;
         TCanvas* c = new TCanvas("c", "c", 800, 600);
         TLegend* legend = new TLegend(0.65, 0.50, 0.89, 0.92);
+        c->SetTopMargin(0.06); // 0.04
+        c->SetBottomMargin(0.13); //0.16
+        c->SetLeftMargin(0.10); //0.13
+        c->SetRightMargin(0.04); // 0.03
         legend->SetFillStyle(0);
         legend->SetTextSize(0.04);
         legend->SetBorderSize(0);
         isFirstGraph = true;
+        // TLatex title;
+        // title.SetTextSize(0.04);
+        // title.SetTextFont(62);
+        // title.DrawLatexNDC(0.12, 0.88, "Cluster size");
+        // TLatex condition;
+        // condition.SetTextSize(0.02);
+        // condition.SetTextFont(62);
+        // condition.DrawLatexNDC(0.10, 0.83, "Electron:3GeV/c");
+        // condition.DrawLatexNDC(0.10, 0.81, Form("Plotted on %s", time.c_str()));
+        
         for(int j=0; j<pixel_pitch_.size();j++) {
             for(int k=0; k<chip_type_.size();k++) {
                 for(int l=0; l<voltage_.size();l++) {
@@ -967,6 +1009,17 @@ void plot_ComparingVoltage::voltage_run() {
             }
         }
         legend->Draw();
+
+        TLatex title;
+        title.SetTextSize(0.04);
+        title.SetTextFont(62);
+        title.DrawLatexNDC(0.13, 0.88, "Cluster size");
+        TLatex condition;
+        condition.SetTextSize(0.02);
+        condition.SetTextFont(62);
+        condition.DrawLatexNDC(0.13, 0.85, "Electron:3GeV/c");
+        condition.DrawLatexNDC(0.13, 0.83, Form("Plotted on %s", time.c_str()));
+
         output->cd();
         output->cd(model_[i].c_str());
         c->Write("clusterSize_thd");
