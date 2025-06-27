@@ -9,7 +9,11 @@
 #include <TF1.h>
 #include <TDirectory.h>
 #include <TGraphErrors.h>
+#include <TMultiGraph.h>
 #include <TProfile2D.h>
+#include <TPaletteAxis.h>
+#include <TSystem.h>
+#include <TString.h>
 #include <TLatex.h>
 #include <TProfile.h>
 #include <TLegend.h>

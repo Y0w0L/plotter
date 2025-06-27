@@ -65,6 +65,7 @@ ADD_SUBDIRECTORY(plot_MobilityModel)
 ADD_SUBDIRECTORY(plot_ComparingVoltage)
 ADD_SUBDIRECTORY(plot_DriftTime)
 ADD_SUBDIRECTORY(plot_inPixel)
+ADD_SUBDIRECTORY(plot_ExperimentData)
 ADD_SUBDIRECTORY(Messenger)
 
 ADD_EXECUTABLE(ce65_model
@@ -88,6 +89,7 @@ TARGET_LINK_LIBRARIES(ce65_model
                         Messenger_lib
                         plot_DriftTime_lib
                         plot_inPixel_lib
+                        plot_ExperimentData_lib
                         ${ROOT_LIBRARIES})
 
 MESSAGE(STATUS "Compiler Flags for ce65_model: $<TARGET_PROPERTY:ce65_model,COMPILE_OPTIONS>")

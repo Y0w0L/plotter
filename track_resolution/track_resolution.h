@@ -16,6 +16,23 @@ struct detector_information {
     double time_resolution;
 };
 
+struct MaterialLayer {
+    std::string name;
+    double thickness_mm;
+    double rad_length_mm;
+};
+
+struct ScatteringConvariance {
+    double yy;
+    double yth;
+    double thth;
+};
+
+struct ScatteringEffect {
+    double angle_rms_rad;
+    double displacement_rms_mm;
+};
+
 class track_resolution : public plot_histogram {
     public:
         /**
@@ -40,12 +57,17 @@ class track_resolution : public plot_histogram {
         **/
         double calculate_trackResolution(const std::vector<double>& ref_resolution, const std::vector<double>& ref_position, double dut_position);
 
+        void calculate_tResoltuion(const std::vector<double>& ref_resolution, const std::vector<double>& ref_position, double dut_position);
+
         /**
         * @brief Open .conf file
         * @param filename Name of the configuration file
         **/
         std::ifstream open_confFile(const std::string& filename);
 
+        double calculate_theta0(double momentum, double beta, int charge_z, double thickness, double radiation_length);
+        std::vector<ScatteringEffect> calculate_multilayer_scattering(double momentum, double beta, int charge_z, const std::vector<MaterialLayer>& layers);
+        void get_multipleScatteringEffect();
         /**
         **/
         // std::vector<detector_information> import_detectorInformation(std::ifstream& file);

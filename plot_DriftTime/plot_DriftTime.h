@@ -6,7 +6,7 @@
 class plot_DriftTime : public plot_histogram {
 public:
     plot_DriftTime();
-    static TCanvas* get_driftTime(std::vector<TFile*> inputROOTFile, TFile* outputROOTFile, const std::vector<std::string>& position_name);
+    static TCanvas* get_driftTime(std::vector<TFile*> inputROOTFile, TFile* outputROOTFile, TCanvas* c, const std::vector<std::string>& position_name);
     void run_driftTime();
 };
 

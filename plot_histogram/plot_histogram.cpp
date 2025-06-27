@@ -106,7 +106,7 @@ std::string plot_histogram::currentDateTime() {
     std::tm* now = std::localtime(&t);
 
     char buffer[128];
-    strftime(buffer, sizeof(buffer), "%d/%m/%Y", now);
+    strftime(buffer, sizeof(buffer), "%b %d ,%Y", now);
     return buffer;
 }
 
@@ -876,6 +876,7 @@ void plot_histogram::write_canvas_Ref(TH1D* hist_x, TF1* fit_x, TH1D* hist_y, TF
 }
 
 void plot_histogram::saveCanvasesToPDF(const char* rootFileName, const char* dirName, const char* outputPDF) {
+    //gROOT->ProcessLine(".PDF_Embed_Fonts_By_Default 1");
     TFile *file = TFile::Open(rootFileName, "READ");
     if (!file || file->IsZombie()) {
         std::cerr << "Error: Cannot open ROOT file " << rootFileName << std::endl;
@@ -921,6 +922,78 @@ void plot_histogram::saveCanvasesToPDF(const char* rootFileName, const char* dir
     file->Close();
     delete file;
 }
+//
+// void plot_histogram::saveCanvasesToPDF(const char* rootFileName, const char* dirName, const char* outputPDF) {
+//     // --- Step 0: Prepare temporary directory ---
+//     const char* tempDir = "temp_eps_for_pdf";
+//     gSystem->MakeDirectory(tempDir);
+
+//     // --- Step 1: Save canvases to temporary EPS files ---
+//     TFile *file = TFile::Open(rootFileName, "READ");
+//     if (!file || file->IsZombie()) {
+//         LOG_ERROR.source("plot_histogram::saveCanvasesToPDF") << "Cannot open ROOT file " << rootFileName;
+//         gSystem->Exec(Form("rm -rf %s", tempDir));
+//         return;
+//     }
+//     TDirectory *dir = dynamic_cast<TDirectory*>(file->Get(dirName));
+//     if (!dir) {
+//         LOG_ERROR.source("plot_histogram::saveCanvasesToPDF") << "Directory '" << dirName << "' not found.";
+//         file->Close();
+//         gSystem->Exec(Form("rm -rf %s", tempDir));
+//         return;
+//     }
+
+//     std::vector<std::string> epsFileList;
+//     TIter next(dir->GetListOfKeys());
+//     TKey *key;
+//     int canvasCounter = 0;
+
+//     LOG_DEBUG.source("plot_histogram::saveCanvasesToPDF") << "Step 1: Generating temporary EPS files in '" << tempDir << "'...";
+//     while ((key = (TKey*)next())) {
+//         if (std::string(key->GetClassName()) == "TCanvas") {
+//             TCanvas *canvas = dynamic_cast<TCanvas*>(key->ReadObj());
+//             if (!canvas) continue;
+
+//             std::string epsPath = Form("%s/canvas_%03d.eps", tempDir, canvasCounter++);
+//             canvas->Print(epsPath.c_str());
+//             epsFileList.push_back(epsPath);
+//         }
+//     }
+//     file->Close();
+//     delete file;
+
+//     if (epsFileList.empty()) {
+//         LOG_ERROR.source("plot_histogram::saveCanvasesToPDF") << "No TCanvas objects found. PDF will not be created.";
+//         gSystem->Exec(Form("rm -rf %s", tempDir));
+//         return;
+//     }
+
+//     // --- Step 2: Merge EPS files into a single PDF using Ghostscript ---
+//     LOG_DEBUG.source("plot_histogram::saveCanvasesToPDF") << "Step 2: Merging " << epsFileList.size() << " EPS files into '" << outputPDF << "'...";
+    
+//     // ▼▼▼ KEY CHANGE IS HERE ▼▼▼
+//     // Build the command string safely using TString::Format and add quotes around filenames.
+//     TString gsCommand = TString::Format("gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=\"%s\"", outputPDF);
+//     for (const auto& epsFile : epsFileList) {
+//         gsCommand += TString::Format(" \"%s\"", epsFile.c_str());
+//     }
+//     // ▲▲▲ ▲▲▲ ▲▲▲
+
+//     // For debugging, print the exact command being executed
+//     // std::cout << "Executing: " << gsCommand.Data() << std::endl;
+
+//     if (gSystem->Exec(gsCommand.Data()) != 0) {
+//         LOG_ERROR.source("plot_histogram::saveCanvasesToPDF") << "Ghostscript command failed. Could not create PDF.";
+//         LOG_ERROR.source("plot_histogram::saveCanvasesToPDF") << "Intermediate EPS files are kept in '" << tempDir << "' for debugging.";
+//         return;
+//     }
+
+//     // --- Step 3: Clean up temporary files ---
+//     LOG_DEBUG.source("plot_histogram::saveCanvasesToPDF") << "Step 3: Cleaning up temporary files...";
+//     gSystem->Exec(Form("rm -rf %s", tempDir));
+
+//     LOG_DEBUG.source("plot_histogram::saveCanvasesToPDF") << "Successfully created final PDF: " << outputPDF;
+// }
 
 /// or filtering
 std::vector<std::string> plot_histogram::or_filter_filenames(std::vector<std::string> filenames, std::vector<std::string> filter) {

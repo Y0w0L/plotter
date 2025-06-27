@@ -13,7 +13,7 @@ plot_DriftTime::plot_DriftTime() {
     LOG_STATUS.source("plot_DriftTime::plot_DriftTime") << "plot_DriftTime object is created.";
 }
 
-TCanvas* plot_DriftTime::get_driftTime(std::vector<TFile*> inputROOTFile, TFile* outputROOTFile, const std::vector<std::string>& position_name) {
+TCanvas* plot_DriftTime::get_driftTime(std::vector<TFile*> inputROOTFile, TFile* outputROOTFile, TCanvas* c, const std::vector<std::string>& position_name) {
     LOG_DEBUG.source("plot_DriftTime::get_driftTime") << "Start get_driftTime.";
     const std::string hDriftTime_path = "GenericPropagation/CE65/drift_time_histo";
     std::vector<TH1D*> vDriftTime = {};
@@ -33,7 +33,6 @@ TCanvas* plot_DriftTime::get_driftTime(std::vector<TFile*> inputROOTFile, TFile*
         vDriftTime.push_back(hDriftTime);
     }
     
-    TCanvas* c = new TCanvas("c", "c", 800, 600);
     c->SetTopMargin(0.062);
     c->SetBottomMargin(0.14);
     c->SetLeftMargin(0.11);
@@ -104,7 +103,8 @@ void plot_DriftTime::run_driftTime() {
     TDirectory* canali = output->mkdir("canali");
 
     std::vector<TDirectory*> outputDir = {masetti, canali, jacoboni};
-    
+
+    TCanvas* c = new TCanvas("c", "c", 800, 600);
     for(int m=0; m<PIXEL_NUMBER_.size();m++) {
         for(int i=0; i<MODEL_.size(); i++) {
             for(int j=0; j<CHIP_TYPE_.size(); j++) {
@@ -115,7 +115,8 @@ void plot_DriftTime::run_driftTime() {
                             TFile* input_file = TFile::Open(Form("%sn%sv/%s/ce65_p%s_%s_%sV_%s_%s.root", driftFile_dir_path.c_str(), VOLTAGE_[l].c_str(), PIXEL_NUMBER_[m].c_str(), PIXEL_PITCH_[k].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[l].c_str(), MODEL_[i].c_str(), SOURCE_POSITION_NAME_[n].c_str()));
                             inputROOTFile.push_back(input_file);
                         } // SOURCE_POSITION_NAME_
-                        TCanvas* c = get_driftTime(inputROOTFile, output, SOURCE_POSITION_NAME_);
+                        c->Clear();
+                        c = get_driftTime(inputROOTFile, output, c, SOURCE_POSITION_NAME_);
                         TLatex title;
                         title.SetTextSize(0.04);
                         title.SetTextFont(62);
