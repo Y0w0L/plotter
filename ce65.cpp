@@ -5,6 +5,7 @@
 #include "plot_ComparingVoltage.h"
 #include "plot_DriftTime.h"
 #include "plot_inPixel.h"
+#include "plot_LabTest.h"
 #include "plot_ExperimentData.h"
 #include <time.h>
 
@@ -28,12 +29,16 @@ int main() {
     plot_DriftTime plot_driftTime;
     plot_inPixel plot_inPixel;
     plot_ExperimentData plot_ExperimentData;
+    plot_LabTest plot_LabTest;
     // plot_Mobility.run();
     // plot_voltage.voltage_run();
     // plot_driftTime.run_driftTime();
     //plot_inPixel.run_inPixel();
     //track.run();
-    plot_ExperimentData.run_inPixel();
+    //plot_ExperimentData.run_inPixel();
+    plot_ExperimentData.run_Analysis();
+    //plot_ExperimentData.run_NoiseScan();
+    //plot_LabTest.run_LabTest();
 
     LOG_STATUS.source("ce65.cpp/main") << "Main process  is complete.";
 
