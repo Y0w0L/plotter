@@ -106,7 +106,7 @@ std::string plot_histogram::currentDateTime() {
     std::tm* now = std::localtime(&t);
 
     char buffer[128];
-    strftime(buffer, sizeof(buffer), "%b %d ,%Y", now);
+    strftime(buffer, sizeof(buffer), "%b. %d ,%Y", now);
     return buffer;
 }
 

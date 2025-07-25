@@ -12,6 +12,7 @@ public:
 
 private:
     static void set_1DStyle(TH1D* hist);
+    static void set_GraphStyle(TGraph* graph);
     static void set_2DSURFStyle(TCanvas* canvas, TH2D* hist);
     static TH2D* convert_toTH2D(TProfile2D* profile2D);
     static std::vector<int> GetMyColors(int n_colors);
