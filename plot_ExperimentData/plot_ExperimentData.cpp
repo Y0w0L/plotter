@@ -8,11 +8,11 @@ plot_ExperimentData::plot_ExperimentData() {
     VOLTAGE_ = {"10", "7", "4"};
     //VOLTAGE_ = {"10"};
     //SEED_THRESHOLD_ = {"400"};
-    //SEED_THRESHOLD_ = {"100"};
+    //SEED_THRESHOLD_ = {"300"};
     SEED_THRESHOLD_ = {"500"};
-    NEIGHBOR_THRESHOLD_ = {"50", "60" ,"70", "80", "90", "100", "150", "200", "250", "300", "350", "400", "450", "500"}; 
+    //NEIGHBOR_THRESHOLD_ = {"50", "60" ,"70", "80", "90", "100", "150", "200", "250", "300", "350", "400", "450", "500"}; 
     //NEIGHBOR_THRESHOLD_ = {"50","60" ,"70", "80", "90", "100"}; 
-    //NEIGHBOR_THRESHOLD_ = {"60", "100", "150", "200", "300", "400"};
+    NEIGHBOR_THRESHOLD_ = {"50", "80", "100", "200", "300", "350", "400", "450", "500"};
     //NEIGHBOR_THRESHOLD_ = {"60"};
     TIME_ = plot_histogram::currentDateTime();
 }
@@ -112,6 +112,12 @@ TH2D* plot_ExperimentData::convert_toTH2D(TProfile2D* profile2D) {
     return h2d;
 }
 
+TH1D* plot_ExperimentData::get_TH1D(std::string filename) {
+    // TFile* file = TFile::Open(filename);
+    // TH1D* hist = (TH1D*)file->Get("AnalysisCE65/CE65_3/local_residuals/residualsX");
+    // return hist;
+}
+
 void plot_ExperimentData::run_NoiseScan() {
     LOG_STATUS.source("plot_ExperimentData::run_NoiseScan") << "Start run for Noise scan data.";
 
@@ -192,7 +198,7 @@ void plot_ExperimentData::run_NoiseScan() {
 
             pixelCharge->cd();
             canvas->Write(Form("perPixelCharge_ce65_%s", chip_variation.c_str()));
-            canvas->SaveAs(Form("perPixelCharge_ce65_%s.pdf", chip_variation.c_str()));
+            canvas->SaveAs(Form("plot/perPixelCharge_ce65_%s.pdf", chip_variation.c_str()));
         } // CHIP_TYPE_
     } // PIXEL_PITCH_
 
@@ -314,7 +320,7 @@ void plot_ExperimentData::run_Analysis() {
 
                     clusterCharge->cd();
                     canvas->Write(Form("clusterCharge_ce65_%s", chip_variation.c_str()));
-                    canvas->SaveAs(Form("clusterCharge_ce65_%s.pdf", chip_variation.c_str()));
+                    canvas->SaveAs(Form("plot/clusterCharge_ce65_%s.pdf", chip_variation.c_str()));
 
                     // Position Resolution with Cluster Size
                     legend->Clear();
@@ -369,201 +375,359 @@ void plot_ExperimentData::run_Analysis() {
 
                     residual->cd();
                     canvas->Write(Form("residualX_ce65_%s", chip_variation.c_str()));
-                    canvas->SaveAs(Form("residualX_ce65_%s.pdf", chip_variation.c_str()));
+                    canvas->SaveAs(Form("plot/residualX_ce65_%s.pdf", chip_variation.c_str()));
                 } // SEED_THRESHOLD_
             } // VOLTAGE_
         } // CHIP_TYPE_
     } // PIXEL_PTICH_
 
-    // for(int i=0; i<PIXEL_PITCH_.size(); i++) {
-    //     for(int j=0; j<CHIP_TYPE_.size(); j++) {
-    //         for(int k=0; k<VOLTAGE_.size(); k++) {
-    //             for(int l=0; l<SEED_THRESHOLD_.size(); l++) {
-    //                 canvas->Clear();
-    //                 canvas->SetTopMargin(0.062);
-    //                 canvas->SetBottomMargin(0.14);
-    //                 canvas->SetLeftMargin(0.2);
-    //                 canvas->SetRightMargin(0.2);
+    bool tgraph_each_chip = false;
+    if(tgraph_each_chip) {
+        for(int i=0; i<PIXEL_PITCH_.size(); i++) {
+            for(int j=0; j<CHIP_TYPE_.size(); j++) {
+                for(int l=0; l<SEED_THRESHOLD_.size(); l++) {
 
-    //                 TGraph* gr_resolution = new TGraph();
-    //                 TGraph* gr_clustersize = new TGraph();
+                    // --- 1. 分解能 (Resolution) のプロット ---
+                    canvas->Clear();
+                    canvas->SetGrid();
 
-    //                 plot_ExperimentData::set_GraphStyle(gr_resolution);
-    //                 plot_ExperimentData::set_GraphStyle(gr_clustersize);
-    //                 gr_resolution->SetMarkerStyle(20);
-    //                 gr_clustersize->SetMarkerStyle(21);
+                    TMultiGraph* mg_resolution = new TMultiGraph();
+                    TLegend* legend_res = new TLegend(0.65, 0.70, 0.88, 0.88);
+                    legend_res->SetFillStyle(0);
+                    legend_res->SetBorderSize(0);
 
-    //                 for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
-    //                     double x_val = std::stod(NEIGHBOR_THRESHOLD_[n]);
-    //                     double y_resolution = vResolutionX[i][j][k][l][n];
-    //                     double y_clustersize = vMeanClusterSize[i][j][k][l][n];
+                    // 電圧(k)ごとにグラフを作成し、MultiGraphに追加
+                    for(int k=0; k<VOLTAGE_.size(); k++) {
+                        TGraph* gr_resolution = new TGraph();
 
-    //                     gr_resolution->SetPoint(n, x_val, y_resolution);
-    //                     gr_clustersize->SetPoint(n, x_val, y_clustersize);
-    //                 } // NEIGHBOR_THRESHOLD_
+                        // データをセット
+                        for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
+                            double x_val = std::stod(NEIGHBOR_THRESHOLD_[n]);
+                            double y_resolution = vResolutionX[i][j][k][l][n];
+                            gr_resolution->SetPoint(n, x_val, y_resolution);
+                        }
 
-    //                 // Drawing
-    //                 canvas->cd();
-    //                 TPad* pad1 = new TPad("pad1","pad1",0,0,1,1);
-    //                 pad1->Draw();
-    //                 pad1->cd();
-    //                 gr_resolution->Draw("APL");
-    //                 gr_resolution->SetTitle(";threshold [ADC];resolution x[um]");
-    //                 gr_resolution->GetXaxis()->SetTitleSize(0.06);
-    //                 gr_resolution->GetXaxis()->SetLabelSize(0.04);
-    //                 gr_resolution->GetXaxis()->SetTitleOffset(0.8);
-    //                 gr_resolution->GetYaxis()->SetRangeUser(0, 10);
+                        // 電圧ごとに色とスタイルを設定
+                        gr_resolution->SetMarkerStyle(20 + k);
+                        gr_resolution->SetMarkerColor(kBlue - 3*k);
+                        gr_resolution->SetLineColor(kBlue - 3*k);
+                        gr_resolution->SetLineWidth(2);
 
-    //                 gr_resolution->GetYaxis()->SetTitleFont(42);
-    //                 gr_resolution->GetYaxis()->SetLabelFont(42);
-    //                 gr_resolution->GetYaxis()->SetTitleSize(0.06);
-    //                 gr_resolution->GetYaxis()->SetLabelSize(0.04);
-    //                 gr_resolution->GetYaxis()->SetTitleOffset(0.8);
-                    
-    //                 canvas->cd();
-    //                 TPad* pad2 = new TPad("pad2","pad2",0,0,1,1);
-    //                 pad2->SetFillStyle(0);
-    //                 pad2->SetFrameFillStyle(0);
-    //                 pad2->Draw();
-    //                 pad2->cd();
-    //                 gr_clustersize->Draw("APL");
-    //                 gr_clustersize->GetYaxis()->SetRangeUser(0,6);
-    //                 gr_clustersize->GetXaxis()->SetLabelSize(0);
-    //                 gr_clustersize->GetXaxis()->SetTitleSize(0);
-    //                 gr_clustersize->GetYaxis()->SetLabelSize(0);
-    //                 gr_clustersize->GetYaxis()->SetTitleSize(0);
-    //                 gr_clustersize->GetYaxis()->SetTickSize(0);                    
+                        mg_resolution->Add(gr_resolution, "PL");
+                        legend_res->AddEntry(gr_resolution, Form("%sV", VOLTAGE_[k].c_str()), "pl");
+                    }
 
-    //                 canvas->Update();
-    //                 TGaxis *axis_clustersize = new TGaxis(
-    //                 gPad->GetUxmax(), gPad->GetUymin(), 
-    //                 gPad->GetUxmax(), gPad->GetUymax(),
-    //                 gr_clustersize->GetYaxis()->GetXmin(), gr_clustersize->GetYaxis()->GetXmax(), 510, "+L");
-    //                 axis_clustersize->SetTitle("Mean Cluster Size");
-    //                 axis_clustersize->SetTitleOffset(0.8);
-    //                 axis_clustersize->SetTitleSize(0.06);
-    //                 axis_clustersize->SetLabelSize(0.04);
-    //                 axis_clustersize->SetTitleFont(42);
-    //                 axis_clustersize->SetLabelFont(42);
-    //                 // axis_clustersize->SetTitleColor(kRed);
-    //                 // axis_clustersize->SetLineColor(kRed);
-    //                 // axis_clustersize->SetLabelColor(kRed);
-    //                 //axis_clustersize->SetTitleOffset(1.2);
-    //                 axis_clustersize->Draw();
+                    // MultiGraphを描画
+                    mg_resolution->Draw("A");
+                    mg_resolution->SetTitle(";Neighbor Threshold [e];Position Resolution #sigma [#mum]");
 
-    //                 canvas->cd(); 
-    //                 TLegend* legend_graph = new TLegend(0.15, 0.75, 0.45, 0.88);
-    //                 legend_graph->SetFillStyle(0);
-    //                 legend_graph->SetBorderSize(0);
-    //                 legend_graph->AddEntry(gr_resolution, "Position Resolution", "pl");
-    //                 legend_graph->AddEntry(gr_clustersize, "Mean Cluster Size", "pl");
-    //                 legend_graph->Draw();
-                    
-                    
-    //                 chip_variation = Form("%s_%s_%sV_SeedThd%se", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), SEED_THRESHOLD_[l].c_str());
-    //                 canvas->Write(Form("neighborThd_Scan_%s.pdf", chip_variation.c_str()));
-    //                 canvas->SaveAs(Form("NeighborThd_Scan_%s.pdf", chip_variation.c_str()));
-    //             } // SEED_THRESHOLD_
-    //         } // VOLTAGE_
-    //     } // CHIP_TYPE_
-    // } // PIXEL_PITCH_
+                    // 軸のスタイルを設定
+                    mg_resolution->GetXaxis()->SetTitleSize(0.05);
+                    mg_resolution->GetXaxis()->SetLabelSize(0.04);
+                    mg_resolution->GetYaxis()->SetTitleSize(0.05);
+                    mg_resolution->GetYaxis()->SetLabelSize(0.04);
 
-    for(int i=0; i<PIXEL_PITCH_.size(); i++) {
-        for(int j=0; j<CHIP_TYPE_.size(); j++) {
-            for(int l=0; l<SEED_THRESHOLD_.size(); l++) {
+                    legend_res->Draw();
+                    chip_variation_text = Form("p%s / %s / SeedThd %se", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str());
+                    title.DrawLatexNDC(0.15, 0.91, chip_variation_text.c_str());
 
+                    canvas->SaveAs(Form("plot/Resolution_vs_NeighborThd_CompV_%s.pdf", Form("%s_%s_Seed%s",PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str())));
+                    tgraph->cd();
+                    canvas->Write(Form("Resolution_vs_NeighborThd_CompV_%s", Form("%s_%s_Seed%s",PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str())));
+
+
+                    // --- 2. クラスターサイズ (Cluster Size) のプロット ---
+                    canvas->Clear();
+                    canvas->SetGrid();
+
+                    TMultiGraph* mg_clustersize = new TMultiGraph();
+                    TLegend* legend_cs = new TLegend(0.65, 0.70, 0.88, 0.88);
+                    legend_cs->SetFillStyle(0);
+                    legend_cs->SetBorderSize(0);
+
+                    for(int k=0; k<VOLTAGE_.size(); k++) {
+                        TGraph* gr_clustersize = new TGraph();
+
+                        for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
+                            double x_val = std::stod(NEIGHBOR_THRESHOLD_[n]);
+                            double y_clustersize = vMeanClusterSize[i][j][k][l][n];
+                            gr_clustersize->SetPoint(n, x_val, y_clustersize);
+                        }
+
+                        gr_clustersize->SetMarkerStyle(20 + k);
+                        gr_clustersize->SetMarkerColor(kRed - 3*k);
+                        gr_clustersize->SetLineColor(kRed - 3*k);
+                        gr_clustersize->SetLineWidth(2);
+
+                        mg_clustersize->Add(gr_clustersize, "PL");
+                        legend_cs->AddEntry(gr_clustersize, Form("%sV", VOLTAGE_[k].c_str()), "pl");
+                    }
+
+                    mg_clustersize->Draw("A");
+                    mg_clustersize->SetTitle(";Neighbor Threshold [e];Mean Cluster Size");
+
+                    mg_clustersize->GetXaxis()->SetTitleSize(0.05);
+                    mg_clustersize->GetXaxis()->SetLabelSize(0.04);
+                    mg_clustersize->GetYaxis()->SetTitleSize(0.05);
+                    mg_clustersize->GetYaxis()->SetLabelSize(0.04);
+
+                    legend_cs->Draw();
+                    title.DrawLatexNDC(0.15, 0.91, chip_variation_text.c_str());
+
+                    canvas->SaveAs(Form("plot/ClusterSize_vs_NeighborThd_CompV_%s.pdf", Form("%s_%s_Seed%s",PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str())));
+                    tgraph->cd();
+                    canvas->Write(Form("ClusterSize_vs_NeighborThd_CompV_%s", Form("%s_%s_Seed%s",PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str())));
+
+
+                }
+            }
+        }
+    }
+
+    // bool residual_plots = true;
+    // if(residual_plots) {
+    //     canvas->Clear();
+    //     canvas->SetTopMargin(0.062);
+    //     canvas->SetBottomMargin(0.14);
+    //     canvas->SetLeftMargin(0.13);
+    //     canvas->SetRightMargin(0.07);
+
+    //     TH1D* h_std_4v_60 = get_TH1D("")
+
+    // } // residual_plots
+
+    bool tgraph_all = false;
+    if(tgraph_all) {
                 // --- 1. 分解能 (Resolution) のプロット ---
+        for(int i=0; i<PIXEL_PITCH_.size(); i++) {
+            for(int l=0; l<SEED_THRESHOLD_.size(); l++) {
                 canvas->Clear();
+                canvas->SetTopMargin(0.062);
+                canvas->SetBottomMargin(0.14);
+                canvas->SetLeftMargin(0.13);
+                canvas->SetRightMargin(0.07);
                 canvas->SetGrid();
-
+                    
                 TMultiGraph* mg_resolution = new TMultiGraph();
-                TLegend* legend_res = new TLegend(0.65, 0.70, 0.88, 0.88);
+                TLegend* legend_res = new TLegend(0.55, 0.65, 0.88, 0.88); // 凡例のサイズを調整
                 legend_res->SetFillStyle(0);
                 legend_res->SetBorderSize(0);
-
-                // 電圧(k)ごとにグラフを作成し、MultiGraphに追加
-                for(int k=0; k<VOLTAGE_.size(); k++) {
-                    TGraph* gr_resolution = new TGraph();
-
-                    // データをセット
-                    for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
-                        double x_val = std::stod(NEIGHBOR_THRESHOLD_[n]);
-                        double y_resolution = vResolutionX[i][j][k][l][n];
-                        gr_resolution->SetPoint(n, x_val, y_resolution);
+                    
+                // j (チップ) と k (電圧) の両方でループ
+                for(int j=0; j<CHIP_TYPE_.size(); j++) {
+                    for(int k=0; k<VOLTAGE_.size(); k++) {
+                        TGraph* gr_resolution = new TGraph();
+                    
+                        for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
+                            double x_val = std::stod(NEIGHBOR_THRESHOLD_[n]);
+                            double y_resolution = vResolutionX[i][j][k][l][n];
+                            gr_resolution->SetPoint(n, x_val, y_resolution);
+                        }
+                    
+                        // 色で電圧、線の種類でチップを表現
+                        gr_resolution->SetMarkerStyle(20 + k + j*VOLTAGE_.size());
+                        gr_resolution->SetMarkerColor(kBlue - 3*k);
+                        gr_resolution->SetLineColor(kBlue - 3*k);
+                        gr_resolution->SetLineStyle(j + 1); // 1: 実線, 2: 破線
+                        gr_resolution->SetLineWidth(1.5);
+                    
+                        mg_resolution->Add(gr_resolution, "PL");
+                        legend_res->AddEntry(gr_resolution, Form("%s, %sV", CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str()), "pl");
                     }
-
-                    // 電圧ごとに色とスタイルを設定
-                    gr_resolution->SetMarkerStyle(20 + k);
-                    gr_resolution->SetMarkerColor(kBlue - 3*k);
-                    gr_resolution->SetLineColor(kBlue - 3*k);
-                    gr_resolution->SetLineWidth(2);
-
-                    mg_resolution->Add(gr_resolution, "PL");
-                    legend_res->AddEntry(gr_resolution, Form("%sV", VOLTAGE_[k].c_str()), "pl");
                 }
-
-                // MultiGraphを描画
+            
                 mg_resolution->Draw("A");
-                mg_resolution->SetTitle(";Neighbor Threshold [e];Position Resolution #sigma [#mum]");
-
-                // 軸のスタイルを設定
-                mg_resolution->GetXaxis()->SetTitleSize(0.05);
+                mg_resolution->SetTitle(";threshold [ADC];resolution in x [um]");
+                mg_resolution->GetYaxis()->SetRangeUser(0, 10);
+                mg_resolution->GetXaxis()->SetLimits(40,510);
+                //mg_resolution->GetYaxis()->SetLimits(0,10);
+                mg_resolution->GetXaxis()->SetTitleSize(0.06);
                 mg_resolution->GetXaxis()->SetLabelSize(0.04);
-                mg_resolution->GetYaxis()->SetTitleSize(0.05);
+                mg_resolution->GetXaxis()->SetTitleOffset(0.6);
+                mg_resolution->GetYaxis()->SetTitleSize(0.06);
                 mg_resolution->GetYaxis()->SetLabelSize(0.04);
-
+                mg_resolution->GetYaxis()->SetTitleOffset(0.7);
+            
                 legend_res->Draw();
-                chip_variation_text = Form("p%s / %s / SeedThd %se", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str());
+                chip_variation_text = Form("p%s/SeedThd%sADC", PIXEL_PITCH_[i].c_str(), SEED_THRESHOLD_[l].c_str());
                 title.DrawLatexNDC(0.15, 0.91, chip_variation_text.c_str());
-
-                canvas->SaveAs(Form("plot/Resolution_vs_NeighborThd_CompV_%s.pdf", Form("%s_%s_Seed%s",PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str())));
-                tgraph->cd();
-                canvas->Write(Form("Resolution_vs_NeighborThd_CompV_%s", Form("%s_%s_Seed%s",PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str())));
-
-
-                // --- 2. クラスターサイズ (Cluster Size) のプロット ---
+            
+                canvas->SaveAs(Form("plot/Resolution_CompAll_%s.pdf", Form("%s_Seed%s",PIXEL_PITCH_[i].c_str(), SEED_THRESHOLD_[l].c_str())));
+            
+                        // --- 2. クラスターサイズ (Cluster Size) のプロット ---
                 canvas->Clear();
+                canvas->SetTopMargin(0.062);
+                canvas->SetBottomMargin(0.14);
+                canvas->SetLeftMargin(0.13);
+                canvas->SetRightMargin(0.07);
                 canvas->SetGrid();
-
+            
                 TMultiGraph* mg_clustersize = new TMultiGraph();
-                TLegend* legend_cs = new TLegend(0.65, 0.70, 0.88, 0.88);
+                TLegend* legend_cs = new TLegend(0.55, 0.65, 0.88, 0.88);
                 legend_cs->SetFillStyle(0);
                 legend_cs->SetBorderSize(0);
-
-                for(int k=0; k<VOLTAGE_.size(); k++) {
-                    TGraph* gr_clustersize = new TGraph();
-
-                    for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
-                        double x_val = std::stod(NEIGHBOR_THRESHOLD_[n]);
-                        double y_clustersize = vMeanClusterSize[i][j][k][l][n];
-                        gr_clustersize->SetPoint(n, x_val, y_clustersize);
+            
+                for(int j=0; j<CHIP_TYPE_.size(); j++) {
+                    for(int k=0; k<VOLTAGE_.size(); k++) {
+                        TGraph* gr_clustersize = new TGraph();
+                    
+                        for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
+                            double x_val = std::stod(NEIGHBOR_THRESHOLD_[n]);
+                            double y_clustersize = vMeanClusterSize[i][j][k][l][n];
+                            gr_clustersize->SetPoint(n, x_val, y_clustersize);
+                        }
+                    
+                        gr_clustersize->SetMarkerStyle(20 + k + j*VOLTAGE_.size());
+                        gr_clustersize->SetMarkerColor(kRed - 3*k);
+                        gr_clustersize->SetLineColor(kRed - 3*k);
+                        gr_clustersize->SetLineStyle(j + 1); // 1: 実線, 2: 破線
+                        gr_clustersize->SetLineWidth(1.5);
+                    
+                        mg_clustersize->Add(gr_clustersize, "PL");
+                        legend_cs->AddEntry(gr_clustersize, Form("%s, %sV", CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str()), "pl");
                     }
-
-                    gr_clustersize->SetMarkerStyle(20 + k);
-                    gr_clustersize->SetMarkerColor(kRed - 3*k);
-                    gr_clustersize->SetLineColor(kRed - 3*k);
-                    gr_clustersize->SetLineWidth(2);
-
-                    mg_clustersize->Add(gr_clustersize, "PL");
-                    legend_cs->AddEntry(gr_clustersize, Form("%sV", VOLTAGE_[k].c_str()), "pl");
                 }
-
+            
                 mg_clustersize->Draw("A");
-                mg_clustersize->SetTitle(";Neighbor Threshold [e];Mean Cluster Size");
-
-                mg_clustersize->GetXaxis()->SetTitleSize(0.05);
+                mg_clustersize->SetTitle(";threshold [ADC];mean cluster size");
+                mg_clustersize->GetXaxis()->SetLimits(40,510);
+                mg_clustersize->GetYaxis()->SetRangeUser(0, 6);
+                mg_clustersize->GetXaxis()->SetTitleSize(0.06);
                 mg_clustersize->GetXaxis()->SetLabelSize(0.04);
-                mg_clustersize->GetYaxis()->SetTitleSize(0.05);
+                mg_clustersize->GetXaxis()->SetTitleOffset(0.6);
+                mg_clustersize->GetYaxis()->SetTitleSize(0.06);
                 mg_clustersize->GetYaxis()->SetLabelSize(0.04);
-
+                mg_clustersize->GetYaxis()->SetTitleOffset(0.7);
+            
                 legend_cs->Draw();
-                title.DrawLatexNDC(0.15, 0.91, chip_variation_text.c_str());
-
-                canvas->SaveAs(Form("plot/ClusterSize_vs_NeighborThd_CompV_%s.pdf", Form("%s_%s_Seed%s",PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str())));
-                tgraph->cd();
-                canvas->Write(Form("ClusterSize_vs_NeighborThd_CompV_%s", Form("%s_%s_Seed%s",PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str())));
-
-
+                title.DrawLatexNDC(0.15, 0.91, chip_variation_text.c_str()); // chip_variation_textは前のプロットから流用
+            
+                canvas->SaveAs(Form("plot/ClusterSize_CompAll_%s.pdf", Form("%s_Seed%s",PIXEL_PITCH_[i].c_str(), SEED_THRESHOLD_[l].c_str())));
+            
+                    // --- 3. 2軸比較プロット (左: Resolution, 右: Cluster Size) ---
+                canvas->Clear();
+                canvas->SetTopMargin(0.052);
+                canvas->SetBottomMargin(0.145);
+                canvas->SetLeftMargin(0.13);
+                canvas->SetRightMargin(0.13);
+            
+                TPad *pad1 = new TPad("pad1", "pad1", 0, 0, 1, 1);
+                // pad1->SetBottomMargin(0.14);
+                // pad1->SetRightMargin(0.16);
+                // pad1->SetLeftMargin(0.16);
+                pad1->SetGrid();
+                pad1->Draw();
+            
+                canvas->cd();
+                TPad *pad2 = new TPad("pad2", "pad2", 0, 0, 1, 1);
+                pad2->SetFillStyle(0);
+                pad2->SetFrameFillStyle(0);
+                pad2->Draw();
+            
+                TMultiGraph* mg_res_comp = new TMultiGraph();
+                TLegend* legend_comp = new TLegend(0.70, 0.4, 0.93, 0.63);
+                legend_comp->SetFillStyle(0);
+                legend_comp->SetBorderSize(0);
+                TLegend* legend_comp_clsize = new TLegend(0.65, 0.4, 0.88, 0.63);
+                legend_comp_clsize->SetFillStyle(0);
+                legend_comp_clsize->SetBorderSize(0);
+            
+                std::vector<TGraph*> v_gr_cs;
+            
+                for(int j=0; j<CHIP_TYPE_.size(); j++) {
+                    for(int k=0; k<VOLTAGE_.size(); k++) {
+                        TGraph* gr_res = new TGraph();
+                        TGraph* gr_cs = new TGraph();
+                    
+                        for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
+                            double x_val = std::stod(NEIGHBOR_THRESHOLD_[n]);
+                            double y_res = vResolutionX[i][j][k][l][n];
+                            double y_cs = vMeanClusterSize[i][j][k][l][n];
+                            gr_res->SetPoint(n, x_val, y_res);
+                            gr_cs->SetPoint(n, x_val, y_cs);
+                        }
+                    
+                        // Resolution (左軸) のスタイル
+                        gr_res->SetMarkerStyle(20);
+                        gr_res->SetMarkerColor(kBlue - 3*k);
+                        gr_res->SetLineColor(kBlue - 3*k);
+                        gr_res->SetLineStyle(j + 1);
+                        gr_res->SetLineWidth(2);
+                    
+                        // Cluster Size (右軸) のスタイル
+                        gr_cs->SetMarkerStyle(21);
+                        gr_cs->SetMarkerColor(kRed - 3*k);
+                        gr_cs->SetLineColor(kRed - 3*k);
+                        gr_cs->SetLineStyle(j + 1);
+                        gr_cs->SetLineWidth(2);
+                    
+                        mg_res_comp->Add(gr_res, "PL");
+                        v_gr_cs.push_back(gr_cs);
+                        legend_comp->AddEntry(gr_cs, Form("%s, %sV", CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str()), "pl");
+                        legend_comp_clsize->AddEntry(gr_res, "", "pl");
+                    }
+                }
+            
+                // --- 左軸 (Resolution) の描画 ---
+                pad1->cd();
+                mg_res_comp->Draw("A");
+                mg_res_comp->SetTitle(";threshold [ADC];resolution in x [um]");
+                mg_res_comp->GetXaxis()->SetLimits(40,510);
+                mg_res_comp->GetYaxis()->SetLimits(3.5,9.5);
+                mg_res_comp->GetXaxis()->SetTitleSize(0.06);
+                mg_res_comp->GetXaxis()->SetLabelSize(0.04);
+                mg_res_comp->GetXaxis()->SetTitleOffset(0.7);
+                mg_res_comp->GetYaxis()->SetTitleSize(0.06);
+                mg_res_comp->GetYaxis()->SetLabelSize(0.04);
+                mg_res_comp->GetYaxis()->SetTitleOffset(0.6);
+                //mg_res_comp->GetYaxis()->SetTitleColor(kBlue);
+                //mg_res_comp->GetYaxis()->SetLabelColor(kBlue);
+            
+                // --- 右軸 (Cluster Size) の描画 ---
+                pad2->cd();
+                double cs_min = 1e9, cs_max = -1e9;
+                for(auto gr : v_gr_cs) {
+                    if (gr->GetYaxis()->GetXmin() < cs_min) cs_min = gr->GetYaxis()->GetXmin();
+                    if (gr->GetYaxis()->GetXmax() > cs_max) cs_max = gr->GetYaxis()->GetXmax();
+                }
+            
+                for(size_t ig=0; ig<v_gr_cs.size(); ++ig) {
+                    if (ig==0) {
+                        v_gr_cs[ig]->Draw("APL"); 
+                        v_gr_cs[ig]->GetXaxis()->SetRangeUser(40, 510);
+                        v_gr_cs[ig]->GetYaxis()->SetRangeUser(0.5, 6.5);
+                        v_gr_cs[ig]->GetXaxis()->SetLabelSize(0);
+                        v_gr_cs[ig]->GetXaxis()->SetTitleSize(0);
+                        v_gr_cs[ig]->GetYaxis()->SetLabelSize(0);
+                        v_gr_cs[ig]->GetYaxis()->SetTitleSize(0);
+                    } else {
+                        v_gr_cs[ig]->Draw("PL same");
+                    }
+                }
+            
+                pad2->Update();
+                TGaxis *axis_cs_comp = new TGaxis(gPad->GetUxmax(), gPad->GetUymin(), gPad->GetUxmax(), gPad->GetUymax(), 0.5, 6.5, 510, "+L");
+                axis_cs_comp->SetTitle("mean cluster size");
+                // axis_cs_comp->SetTitleColor(kRed);
+                // axis_cs_comp->SetLineColor(kRed);
+                // axis_cs_comp->SetLabelColor(kRed);
+                axis_cs_comp->SetTitleSize(0.06);
+                axis_cs_comp->SetLabelSize(0.04);
+                axis_cs_comp->SetTitleOffset(0.6);
+                axis_cs_comp->SetTitleFont(42);
+                axis_cs_comp->SetLabelFont(42);
+                axis_cs_comp->Draw();
+            
+                canvas->cd();
+                legend_comp->Draw();
+                legend_comp_clsize->Draw();
+                //title.DrawLatexNDC(0.15, 0.91, chip_variation_text.c_str()); // chip_variation_textは流用
+                condition.DrawLatexNDC(0.12, 0.87, "e^{-} 3GeV/c @KEK(Dec. 2024)");
+                condition.DrawLatexNDC(0.12, 0.84, chip_variation_text.c_str());
+                condition.DrawLatexNDC(0.65,0.87, Form("Plotted on %s", TIME_.c_str()));
+            
+                canvas->SaveAs(Form("plot/DualAxis_CompAll_%s.pdf", Form("%s_Seed%s",PIXEL_PITCH_[i].c_str(), SEED_THRESHOLD_[l].c_str())));
+        
             }
         }
     }
@@ -656,7 +820,204 @@ void plot_ExperimentData::run_Analysis() {
         condition.DrawLatexNDC(0.40, 0.79, Form("Plotted on %s", TIME_.c_str()));
         legend_check->Draw();
 
-        canvas->SaveAs("clusterCharge_blk_check.root");
+        canvas->SaveAs("plot/clusterCharge_blk_check.root");
+    }
+
+    bool blk_reso_clsize = true;
+    if(blk_reso_clsize) {
+        TFile* tmpROOTFile = nullptr;
+        TH1D* tmpClusterSizeTH1D = nullptr;
+        TH1D* tmpResidualTH1D = nullptr;
+        TF1* tmpResidualTF1 = nullptr;
+
+        // blk
+        std::vector<std::string> blk_neighbor_thresholds_1 = {"50", "60", "70", "80", "90", "100", "125", "150", "200", "250", "300"};
+        std::vector<std::string> blk_neighbor_thresholds_2 = {};
+        std::vector<std::string> blk_all_thresholds = blk_neighbor_thresholds_1;
+        blk_all_thresholds.insert(blk_all_thresholds.end(), blk_neighbor_thresholds_2.begin(), blk_neighbor_thresholds_2.end());
+        std::vector<double> blk_thresholds = {};
+        std::vector<double> blk_resolution = {};
+        std::vector<double> blk_clusterSize = {};
+        for(int i=0; i<blk_neighbor_thresholds_1.size(); i++) {
+            tmpROOTFile = TFile::Open(Form("%skek202412_22p5_blk_10V_SeedThd300e_NeighborThd%se.root", data_dir_path.c_str(), blk_neighbor_thresholds_1[i].c_str()));
+            tmpClusterSizeTH1D = (TH1D*)tmpROOTFile->Get("AnalysisCE65/CE65_3/cluster/clusterSize");
+            tmpResidualTH1D = (TH1D*)tmpROOTFile->Get("AnalysisCE65/CE65_3/local_residuals/residualsX");
+            
+            tmpResidualTF1 = new TF1("tmpResidualTF1","gaus",-50,50);
+            tmpResidualTH1D->Fit(tmpResidualTF1, "RQ");
+
+            blk_clusterSize.push_back(tmpClusterSizeTH1D->GetMean());
+            blk_resolution.push_back(tmpResidualTF1->GetParameter(2));
+
+            blk_thresholds.push_back(std::stod(blk_neighbor_thresholds_1[i]));
+        }
+
+        // for(int i=0; i<blk_neighbor_thresholds_2.size(); i++) {
+        //     tmpROOTFile = TFile::Open(Form("%skek202412_22p5_blk_10V_SeedThd%se_NeighborThd%se.root", data_dir_path.c_str(), blk_neighbor_thresholds_2[i].c_str(), blk_neighbor_thresholds_2[i].c_str()));
+        //     tmpClusterSizeTH1D = (TH1D*)tmpROOTFile->Get("AnalysisCE65/CE65_3/cluster/clusterSize");
+        //     tmpResidualTH1D = (TH1D*)tmpROOTFile->Get("AnalysisCE65/CE65_3/local_residuals/residualsX");
+            
+        //     tmpResidualTF1 = new TF1("tmpResidualTF1","gaus",-50,50);
+        //     tmpResidualTF1->Fit(tmpResidualTH1D, "RQ");
+
+        //     blk_clusterSize.push_back(tmpClusterSizeTH1D->GetMean());
+        //     blk_resolution.push_back(tmpResidualTF1->GetParameter(2));
+
+        //     blk_thresholds.push_back(std::stod(blk_neighbor_thresholds_2[i]));
+        // }
+
+
+        std::vector<std::string> neighbor_thresholds = {"50", "60", "70", "80", "90", "100", "120", "150", "200", "250", "300", "350", "400", "450", "500"};
+        std::vector<double> thresholds = {};
+        // std
+        std::vector<double> std_resolution = {};
+        std::vector<double> std_clusterSize = {};
+        for(int i=0; i<neighbor_thresholds.size(); i++) {
+            tmpROOTFile = TFile::Open(Form("%skek202412_22p5_std_10V_SeedThd500e_NeighborThd%se.root", data_dir_path.c_str(), neighbor_thresholds[i].c_str()));
+            tmpClusterSizeTH1D = (TH1D*)tmpROOTFile->Get("AnalysisCE65/CE65_3/cluster/clusterSize");
+            tmpResidualTH1D = (TH1D*)tmpROOTFile->Get("AnalysisCE65/CE65_3/local_residuals/residualsX");
+            
+            tmpResidualTF1 = new TF1("tmpResidualTF1","gaus",-50,50);
+            tmpResidualTH1D->Fit(tmpResidualTF1, "RQ");
+
+            std_clusterSize.push_back(tmpClusterSizeTH1D->GetMean());
+            std_resolution.push_back(tmpResidualTF1->GetParameter(2));
+
+            thresholds.push_back(std::stod(neighbor_thresholds[i]));
+        }
+
+        // gap
+        std::vector<double> gap_resolution = {};
+        std::vector<double> gap_clusterSize = {};
+        for(int i=0; i<neighbor_thresholds.size(); i++) {
+            tmpROOTFile = TFile::Open(Form("%skek202412_22p5_gap_10V_SeedThd500e_NeighborThd%se.root", data_dir_path.c_str(), neighbor_thresholds[i].c_str()));
+            tmpClusterSizeTH1D = (TH1D*)tmpROOTFile->Get("AnalysisCE65/CE65_3/cluster/clusterSize");
+            tmpResidualTH1D = (TH1D*)tmpROOTFile->Get("AnalysisCE65/CE65_3/local_residuals/residualsX");
+            
+            tmpResidualTF1 = new TF1("tmpResidualTF1","gaus",-50,50);
+            tmpResidualTH1D->Fit(tmpResidualTF1, "RQ");
+
+            gap_clusterSize.push_back(tmpClusterSizeTH1D->GetMean());
+            gap_resolution.push_back(tmpResidualTF1->GetParameter(2));
+        }
+
+        TGraph* gr_res_blk = new TGraph(blk_thresholds.size(), &blk_thresholds[0], &blk_resolution[0]);
+        TGraph* gr_cs_blk  = new TGraph(blk_thresholds.size(), &blk_thresholds[0], &blk_clusterSize[0]);
+        TGraph* gr_res_std = new TGraph(thresholds.size(), &thresholds[0], &std_resolution[0]);
+        TGraph* gr_cs_std  = new TGraph(thresholds.size(), &thresholds[0], &std_clusterSize[0]);
+        TGraph* gr_res_gap = new TGraph(thresholds.size(), &thresholds[0], &gap_resolution[0]);
+        TGraph* gr_cs_gap  = new TGraph(thresholds.size(), &thresholds[0], &gap_clusterSize[0]);
+
+        // Style Resolution graphs (blue tones, different markers)
+        gr_res_blk->SetMarkerStyle(20); gr_res_blk->SetMarkerColorAlpha(kAzure+2,   1); gr_res_blk->SetLineColorAlpha(kAzure+2,   1); gr_res_blk->SetLineStyle(1); gr_res_blk->SetLineWidth(2); gr_res_blk->SetMarkerSize(1.1);
+        gr_res_std->SetMarkerStyle(21); gr_res_std->SetMarkerColorAlpha(kAzure-4,   1); gr_res_std->SetLineColorAlpha(kAzure-4, 0.6); gr_res_std->SetLineStyle(2); gr_res_std->SetLineWidth(2); gr_res_std->SetMarkerSize(1.1);
+        gr_res_gap->SetMarkerStyle(22); gr_res_gap->SetMarkerColorAlpha(kAzure-7, 0.6); gr_res_gap->SetLineColorAlpha(kAzure-7, 0.6); gr_res_gap->SetLineStyle(3); gr_res_gap->SetLineWidth(2); gr_res_gap->SetMarkerSize(1.3);
+        
+        // Style Cluster Size graphs (red tones, different markers)
+        gr_cs_blk->SetMarkerStyle(20); gr_cs_blk->SetMarkerColorAlpha(kRed+1,   1); gr_cs_blk->SetLineColorAlpha(kRed+1,   1); gr_cs_blk->SetLineStyle(1); gr_cs_blk->SetLineWidth(2); gr_cs_blk->SetMarkerSize(1.1);
+        gr_cs_std->SetMarkerStyle(21); gr_cs_std->SetMarkerColorAlpha(kRed-4, 0.7); gr_cs_std->SetLineColorAlpha(kRed-4, 0.6); gr_cs_std->SetLineStyle(2); gr_cs_std->SetLineWidth(2); gr_cs_std->SetMarkerSize(1.1);
+        gr_cs_gap->SetMarkerStyle(22); gr_cs_gap->SetMarkerColorAlpha(kRed-7,   1); gr_cs_gap->SetLineColorAlpha(kRed-7, 0.6); gr_cs_gap->SetLineStyle(3); gr_cs_gap->SetLineWidth(2); gr_cs_gap->SetMarkerSize(1.3);
+
+        // --- 3. Plotting ---
+        canvas->Clear();
+        canvas->SetTopMargin(0.052);
+        canvas->SetBottomMargin(0.145);
+        canvas->SetLeftMargin(0.13);
+        canvas->SetRightMargin(0.13);
+
+        // Pad for left axis (Resolution)
+        TPad *pad1 = new TPad("pad1", "pad1", 0, 0, 1, 1);
+        pad1->SetGrid();
+        pad1->Draw();
+        pad1->cd();
+
+        TMultiGraph* mg_resolution = new TMultiGraph();
+        //mg_resolution->Add(gr_res_blk, "PL");
+        mg_resolution->Add(gr_res_std, "PL");
+        mg_resolution->Add(gr_res_gap, "PL");
+        mg_resolution->Add(gr_res_blk, "PL");
+        
+        mg_resolution->Draw("A");
+        mg_resolution->SetTitle(";threshold [ADC];resolution in x [um]");
+        mg_resolution->GetXaxis()->SetLimits(40, 510); // Set X-axis range
+        mg_resolution->GetYaxis()->SetRangeUser(3.5, 9.5); // Set Y-axis range for resolution
+
+        // Axis styling
+        mg_resolution->GetXaxis()->SetTitleSize(0.06);
+        mg_resolution->GetXaxis()->SetLabelSize(0.04);
+        mg_resolution->GetXaxis()->SetTitleOffset(0.6);
+        mg_resolution->GetYaxis()->SetTitleSize(0.06);
+        mg_resolution->GetYaxis()->SetLabelSize(0.04);
+        mg_resolution->GetYaxis()->SetTitleOffset(0.7);
+        //mg_resolution->GetYaxis()->SetTitleColor(kAzure-4);
+        //mg_resolution->GetYaxis()->SetLabelColor(kAzure-4);
+
+        // Transparent pad for right axis (Cluster Size)
+        canvas->cd();
+        TPad *pad2 = new TPad("pad2", "pad2", 0, 0, 1, 1);
+        pad2->SetFillStyle(0); // Transparent
+        pad2->SetFrameFillStyle(0);
+        pad2->Draw();
+        pad2->cd();
+
+        TMultiGraph* mg_clustersize = new TMultiGraph();
+        //mg_clustersize->Add(gr_cs_blk, "PL");
+        mg_clustersize->Add(gr_cs_std, "PL");
+        mg_clustersize->Add(gr_cs_gap, "PL");
+        mg_clustersize->Add(gr_cs_blk, "PL");
+        
+        // Draw with invisible axes to align with pad1
+        mg_clustersize->Draw("A"); 
+        mg_clustersize->GetXaxis()->SetLimits(40, 510);
+        mg_clustersize->GetYaxis()->SetRangeUser(0.5, 6.5);
+        mg_clustersize->GetXaxis()->SetLabelSize(0);
+        mg_clustersize->GetXaxis()->SetTickLength(0);
+        mg_clustersize->GetYaxis()->SetLabelSize(0);
+        mg_clustersize->GetYaxis()->SetTickLength(0);
+
+
+        // Right Y-axis (TGaxis)
+        pad2->Update(); // Important: update pad before getting coordinates
+        double y_min_cs = 0.5;
+        double y_max_cs = 6.5;
+        TGaxis *axis_cs = new TGaxis(gPad->GetUxmax(), gPad->GetUymin(), gPad->GetUxmax(), gPad->GetUymax(), y_min_cs, y_max_cs, 510, "+L");
+        axis_cs->SetTitle("mean cluster size");
+        //axis_cs->SetTitleColor(kRed+1);
+        //axis_cs->SetLineColor(kRed+1);
+        //axis_cs->SetLabelColor(kRed+1);
+        axis_cs->SetTitleSize(0.06);
+        axis_cs->SetLabelSize(0.04);
+        axis_cs->SetTitleOffset(0.7);
+        axis_cs->SetLabelFont(42);
+        axis_cs->SetTitleFont(42);
+        axis_cs->Draw();
+
+        // Legend
+        canvas->cd();
+        TLegend* legend_comp_residual = new TLegend(0.70, 0.4, 0.93, 0.63);
+        legend_comp_residual->SetFillStyle(0);
+        legend_comp_residual->SetBorderSize(0);
+        legend_comp_residual->SetTextSize(0.04);
+        //legend_comp_residual->SetHeader("resolution", "C");
+        legend_comp_residual->AddEntry(gr_res_blk, "blk, 10V", "pl");
+        legend_comp_residual->AddEntry(gr_res_std, "std, 10V", "pl");
+        legend_comp_residual->AddEntry(gr_res_gap, "gap, 10V", "pl");
+        legend_comp_residual->Draw();
+
+        TLegend* legend_comp_clsize = new TLegend(0.65, 0.4, 0.88, 0.63);
+        legend_comp_clsize->SetFillStyle(0);
+        legend_comp_clsize->SetBorderSize(0);
+        legend_comp_clsize->AddEntry(gr_cs_blk, " ", "pl");
+        legend_comp_clsize->AddEntry(gr_cs_std, " ", "pl");
+        legend_comp_clsize->AddEntry(gr_cs_gap, " ", "pl");
+        legend_comp_clsize->Draw();
+        
+
+        condition.DrawLatexNDC(0.12, 0.87, "e^{-} 3GeV/c @KEK (Dec. 2024)");
+        condition.DrawLatexNDC(0.65, 0.87, Form("Plotted on: %s", TIME_.c_str()));
+
+        // Save the plot
+        canvas->SaveAs("plot/Resolution_vs_ClusterSize_Comparison_forBLK.pdf");
     }
 
     bool seed_charge = true;

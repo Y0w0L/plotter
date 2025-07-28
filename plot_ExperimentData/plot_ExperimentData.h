@@ -16,6 +16,7 @@ private:
     static void set_2DSURFStyle(TCanvas* canvas, TH2D* hist);
     static TH2D* convert_toTH2D(TProfile2D* profile2D);
     static std::vector<int> GetMyColors(int n_colors);
+    static TH1D* get_TH1D(std::string filename);
 
     std::vector<std::string> PIXEL_PITCH_, CHIP_TYPE_, VOLTAGE_, SEED_THRESHOLD_, NEIGHBOR_THRESHOLD_;
     std::string TIME_;
