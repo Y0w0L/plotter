@@ -164,6 +164,7 @@ public:
     * @param input_file Pointer to the input ROOT file
     * @param output_file Pointer to the output ROOT file
     **/
+    static TF1* optimise_hist_langau_expo(TH1D* hist, int color);
     void draw_ref_clusteringSpatial(const std::string& refname, TFile* input_file, TFile* output_file);
     /**
     * @brief Draw histogram from clusteringAnalog module as DUT plots

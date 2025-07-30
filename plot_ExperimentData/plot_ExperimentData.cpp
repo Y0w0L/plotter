@@ -823,6 +823,272 @@ void plot_ExperimentData::run_Analysis() {
         canvas->SaveAs("plot/clusterCharge_blk_check.root");
     }
 
+    bool cluster_charge_plots = true;
+    if(cluster_charge_plots) {
+        std::vector<std::string> chip_types = {"std", "blk", "gap"};
+        std::vector<TH1D*> hists_to_delete;
+
+        for(int i = 0; i < chip_types.size(); i++) {
+            canvas->Clear();
+            canvas->SetTopMargin(0.062);
+            canvas->SetBottomMargin(0.14);
+            canvas->SetLeftMargin(0.13);
+            canvas->SetRightMargin(0.07);
+
+            // --- 凡例の作成 ---
+            // メインプロットとノイズのみ凡例に追加します。
+            TLegend* legend = new TLegend(0.60, 0.65, 0.9, 0.90);
+            //legend->SetHeaderText(Form("Chip: %s", CHIP_TYPE_[i].c_str()));
+            legend->SetFillStyle(0); // 背景を透明に
+            legend->SetBorderSize(0); // 枠線をなしに
+            legend->SetTextSize(0.05);
+
+            TLegend* legend_sub = new TLegend(0.60, 0.45, 0.9, 0.65);
+            legend_sub->SetFillStyle(0);
+            legend_sub->SetBorderSize(0);
+            legend_sub->SetTextSize(0.05);
+
+            //  --- ノイズのプロット ---
+            TFile* noiseFile = TFile::Open(Form("%skek202412_22p5_%s_10V_SeedThd60e_NeighborThd60e_noise.root", data_dir_path.c_str(), chip_types[i].c_str()));
+            if (noiseFile && !noiseFile->IsZombie()) {
+                TH1D* hNoise = (TH1D*)noiseFile->Get("ClusteringAnalog/CE65_3/clusterCharge");
+                if (hNoise) {
+                    TH1D* hNoiseClone = (TH1D*)hNoise->Clone(Form("hNoiseClone_%s", chip_types[i].c_str()));
+                    hists_to_delete.push_back(hNoiseClone); // 解放リストに追加
+
+                    hNoiseClone->Rebin(10);
+                    hNoiseClone->Scale(1.0 / hNoiseClone->GetMaximum());
+                    hNoiseClone->SetStats(0);
+                    hNoiseClone->SetTitle(";charge [ADC];normalized counts");
+                    hNoiseClone->GetXaxis()->SetRangeUser(60, 4000);
+                    hNoiseClone->GetYaxis()->SetRangeUser(0, 1.2); // 上限に少し余裕を持たせる
+                    hNoiseClone->GetXaxis()->SetTitleSize(0.05); hNoiseClone->GetXaxis()->SetLabelSize(0.04); hNoiseClone->GetXaxis()->SetTitleOffset(0.8);
+                    hNoiseClone->GetYaxis()->SetTitleSize(0.05); hNoiseClone->GetYaxis()->SetLabelSize(0.04); hNoiseClone->GetYaxis()->SetTitleOffset(0.8);
+
+                    hNoiseClone->SetMarkerColor(kGray+1);
+                    hNoiseClone->SetLineColor(kGray+1);
+                    hNoiseClone->SetMarkerStyle(20+i);
+                    hNoiseClone->SetMarkerSize(0.8);
+                    //hNoiseClone->SetLineStyle(3);
+                    hNoiseClone->SetLineWidth(1);
+                    hNoiseClone->Draw("PE"); // 最初に描画
+
+                    // TF1* fNoise = plot_histogram::optimise_hist_gaus(hNoiseClone, kGray);
+                    // fNoise->SetLineWidth(2);
+                    TF1* fNoise = new TF1(Form("fNoise_%s", chip_types[i].c_str()), "[0]*exp([1]*x)", 60, 500);
+                    // fNoise->SetParameter(0, 1);
+                    // fNoise->SetParameter(1, -0.01);
+                    hNoiseClone->Fit(fNoise, "NLS+", "", 60, 600);
+                    fNoise->SetLineColor(kGray);
+                    fNoise->SetLineWidth(2);
+                    fNoise->SetLineStyle(3);
+                    fNoise->SetRange(hNoiseClone->GetXaxis()->GetXmin(), hNoiseClone->GetXaxis()->GetXmax());
+                    fNoise->Draw("SAME");
+
+                    legend_sub->AddEntry(hNoiseClone, Form("%s, pedestal", chip_types[i].c_str()), "pel");
+                }
+                //noiseFile->Close();
+            }
+
+            // --- サブチップのプロット（背景として先に描画） ---
+            for (int j = 0; j < chip_types.size(); j++) {
+                if (i == j) continue; // メインチップ自身はスキップ
+                TFile* subFile = TFile::Open(Form("%skek202412_22p5_%s_10V_SeedThd60e_NeighborThd60e.root", data_dir_path.c_str(), chip_types[j].c_str()));
+                if (subFile && !subFile->IsZombie()) {
+                    TH1D* hSub = (TH1D*)subFile->Get("AnalysisCE65/CE65_3/cluster/clusterCharge");
+                    if (hSub) {
+                        TH1D* hSubClone = (TH1D*)hSub->Clone(Form("hSubClone_%s_10v", chip_types[j].c_str()));
+                        hists_to_delete.push_back(hSubClone); // 解放リストに追加
+
+                        hSubClone->Rebin(10);
+                        if (hSubClone->GetMaximum() > 0) hSubClone->Scale(1.0 / hSubClone->GetMaximum());
+
+                        // サブチップは薄い色で統一
+                        //int color = kSpring - 3 - j;
+                        hSubClone->SetMarkerColor(kGray+2);
+                        hSubClone->SetLineColor(kGray+2);
+                        hSubClone->SetMarkerStyle(24+j);
+                        hSubClone->SetMarkerSize(0.8);
+                        hSubClone->SetLineWidth(1);
+
+                        TF1* fSub = plot_histogram::optimise_hist_langaus(hSubClone, kGray);
+                        fSub->SetLineStyle(2);
+                        fSub->SetLineWidth(2);
+
+                        hSubClone->Draw("SAME PE"); // 線なしでマーカーのみ
+                        legend_sub->AddEntry(hSubClone, Form("%s, 10 V", chip_types[j].c_str()), "pel");
+                    }
+                        //subFile->Close();
+                }
+                // }
+
+                // for (int k = 0; k < VOLTAGE_.size(); k++) {
+                //     TFile* subFile = TFile::Open(Form("%skek202412_22p5_%s_%sV_SeedThd60e_NeighborThd60e.root", data_dir_path.c_str(), chip_types[j].c_str(), VOLTAGE_[k].c_str()));
+                //     if (subFile && !subFile->IsZombie()) {
+                //         TH1D* hSub = (TH1D*)subFile->Get("AnalysisCE65/CE65_3/cluster/clusterCharge");
+                //         if (hSub) {
+                //             TH1D* hSubClone = (TH1D*)hSub->Clone(Form("hSubClone_%s_%s", chip_types[j].c_str(), VOLTAGE_[k].c_str()));
+                //             hists_to_delete.push_back(hSubClone); // 解放リストに追加
+
+                //             hSubClone->Rebin(10);
+                //             if (hSubClone->GetMaximum() > 0) hSubClone->Scale(1.0 / hSubClone->GetMaximum());
+
+                //             // サブチップは薄い色で統一
+                //             int color = kSpring - 3 - k;
+                //             hSubClone->SetMarkerColor(color);
+                //             hSubClone->SetLineColor(color);
+                //             hSubClone->SetMarkerStyle(20);
+                //             hSubClone->SetMarkerSize(0.8);
+                //             hSubClone->SetLineWidth(1);
+
+                //             hSubClone->Draw("SAME PE"); // 線なしでマーカーのみ
+                //         }
+                //         //subFile->Close();
+                //     }
+                // }
+            }
+
+            // --- メインチップのプロット（一番手前に描画） ---
+            for (int j = 0; j < VOLTAGE_.size(); j++) {
+                TFile* mainFile = TFile::Open(Form("%skek202412_22p5_%s_%sV_SeedThd60e_NeighborThd60e.root", data_dir_path.c_str(), chip_types[i].c_str(), VOLTAGE_[j].c_str()));
+                if (mainFile && !mainFile->IsZombie()) {
+                    TH1D* hMain = (TH1D*)mainFile->Get("AnalysisCE65/CE65_3/cluster/clusterCharge");
+                    if (hMain) {
+                        TH1D* hMainClone = (TH1D*)hMain->Clone(Form("hMainClone_%s_%s", chip_types[i].c_str(), VOLTAGE_[j].c_str()));
+                        hists_to_delete.push_back(hMainClone); // 解放リストに追加
+
+                        hMainClone->Rebin(10);
+                        if (hMainClone->GetMaximum() > 0) hMainClone->Scale(1.0 / hMainClone->GetMaximum());
+
+                        int color = kAzure - 3 + (2 * j); // 色のバリエーション
+                        hMainClone->GetXaxis()->SetRangeUser(60, 4000);
+                        hMainClone->SetMarkerColor(color);
+                        hMainClone->SetLineColor(color);
+                        hMainClone->SetMarkerStyle(20+i); // メインとサブでマーカーを変える
+                        hMainClone->SetMarkerSize(1.2);
+                        if(i == 2) {
+                            hMainClone->SetMarkerSize(1.4);
+                        }
+                        hMainClone->SetLineStyle(1);
+                        hMainClone->SetLineWidth(2);
+                        hMainClone->Draw("SAME PE"); // マーカー、線、エラーバーを描画
+
+                        // TF1* fMain = new TF1(Form("fMain_%s_%s", chip_types[i].c_str(), VOLTAGE_[j].c_str()), langaufun, 60, 5000);
+                        // fMain->SetLineWidth(2);
+                        // fMain->SetLineColor(color);
+                        // fit->SetParameters()
+                        TF1* fMain = plot_histogram::optimise_hist_langaus(hMainClone, color);
+                        //TF1* fMain = plot_histogram::optimise_hist_langau_expo(hMainClone, color);
+                        //fMain->SetLineColorAlpha(color, 1);
+                        fMain->SetLineStyle(1);
+                        fMain->SetLineWidth(2);
+
+                        //hMainClone->Draw("SAME PE"); // マーカー、線、エラーバーを描画
+                        legend->AddEntry(hMainClone, Form("%s, %s V", chip_types[i].c_str(), VOLTAGE_[j].c_str()), "epl");
+                    }
+                    //mainFile->Close();
+                }
+            }
+
+            // --- 凡例とプロットの保存 ---
+            legend->Draw();
+            legend_sub->Draw();
+            condition.DrawLatexNDC(0.15, 0.90, "e^{-} 3GeV/c @KEK (Dec. 2024)");
+            condition.DrawLatexNDC(0.15, 0.87, Form("Plotted on %s", TIME_.c_str()));
+            canvas->SaveAs(Form("plot/ClusterCharge_for_%s_with_Others.pdf", chip_types[i].c_str()));
+        } // end of the main loop
+    } // if(cluster_charge_plots)
+
+    // bool cluster_charge_plots = true;
+    // if(cluster_charge_plots) {
+    //     TFile* tmpMainROOTFile = nullptr;
+    //     TFile* tmpSubROOTFile = nullptr;
+    //     TFile* tmpNoiseROOTFile = nullptr;
+    //     TH1D* tmpMainClusterCharge = nullptr;
+    //     TH1D* tmpSubClusterCharge = nullptr;
+    //     TH1D* tmpNoiseCharge = nullptr;
+
+    //     std::vector<TH1D*> vMainClusterCharge = {};
+    //     std::vector<std::vector<TH1D*>> vSubClusterCharge = {};        
+    //     for(int i=0; i<CHIP_TYPE_.size(); i++) {
+    //         canvas->Clear();
+    //         canvas->SetTopMargin(0.062);
+    //         canvas->SetBottomMargin(0.14);
+    //         canvas->SetLeftMargin(0.13);
+    //         canvas->SetRightMargin(0.07);
+    //         TLegend* legend_main = new TLegend(0.5,0.5,0.7,0.7);
+
+    //         tmpNoiseROOTFile = TFile::Open(Form("%skek202412_22p5_%s_10V_SeedThd60e_NeighborThd60e_noise.root", data_dir_path.c_str(), CHIP_TYPE_[i].c_str()));
+    //         tmpNoiseCharge = (TH1D*)tmpNoiseROOTFile->Get("ClusteringAnalog/CE65_3/clusterCharge");
+    //         //std::cout << "Mean : " << tmpNoiseCharge->GetMean() << std::endl;
+
+    //         tmpNoiseCharge->Rebin(10);
+    //         tmpNoiseCharge->Scale(1.0/tmpNoiseCharge->GetMaximum());
+    //         tmpNoiseCharge->SetStats(0);
+    //         tmpNoiseCharge->SetTitle(";charge [ADC];#counts");
+    //         tmpNoiseCharge->GetXaxis()->SetLimits(60, 8000);
+    //         tmpNoiseCharge->GetYaxis()->SetLimits(0, 1.1);
+    //         tmpNoiseCharge->GetXaxis()->SetTitleSize(0.06); tmpNoiseCharge->GetXaxis()->SetLabelSize(0.04); tmpNoiseCharge->GetYaxis()->SetTitleOffset(0.7);
+    //         tmpNoiseCharge->GetYaxis()->SetTitleSize(0.06); tmpNoiseCharge->GetYaxis()->SetLabelSize(0.04); tmpNoiseCharge->GetYaxis()->SetTitleOffset(0.7);
+
+    //         tmpNoiseCharge->SetMarkerColor(kGray);
+    //         tmpNoiseCharge->SetLineColor(kGray);
+    //         tmpNoiseCharge->SetMarkerStyle(20);
+    //         tmpNoiseCharge->SetMarkerSize(0.8);
+    //         tmpNoiseCharge->SetLineStyle(1);
+    //         tmpNoiseCharge->SetLineWidth(2);
+
+    //         tmpNoiseCharge->Draw("PE");
+    //         tmpNoiseCharge->Draw("C");
+
+    //         // cluster charge of the main chip
+    //         for(int j=0; j<VOLTAGE_.size(); j++) {
+    //             tmpMainROOTFile = TFile::Open(Form("%skek202412_22p5_%s_%sV_SeedThd60e_NeighborThd60e.root", data_dir_path.c_str(), CHIP_TYPE_[i].c_str(), VOLTAGE_[j].c_str()));
+    //             tmpMainClusterCharge = (TH1D*)tmpMainROOTFile->Get("AnalysisCE65/CE65_3/cluster/clusterCharge");
+
+    //             // Setting for histogram style
+    //             tmpMainClusterCharge->Rebin(10);
+    //             tmpMainClusterCharge->Scale(1/tmpMainClusterCharge->GetMaximum());
+
+    //             int tmp_color = 2*j;
+    //             tmpMainClusterCharge->SetMarkerColor(kAzure+tmp_color);
+    //             tmpMainClusterCharge->SetMarkerColor(kAzure+tmp_color);
+    //             tmpMainClusterCharge->SetMarkerStyle(20);
+    //             tmpMainClusterCharge->SetMarkerSize(1.1);
+    //             tmpMainClusterCharge->SetLineStyle(1);
+    //             tmpMainClusterCharge->SetLineWidth(2);
+
+    //             tmpMainClusterCharge->Draw("SAME PEC");
+    //         } // VOLTAGE_
+
+    //         // cluster charge of the sub chips
+    //         for(int j=0; j<CHIP_TYPE_.size(); j++) {
+    //             if(CHIP_TYPE_[i] == CHIP_TYPE_[j]) {
+    //                     continue;
+    //                 } else {
+    //                     for(int k=0; k<VOLTAGE_.size(); k++) {
+    //                         tmpSubROOTFile = TFile::Open(Form("%skek202412_22p5_%s_%sV_SeedThd60e_NeighborThd60e.root", data_dir_path.c_str(), CHIP_TYPE_[i].c_str(), VOLTAGE_[j].c_str()));
+    //                         tmpSubClusterCharge = (TH1D*)tmpSubROOTFile->Get("AnalysisCE65/CE65_3/cluster/clusterCharge");
+
+    //                         tmpSubClusterCharge->Rebin(10);
+    //                         tmpSubClusterCharge->Scale(1/tmpSubClusterCharge->GetMaximum());
+
+    //                         tmpSubClusterCharge->SetMarkerColor(kRed + j);
+    //                         tmpSubClusterCharge->SetLineColor(kRed+j);
+    //                         tmpSubClusterCharge->SetMarkerStyle(20);
+    //                         tmpSubClusterCharge->SetMarkerSize(1.1);
+    //                         tmpSubClusterCharge->SetLineStyle(1);
+    //                         tmpSubClusterCharge->SetLineWidth(2);
+
+    //                         tmpSubClusterCharge->Draw("SAME PEC");
+    //                     } // VOLTAGE_
+    //                 } // if chip_type
+    //         } // sub CHIP_TYPE_
+
+    //         canvas->SaveAs(Form("plot/ClusterCharge_for_%s_with_Noise_and_other.pdf",CHIP_TYPE_[i].c_str()));
+    //     } // main CHIP_TYPE_
+    // } // if cluster charge plots
+
     bool blk_reso_clsize = true;
     if(blk_reso_clsize) {
         TFile* tmpROOTFile = nullptr;
@@ -1014,7 +1280,7 @@ void plot_ExperimentData::run_Analysis() {
         
 
         condition.DrawLatexNDC(0.12, 0.87, "e^{-} 3GeV/c @KEK (Dec. 2024)");
-        condition.DrawLatexNDC(0.65, 0.87, Form("Plotted on: %s", TIME_.c_str()));
+        condition.DrawLatexNDC(0.65, 0.87, Form("Plotted on %s", TIME_.c_str()));
 
         // Save the plot
         canvas->SaveAs("plot/Resolution_vs_ClusterSize_Comparison_forBLK.pdf");

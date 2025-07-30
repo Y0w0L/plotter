@@ -1,6 +1,7 @@
 #include "plot_histogram.h"
 #include "tools/langaus.C"
 #include "tools/twogaus.C"
+#include "tools/langaus_expo.C"
 
 // // constructor
 // plot_histogram::plot_histogram() {
@@ -106,7 +107,7 @@ std::string plot_histogram::currentDateTime() {
     std::tm* now = std::localtime(&t);
 
     char buffer[128];
-    strftime(buffer, sizeof(buffer), "%b. %d ,%Y", now);
+    strftime(buffer, sizeof(buffer), "%b. %d, %Y", now);
     return buffer;
 }
 
@@ -375,7 +376,9 @@ TF1* plot_histogram::optimise_hist_langaus(TH1D* hist, int color) {
 
     LOG_INFO.source("plot_histogram::optimise_hist_langaus") << "Hist name is " << hist->GetName() << "/Fit name is " << fitname;
     LOG_INFO.source("plot_histogram::optimise_hist_langaus") << "Fit range: " << fit_range[0] << " -> " << fit_range[1]; 
-    hist->Fit(fit, "RLQ", "", fit_range[0], fit_range[1]);
+    hist->Fit(fit, "NSLQ+", "", fit_range[0], fit_range[1]);
+    fit->SetRange(hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax());
+    fit->Draw("SAME");
     print_fitResult(fit);
     LOG_INFO.source("plot_histogram::optimise_hist_langaus") << "Chi2/ndf: " << fit->GetChisquare() << "/" << fit->GetNDF();
     if(fit->GetChisquare() / fit->GetNDF() > 10) {
@@ -411,12 +414,77 @@ TF1* plot_histogram::optimise_hist_gaus(TH1D* hist, int color) {
     
     TF1* fit = new TF1(fit_name.c_str(), "gaus", -60, 60);
     set_tf1Style(fit, color);
-    hist->Fit(fit, "RLQ", "", fit_range_min, fit_range_max);
+    hist->Fit(fit, "NSLQ+", "", fit_range_min, fit_range_max);
+    fit->SetRange(hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax());
+    fit->Draw("SAME");
     print_fitResult(fit);
     LOG_INFO.source("plot_histogram::optimise_hist_gaus") << "Chi2/ndf: " << fit->GetChisquare() << "/" << fit->GetNDF();
     if(fit->GetChisquare() / fit->GetNDF() > 10) {
         LOG_WARNING.source("plot_histogram::optimise_hist_gaus()") << "Chi2/ndf in [" << hist->GetName() << "] is larger than 10.";
     }
+    return fit;
+}
+
+// optimise fitting function with (Landau + Gaussian) + Exponential
+TF1* plot_histogram::optimise_hist_langau_expo(TH1D* hist, int color) {
+    double area;
+    std::vector<double> fit_range;
+    // Langau parameters
+    std::vector<double> fwhm_pars, center_pars, area_pars, gsigma_pars;
+    // Exponential parameters
+    std::vector<double> expo_amp_pars, expo_slope_pars;
+
+    std::string fitname;
+    std::vector<double> startvals, parlimitlow, parlimithigh;
+
+    // --- パラメータ初期値の推定 ---
+    auto [fwhm, center] = estimate_fwhm(hist);
+    fit_range = {0.3 * hist->GetMean(), 1.5 * hist->GetMean()};
+    area = hist->Integral();
+
+    // Langau パラメータの範囲と初期値
+    fwhm_pars = {fwhm * 0.2, fwhm * 0, fwhm * 1};          // Landau Width
+    center_pars = {center, center * 0.5, center * 2};       // MPV
+    area_pars = {area, area * 0.1, area * 10};        // Area
+    gsigma_pars = {fwhm * 0.2, fwhm * 0, fwhm * 1};       // Gaussian Sigma
+
+    // Exponential パラメータの範囲と初期値
+    double low_edge_bin_content = hist->GetBinContent(hist->GetXaxis()->FindBin(fit_range[0]));
+    expo_amp_pars = {low_edge_bin_content, 0, low_edge_bin_content * 10}; // Expo Amplitude
+    expo_slope_pars = {-0.01, -0.1, 0};                                // Expo Slope
+
+    // --- TF1オブジェクトの準備 ---
+    fitname = std::string("fLangauExpo_") + hist->GetName();
+    // ★モデル関数を langau_expo_fun に、パラメータ数を 6 に変更
+    TF1* fit = new TF1(fitname.c_str(), langau_expo_fun, fit_range[0], fit_range[1], 6);
+    set_tf1Style(fit, color);
+
+    // ★6個のパラメータをベクトルに格納
+    startvals    = {fwhm_pars[0], center_pars[0], area_pars[0], gsigma_pars[0], expo_amp_pars[0], expo_slope_pars[0]};
+    parlimitlow  = {fwhm_pars[1], center_pars[1], area_pars[1], gsigma_pars[1], expo_amp_pars[1], expo_slope_pars[1]};
+    parlimithigh = {fwhm_pars[2], center_pars[2], area_pars[2], gsigma_pars[2], expo_amp_pars[2], expo_slope_pars[2]};
+    
+    fit->SetParameters(startvals.data());
+    // ★パラメータ名を6個設定
+    fit->SetParNames("Width", "MP", "Area", "GSigma", "E_Amp", "E_Slope");
+    for (int i = 0; i < 6; ++i) { // ★ループを6回に変更
+        fit->SetParLimits(i, parlimitlow[i], parlimithigh[i]);
+    }
+
+    // --- フィットの実行と結果の表示 ---
+    LOG_INFO.source("plot_histogram::optimise_hist_langau_expo") << "Hist name is " << hist->GetName() << "/Fit name is " << fitname;
+    LOG_INFO.source("plot_histogram::optimise_hist_langau_expo") << "Fit range: " << fit_range[0] << " -> " << fit_range[1]; 
+    hist->Fit(fit, "NSLQR+", "", fit_range[0], fit_range[1]); // "R"を追加
+    
+    fit->SetRange(hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax());
+    fit->Draw("SAME");
+    
+    print_fitResult(fit);
+    LOG_INFO.source("plot_histogram::optimise_hist_langau_expo") << "Chi2/ndf: " << fit->GetChisquare() << "/" << fit->GetNDF();
+    if(fit->GetNDF() > 0 && fit->GetChisquare() / fit->GetNDF() > 10) {
+        LOG_WARNING.source("plot_histogram::optimise_hist_langau_expo()") << "Chi2/ndf in [" << hist->GetName() << "] is larger than 10.";
+    }
+    
     return fit;
 }
 
