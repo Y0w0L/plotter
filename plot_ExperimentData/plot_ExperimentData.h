@@ -9,6 +9,7 @@ public:
     void run_NoiseScan();
     void run_Analysis();
     void run_inPixel();
+    void run_SPSAnalysis();
 
 private:
     static void set_1DStyle(TH1D* hist);
@@ -16,10 +17,10 @@ private:
     static void set_2DSURFStyle(TCanvas* canvas, TH2D* hist);
     static TH2D* convert_toTH2D(TProfile2D* profile2D);
     static std::vector<int> GetMyColors(int n_colors);
-    static TH1D* get_TH1D(std::string filename);
+    //static TH1D* get_TH1D(std::string filename);
 
     std::vector<std::string> PIXEL_PITCH_, CHIP_TYPE_, VOLTAGE_, SEED_THRESHOLD_, NEIGHBOR_THRESHOLD_;
-    std::string TIME_;
+    std::string TIME_, NAME_, DUT_NAME_;
 };
 
 #endif // PLOT_EXPERIMENTDATA_H

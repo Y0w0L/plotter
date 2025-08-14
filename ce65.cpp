@@ -35,10 +35,10 @@ int main() {
     // plot_driftTime.run_driftTime();
     //plot_inPixel.run_inPixel();
     //track.run();
-    //plot_ExperimentData.run_inPixel();
+    plot_ExperimentData.run_inPixel();
     //plot_ExperimentData.run_Analysis();
     //plot_ExperimentData.run_NoiseScan();
-    plot_LabTest.run_LabTest();
+    //plot_LabTest.run_LabTest();
 
     LOG_STATUS.source("ce65.cpp/main") << "Main process  is complete.";
 

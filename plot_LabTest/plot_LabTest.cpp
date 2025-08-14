@@ -320,7 +320,7 @@ void plot_LabTest::run_LabTest() {
                 hMainClone->GetYaxis()->SetTitleSize(0.05); hMainClone->GetYaxis()->SetLabelSize(0.04); hMainClone->GetYaxis()->SetTitleOffset(0.8);            
                 hMainClone->SetMarkerColor(color);
                 hMainClone->SetLineColor(color);
-                hMainClone->SetMarkerStyle(24+k);
+                hMainClone->SetMarkerStyle(20+k);
                 hMainClone->SetMarkerSize(1);
 
                 hMainClone->SetLineStyle(1);
@@ -357,11 +357,18 @@ void plot_LabTest::run_LabTest() {
         vMean.resize(CHIP_TYPE_.size());
         vSigmaError.resize(CHIP_TYPE_.size());
         vMeanError.resize(CHIP_TYPE_.size());
-        for(size_t int i=0; i<VOLTAGE_.size(); i++) {
+        for(int i=0; i<CHIP_TYPE_.size(); i++) {
             vSigma[i].resize(VOLTAGE_.size());
             vMean[i].resize(VOLTAGE_.size());
             vSigmaError[i].resize(VOLTAGE_.size());
             vMeanError[i].resize(VOLTAGE_.size());
+        }
+
+        std::vector<double> vVoltage;
+        std::vector<double> vVoltageError;
+        for(size_t i=0; i<VOLTAGE_.size(); i++) {
+            vVoltage.push_back(std::stod(VOLTAGE_[i]));
+            vVoltageError.push_back(0.0);
         }
 
         // Sigma and Mean
@@ -369,7 +376,7 @@ void plot_LabTest::run_LabTest() {
             for(int j=0; j<VOLTAGE_.size(); j++) {
                 TFile* fileMain = TFile::Open(FILENAMES_[i][j].c_str());
                 TH1D* hMain = (TH1D*)fileMain->Get("h_mxAmpAC_spectra[1]");
-                TH1D* hMainClone = (TH1D*)hMain->Clone(Form("hMainClone_%s_%sV", CHIP_TYPE_[i].c_str(). VOLTAGE_[k].c_str()));
+                TH1D* hMainClone = (TH1D*)hMain->Clone(Form("hMainClone_%s_%sV", CHIP_TYPE_[i].c_str(), VOLTAGE_[j].c_str()));
 
                 for(int l=0; l<3000; l++) {
                     hMainClone->SetBinContent(l, 0);
@@ -377,10 +384,16 @@ void plot_LabTest::run_LabTest() {
                 }
 
                 TF1* fMain = plot_histogram::optimise_hist_gaus(hMainClone, 1);
-                vSigma[i][j].push_back(fMain->GetParameter(2));
-                vMean[i][j].push_back(fMain->GetParameter(1));
-                vSigmaError[i][j].push_back(fMain->GetParError(2));
-                vMeanError[i][j].push_back(fMain->GetParError(1));
+                // vSigma[i].push_back(fMain->GetParameter(2));
+                // vMean[i].push_back(fMain->GetParameter(1));
+                // vSigmaError[i].push_back(fMain->GetParError(2));
+                // vMeanError[i].push_back(fMain->GetParError(1));
+
+                vSigma[i][j] = fMain->GetParameter(2);
+                vSigmaError[i][j] = fMain->GetParError(2);
+                vMean[i][j] = fMain->GetParameter(1);
+                vMeanError[i][j] = fMain->GetParError(1);
+
             } // VOLTAGE_
         } // CHIP_TYPE_
 
@@ -391,17 +404,93 @@ void plot_LabTest::run_LabTest() {
         canvas->SetLeftMargin(0.13);
         canvas->SetRightMargin(0.07);
 
-        TLegend* legend_main = new TLegend(0.13, 0.70, 0.43, 0.92);
-        legend_main->SetFillStyle(0);
-        legend_main->SetBorderSize(0);
-        legend_main->SetTextSize(0.04);
+        TLegend* legend_sigma = new TLegend(0.8, 0.70, 0.92, 0.92);
+        legend_sigma->SetFillStyle(0);
+        legend_sigma->SetBorderSize(0);
+        legend_sigma->SetTextSize(0.04);
 
-        TLegend* legend_sub = new TLegend(0.33, 0.81, 0.63, 0.92);
-        legend_sub->SetFillStyle(0);
-        legend_sub->SetBorderSize(0);
-        legend_sub->SetTextSize(0.04);
+        TLegend* legend_mean = new TLegend(0.8, 0.50, 0.92, 0.82);
+        legend_mean->SetFillStyle(0);
+        legend_mean->SetBorderSize(0);
+        legend_mean->SetTextSize(0.04);
 
+        // plot for sigma vs voltage
+        TMultiGraph* mg_sigma = new TMultiGraph();
+        mg_sigma->SetTitle(";voltage [V];peak width");
+
+        int colors[] = {kRed+2, kAzure+2, kGreen+2};
+        int line_colors[] = {kRed-9, kAzure-9, kGreen-9};
+        int markers[] = {20,21,22};
+
+        for(int i=0; i<CHIP_TYPE_.size(); i++) {
+            TGraphErrors* gr_sigma = new TGraphErrors(vVoltage.size(), &vVoltage[0], &vSigma[i][0], &vVoltageError[0], &vSigmaError[i][0]);
+            gr_sigma->SetMarkerColor(colors[i]);
+            gr_sigma->SetLineColor(colors[i]);
+            gr_sigma->SetMarkerStyle(markers[i]);
+            //gr_sigma->SetLineStyle(i+1);
+            //gr_sigma->SetLineWidth(0);
+            gr_sigma->SetMarkerSize(1.5);
+            //mg_sigma->Add(gr_sigma, "EP");
+
+            TGraphErrors* gr_sigma_line = new TGraphErrors(vVoltage.size(), &vVoltage[0], &vSigma[i][0], &vVoltageError[0], &vSigmaError[i][0]);
+            gr_sigma_line->SetLineColor(line_colors[i]);
+            //gr_sigma_line->SetLineColor(kGray);
+            gr_sigma_line->SetLineStyle(2);
+            gr_sigma_line->SetLineWidth(2);
+
+            mg_sigma->Add(gr_sigma_line, "L");
+            mg_sigma->Add(gr_sigma, "EP");
+
+            legend_sigma->AddEntry(gr_sigma, Form("%s", CHIP_TYPE_[i].c_str()), "pe");
+        }
+
+        mg_sigma->Draw("A");
+        mg_sigma->GetXaxis()->SetTitleSize(0.05); mg_sigma->GetXaxis()->SetLabelSize(0.04);// mg_sigma->SetTitleOffset(0.8);
+        mg_sigma->GetYaxis()->SetTitleSize(0.05); mg_sigma->GetYaxis()->SetLabelSize(0.04);// mg_sigma->SetTitleOffset(0.8);
+        //mg_sigma->Draw();
+
+        legend_sigma->Draw();
+        condition.DrawLatexNDC(0.58, 0.25, "^{55}Fe @Hiroshima Univ.(Aug. 2024)");
+        condition.DrawLatexNDC(0.58, 0.21, "SeedThd 1000 ADC/cluster size = 1");
+        condition.DrawLatexNDC(0.58, 0.17, Form("Plotted on %s", TIME_.c_str()));
+
+        canvas->SaveAs("plot/Sigma_vs_Voltage_as_labtest.pdf");
+
+        canvas->Clear();
+        // plot for mean vs voltage
+        TMultiGraph* mg_mean = new TMultiGraph();
+        mg_mean->SetTitle(";voltage [V];peak position");
         
+        for(int i=0; i<CHIP_TYPE_.size(); i++) {
+            TGraphErrors* gr_mean = new TGraphErrors(vVoltage.size(), &vVoltage[0], &vMean[i][0], &vVoltageError[0], &vMeanError[i][0]);
+            TGraphErrors* gr_mean_line = new TGraphErrors(vVoltage.size(), &vVoltage[0], &vMean[i][0], &vVoltageError[0], &vMeanError[i][0]);
+            
+            gr_mean->SetMarkerColor(colors[i]);
+            gr_mean->SetLineColor(colors[i]);
+            gr_mean->SetMarkerStyle(markers[i]);
+            //gr_sigma->SetLineStyle(i+1);
+            //gr_sigma->SetLineWidth(0);
+            gr_mean->SetMarkerSize(1.5);
+            
+            gr_mean_line->SetLineColor(line_colors[i]);
+            gr_mean_line->SetLineStyle(2);
+            gr_mean_line->SetLineWidth(2);
 
+            mg_mean->Add(gr_mean_line, "L");
+            mg_mean->Add(gr_mean, "EP");
+
+            legend_mean->AddEntry(gr_mean, Form("%s", CHIP_TYPE_[i].c_str()), "pe");
+        }
+
+        mg_mean->Draw("A");
+        mg_mean->GetXaxis()->SetTitleSize(0.05); mg_mean->GetXaxis()->SetLabelSize(0.04);// mg_sigma->SetTitleOffset(0.8);
+        mg_mean->GetYaxis()->SetTitleSize(0.05); mg_mean->GetYaxis()->SetLabelSize(0.04);// mg_sigma->SetTitleOffset(0.8);
+
+        legend_mean->Draw();
+        condition.DrawLatexNDC(0.58, 0.25, "^{55}Fe @Hiroshima Univ.(Aug. 2024)");
+        condition.DrawLatexNDC(0.58, 0.21, "SeedThd 1000 ADC/cluster size = 1");
+        condition.DrawLatexNDC(0.58, 0.17, Form("Plotted on %s", TIME_.c_str()));
+
+        canvas->SaveAs("plot/Mean_vs_Voltage_as_labtest.pdf");
     }
 }

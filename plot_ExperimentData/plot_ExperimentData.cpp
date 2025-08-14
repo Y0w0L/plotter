@@ -8,13 +8,15 @@ plot_ExperimentData::plot_ExperimentData() {
     VOLTAGE_ = {"10", "7", "4"};
     //VOLTAGE_ = {"10"};
     //SEED_THRESHOLD_ = {"400"};
-    //SEED_THRESHOLD_ = {"300"};
+    //SEED_THRESHOLD_ = {"1000"};
     SEED_THRESHOLD_ = {"500"};
-    //NEIGHBOR_THRESHOLD_ = {"50", "60" ,"70", "80", "90", "100", "150", "200", "250", "300", "350", "400", "450", "500"}; 
+    NEIGHBOR_THRESHOLD_ = {"50", "60" ,"70", "80", "90", "100", "150", "200", "250", "300", "350", "400", "450", "500"}; 
     //NEIGHBOR_THRESHOLD_ = {"50","60" ,"70", "80", "90", "100"}; 
-    NEIGHBOR_THRESHOLD_ = {"50", "80", "100", "200", "300", "350", "400", "450", "500"};
-    //NEIGHBOR_THRESHOLD_ = {"60"};
+    //NEIGHBOR_THRESHOLD_ = {"50", "80", "100", "200", "300", "350", "400", "450", "500"};
+    //NEIGHBOR_THRESHOLD_ = {"200", "300", "400", "500", "600", "700", "800", "900", "1000"};
     TIME_ = plot_histogram::currentDateTime();
+    NAME_ = "kek202412";
+    DUT_NAME_ = "CE65_3";
 }
 
 std::vector<int> plot_ExperimentData::GetMyColors(int n_colors) {
@@ -112,17 +114,11 @@ TH2D* plot_ExperimentData::convert_toTH2D(TProfile2D* profile2D) {
     return h2d;
 }
 
-TH1D* plot_ExperimentData::get_TH1D(std::string filename) {
-    // TFile* file = TFile::Open(filename);
-    // TH1D* hist = (TH1D*)file->Get("AnalysisCE65/CE65_3/local_residuals/residualsX");
-    // return hist;
-}
-
 void plot_ExperimentData::run_NoiseScan() {
     LOG_STATUS.source("plot_ExperimentData::run_NoiseScan") << "Start run for Noise scan data.";
 
     std::string output_file_name = "/home/towa/alice3/plotter/plot/experimentData_NoiseScan.root";
-    std::string data_dir_path = "/home/towa/alice3/hist/kek202412/";
+    std::string data_dir_path = "/home/towa/alice3/hist/" + NAME_ + "/";
     TFile* output = TFile::Open(output_file_name.c_str(), "RECREATE");
 
     TDirectory* pixelCharge = output->mkdir("pixelCharge");
@@ -152,16 +148,26 @@ void plot_ExperimentData::run_NoiseScan() {
             canvas->SetLeftMargin(0.13);
             canvas->SetRightMargin(0.07);
             for(int k=0; k<VOLTAGE_.size(); k++) {
-                inputROOTFile = TFile::Open(Form("%skek202412_%s_%s_%sV_SeedThd0e_NeighborThd0e_noise.root", data_dir_path.c_str(), PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str()));
+                inputROOTFile = TFile::Open(Form("%s%s_%s_%s_%sV_SeedThd0e_NeighborThd0e_noise.root", data_dir_path.c_str(), NAME_.c_str(), PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str()));
+                if (!inputROOTFile || inputROOTFile->IsZombie()) {
+                    LOG_STATUS.source("plot_ExperimentData::run_NoiseScan") << "Error: Cannot open file. Breaking from voltage loop.";
+                    if(inputROOTFile) delete inputROOTFile;
+                    break; 
+                }
+
                 chip_variation = Form("%s_%s_%sV_SeedThd0e_NeighborThd0e", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str());
                 chip_variation_text = Form("p%s/%s/%sV/SeedThd0e/NeighborThd0e", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str());
                 gStyle->SetPalette(kViridis);
 
-                h_pixelCharge = (TH1D*)inputROOTFile->Get("EventLoaderEUDAQ2/CE65_3/hPixelRawValues");
-                h_pixelCharge->SetTitle(";charge [ADC];counts");
+                h_pixelCharge = (TH1D*)inputROOTFile->Get(Form("EventLoaderEUDAQ2/%s/hPixelRawValues",DUT_NAME_.c_str()));
+                h_pixelCharge->SetTitle(";charge [ADC];normalized counts");
+                h_pixelCharge->Rebin(20);
+                h_pixelCharge->Scale(1.0 / h_pixelCharge->GetMaximum());
                 plot_ExperimentData::set_1DStyle(h_pixelCharge);
+                h_pixelCharge->SetMarkerSize(1);
                 if(k==0) {
-                    h_pixelCharge->GetXaxis()->SetRangeUser(0,120);
+                    h_pixelCharge->GetYaxis()->SetRangeUser(0,1.4);
+                    h_pixelCharge->GetXaxis()->SetRangeUser(0,1000);
                     //h_pixelCharge->GetYaxis()->SetRangeUser(0,2100000);
                     h_pixelCharge->SetMarkerColor(kBlack);
                     h_pixelCharge->SetLineColor(kBlack);
@@ -182,10 +188,10 @@ void plot_ExperimentData::run_NoiseScan() {
                 //inputROOTFile->Close();
             } // VOLTAGE_
 
-            title.DrawLatexNDC(0.70, 0.89, "Per-Pixel Charge");
-            condition.DrawLatexNDC(0.70, 0.85, "w/o beam");
-            condition.DrawLatexNDC(0.70, 0.79, Form("%s/%s", CHIP_TYPE_[j].c_str(), PIXEL_PITCH_[i].c_str()));
-            condition.DrawLatexNDC(0.70, 0.82, Form("Plotted on %s", TIME_.c_str()));
+            title.DrawLatexNDC(0.68, 0.90, "Per-Pixel Charge");
+            condition.DrawLatexNDC(0.15, 0.91, "w/o beam @CERN-SPS (Apr. 2024)");
+            condition.DrawLatexNDC(0.15, 0.88, Form("%s/%s", CHIP_TYPE_[j].c_str(), PIXEL_PITCH_[i].c_str()));
+            condition.DrawLatexNDC(0.68, 0.86, Form("Plotted on %s", TIME_.c_str()));
 
             TLegend* legend = new TLegend(0.75, 0.60, 0.85, 0.78);
             legend->SetFillStyle(0);
@@ -209,7 +215,7 @@ void plot_ExperimentData::run_Analysis() {
     LOG_STATUS.source("plot_ExperimentData::run_Analysis") << "Start run for beamtest analysis.";
 
     std::string output_file_name = "/home/towa/alice3/plotter/plot/experimentData_analysis.root";
-    std::string data_dir_path = "/home/towa/alice3/hist/kek202412/";
+    std::string data_dir_path = "/home/towa/alice3/hist/" + NAME_ + "/";
     TFile* output = TFile::Open(output_file_name.c_str(), "RECREATE");
 
     TDirectory* clusterCharge = output->mkdir("cluster_charge");
@@ -247,21 +253,31 @@ void plot_ExperimentData::run_Analysis() {
     std::string chip_variation_text;
 
     std::vector<std::vector<std::vector<std::vector<std::vector<double>>>>> vMeanClusterSize;
+    std::vector<std::vector<std::vector<std::vector<std::vector<double>>>>> vMeanClusterSizeError;
     std::vector<std::vector<std::vector<std::vector<std::vector<double>>>>> vResolutionX;
+    std::vector<std::vector<std::vector<std::vector<std::vector<double>>>>> vResolutionXError;
     vResolutionX.resize(PIXEL_PITCH_.size());
+    vResolutionXError.resize(PIXEL_PITCH_.size());
     vMeanClusterSize.resize(PIXEL_PITCH_.size());
+    vMeanClusterSizeError.resize(PIXEL_PITCH_.size());
 
     for(size_t i=0; i < PIXEL_PITCH_.size(); i++) {
         vResolutionX[i].resize(CHIP_TYPE_.size());
+        vResolutionXError[i].resize(CHIP_TYPE_.size());
         vMeanClusterSize[i].resize(CHIP_TYPE_.size());
+        vMeanClusterSizeError[i].resize(CHIP_TYPE_.size());
 
         for(size_t j=0; j < CHIP_TYPE_.size(); j++) {
             vResolutionX[i][j].resize(VOLTAGE_.size());
+            vResolutionXError[i][j].resize(VOLTAGE_.size());
             vMeanClusterSize[i][j].resize(VOLTAGE_.size());
+            vMeanClusterSizeError[i][j].resize(VOLTAGE_.size());
 
             for(size_t k=0; k < VOLTAGE_.size(); k++) {
                 vResolutionX[i][j][k].resize(SEED_THRESHOLD_.size());
+                vResolutionXError[i][j][k].resize(SEED_THRESHOLD_.size());
                 vMeanClusterSize[i][j][k].resize(SEED_THRESHOLD_.size());
+                vMeanClusterSizeError[i][j][k].resize(SEED_THRESHOLD_.size());
             }
         }
     }
@@ -284,15 +300,20 @@ void plot_ExperimentData::run_Analysis() {
                     chip_variation = Form("%s_%s_%sV_SeedThd%se", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), SEED_THRESHOLD_[l].c_str());
                     chip_variation_text = Form("p%s/%s/%sV/SeedThd%s", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), SEED_THRESHOLD_[l].c_str());
                         
-
                     for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
-                        inputROOTFile = TFile::Open(Form("%skek202412_%s_%s_%sV_SeedThd%se_NeighborThd%se.root", data_dir_path.c_str(), PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), SEED_THRESHOLD_[l].c_str(), NEIGHBOR_THRESHOLD_[n].c_str()));
+                        inputROOTFile = TFile::Open(Form("%s%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root", data_dir_path.c_str(), NAME_.c_str(), PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), SEED_THRESHOLD_[l].c_str(), NEIGHBOR_THRESHOLD_[n].c_str()));
+                        if (!inputROOTFile || inputROOTFile->IsZombie()) {
+                            LOG_STATUS.source("plot_ExperimentData::run_Analysis") << "Error: Cannot open file. Breaking from voltage loop.";
+                            if(inputROOTFile) delete inputROOTFile;
+                            break; 
+                        }
+
                         //chip_variation = Form("%s_%s_%sV_SeedThd%se_NeighborThd%se", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), SEED_THRESHOLD_[l].c_str(), NEIGHBOR_THRESHOLD_[n].c_str());
                         //chip_variation_text = Form("p%s/%s/%sV/SeedThd%s/NeighborThd%s", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), SEED_THRESHOLD_[l].c_str(), NEIGHBOR_THRESHOLD_[n].c_str());
                         //gStyle->SetPalette(kViridis);
 
-                        hClusterCharge = (TH1D*)inputROOTFile->Get("AnalysisCE65/CE65_3/cluster/clusterCharge");
-                        hSeedCharge = (TH1D*)inputROOTFile->Get("AnalysisCE65/CE65_3/cluster/clusterSeedCharge");
+                        hClusterCharge = (TH1D*)inputROOTFile->Get(Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str()));
+                        hSeedCharge = (TH1D*)inputROOTFile->Get(Form("AnalysisCE65/%s/cluster/clusterSeedCharge", DUT_NAME_.c_str()));
                         hClusterCharge->SetTitle(";charge [ADC];counts");
                         hClusterCharge->Rebin(10);
                         plot_ExperimentData::set_1DStyle(hClusterCharge);
@@ -336,10 +357,15 @@ void plot_ExperimentData::run_Analysis() {
                     legend->SetBorderSize(0);
 
                     for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
-                        inputROOTFile = TFile::Open(Form("%skek202412_%s_%s_%sV_SeedThd%se_NeighborThd%se.root", data_dir_path.c_str(), PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), SEED_THRESHOLD_[l].c_str(), NEIGHBOR_THRESHOLD_[n].c_str()));
-                        
-                        hResidualX = (TH1D*)inputROOTFile->Get("AnalysisCE65/CE65_3/local_residuals/residualsX");
-                        hClusterSize = (TH1D*)inputROOTFile->Get("AnalysisCE65/CE65_3/cluster/clusterSize");
+                        inputROOTFile = TFile::Open(Form("%s%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root", data_dir_path.c_str(), NAME_.c_str(), PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), SEED_THRESHOLD_[l].c_str(), NEIGHBOR_THRESHOLD_[n].c_str()));
+                        if (!inputROOTFile || inputROOTFile->IsZombie()) {
+                            LOG_STATUS.source("plot_ExperimentData::run_NoiseScan") << "Error: Cannot open file. Breaking from voltage loop.";
+                            if(inputROOTFile) delete inputROOTFile;
+                            break; 
+                        }
+
+                        hResidualX = (TH1D*)inputROOTFile->Get(Form("AnalysisCE65/%s/local_residuals/residualsX", DUT_NAME_.c_str()));
+                        hClusterSize = (TH1D*)inputROOTFile->Get(Form("AnalysisCE65/%s/cluster/clusterSize", DUT_NAME_.c_str()));
                         hResidualX->SetTitle(";x_{track} - x_{hit} [um];counts");
                         hResidualX->Rebin(10);
                         hResidualX->Scale(1/hResidualX->GetMaximum());
@@ -364,7 +390,9 @@ void plot_ExperimentData::run_Analysis() {
                         hResidualX->Fit(fResidualX, "RQ");
 
                         vResolutionX[i][j][k][l].push_back(fResidualX->GetParameter(2));
+                        vResolutionXError[i][j][k][l].push_back(fResidualX->GetParError(2));
                         vMeanClusterSize[i][j][k][l].push_back(hClusterSize->GetMean());
+                        vMeanClusterSizeError[i][j][k][l].push_back(hClusterSize->GetMeanError());
                     }// NEIGHBOR_THRESHOLD_
 
                     title.DrawLatexNDC(0.60, 0.89, "Residual (X_{track} - X_{hit})");
@@ -381,108 +409,108 @@ void plot_ExperimentData::run_Analysis() {
         } // CHIP_TYPE_
     } // PIXEL_PTICH_
 
-    bool tgraph_each_chip = false;
-    if(tgraph_each_chip) {
-        for(int i=0; i<PIXEL_PITCH_.size(); i++) {
-            for(int j=0; j<CHIP_TYPE_.size(); j++) {
-                for(int l=0; l<SEED_THRESHOLD_.size(); l++) {
+    // bool tgraph_each_chip = false;
+    // if(tgraph_each_chip) {
+    //     for(int i=0; i<PIXEL_PITCH_.size(); i++) {
+    //         for(int j=0; j<CHIP_TYPE_.size(); j++) {
+    //             for(int l=0; l<SEED_THRESHOLD_.size(); l++) {
 
-                    // --- 1. 分解能 (Resolution) のプロット ---
-                    canvas->Clear();
-                    canvas->SetGrid();
+    //                 // --- 1. 分解能 (Resolution) のプロット ---
+    //                 canvas->Clear();
+    //                 //canvas->SetGrid();
 
-                    TMultiGraph* mg_resolution = new TMultiGraph();
-                    TLegend* legend_res = new TLegend(0.65, 0.70, 0.88, 0.88);
-                    legend_res->SetFillStyle(0);
-                    legend_res->SetBorderSize(0);
+    //                 TMultiGraph* mg_resolution = new TMultiGraph();
+    //                 TLegend* legend_res = new TLegend(0.65, 0.70, 0.88, 0.88);
+    //                 legend_res->SetFillStyle(0);
+    //                 legend_res->SetBorderSize(0);
 
-                    // 電圧(k)ごとにグラフを作成し、MultiGraphに追加
-                    for(int k=0; k<VOLTAGE_.size(); k++) {
-                        TGraph* gr_resolution = new TGraph();
+    //                 // 電圧(k)ごとにグラフを作成し、MultiGraphに追加
+    //                 for(int k=0; k<VOLTAGE_.size(); k++) {
+    //                     TGraph* gr_resolution = new TGraph();
 
-                        // データをセット
-                        for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
-                            double x_val = std::stod(NEIGHBOR_THRESHOLD_[n]);
-                            double y_resolution = vResolutionX[i][j][k][l][n];
-                            gr_resolution->SetPoint(n, x_val, y_resolution);
-                        }
+    //                     // データをセット
+    //                     for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
+    //                         double x_val = std::stod(NEIGHBOR_THRESHOLD_[n]);
+    //                         double y_resolution = vResolutionX[i][j][k][l][n];
+    //                         gr_resolution->SetPoint(n, x_val, y_resolution);
+    //                     }
 
-                        // 電圧ごとに色とスタイルを設定
-                        gr_resolution->SetMarkerStyle(20 + k);
-                        gr_resolution->SetMarkerColor(kBlue - 3*k);
-                        gr_resolution->SetLineColor(kBlue - 3*k);
-                        gr_resolution->SetLineWidth(2);
+    //                     // 電圧ごとに色とスタイルを設定
+    //                     gr_resolution->SetMarkerStyle(20 + k);
+    //                     gr_resolution->SetMarkerColor(kBlue - 3*k);
+    //                     gr_resolution->SetLineColor(kBlue - 3*k);
+    //                     gr_resolution->SetLineWidth(2);
 
-                        mg_resolution->Add(gr_resolution, "PL");
-                        legend_res->AddEntry(gr_resolution, Form("%sV", VOLTAGE_[k].c_str()), "pl");
-                    }
+    //                     mg_resolution->Add(gr_resolution, "PL");
+    //                     legend_res->AddEntry(gr_resolution, Form("%sV", VOLTAGE_[k].c_str()), "pl");
+    //                 }
 
-                    // MultiGraphを描画
-                    mg_resolution->Draw("A");
-                    mg_resolution->SetTitle(";Neighbor Threshold [e];Position Resolution #sigma [#mum]");
+    //                 // MultiGraphを描画
+    //                 mg_resolution->Draw("A");
+    //                 mg_resolution->SetTitle(";Neighbor Threshold [e];Position Resolution #sigma [#mum]");
 
-                    // 軸のスタイルを設定
-                    mg_resolution->GetXaxis()->SetTitleSize(0.05);
-                    mg_resolution->GetXaxis()->SetLabelSize(0.04);
-                    mg_resolution->GetYaxis()->SetTitleSize(0.05);
-                    mg_resolution->GetYaxis()->SetLabelSize(0.04);
+    //                 // 軸のスタイルを設定
+    //                 mg_resolution->GetXaxis()->SetTitleSize(0.05);
+    //                 mg_resolution->GetXaxis()->SetLabelSize(0.04);
+    //                 mg_resolution->GetYaxis()->SetTitleSize(0.05);
+    //                 mg_resolution->GetYaxis()->SetLabelSize(0.04);
 
-                    legend_res->Draw();
-                    chip_variation_text = Form("p%s / %s / SeedThd %se", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str());
-                    title.DrawLatexNDC(0.15, 0.91, chip_variation_text.c_str());
+    //                 legend_res->Draw();
+    //                 chip_variation_text = Form("p%s / %s / SeedThd %se", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str());
+    //                 title.DrawLatexNDC(0.15, 0.91, chip_variation_text.c_str());
 
-                    canvas->SaveAs(Form("plot/Resolution_vs_NeighborThd_CompV_%s.pdf", Form("%s_%s_Seed%s",PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str())));
-                    tgraph->cd();
-                    canvas->Write(Form("Resolution_vs_NeighborThd_CompV_%s", Form("%s_%s_Seed%s",PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str())));
-
-
-                    // --- 2. クラスターサイズ (Cluster Size) のプロット ---
-                    canvas->Clear();
-                    canvas->SetGrid();
-
-                    TMultiGraph* mg_clustersize = new TMultiGraph();
-                    TLegend* legend_cs = new TLegend(0.65, 0.70, 0.88, 0.88);
-                    legend_cs->SetFillStyle(0);
-                    legend_cs->SetBorderSize(0);
-
-                    for(int k=0; k<VOLTAGE_.size(); k++) {
-                        TGraph* gr_clustersize = new TGraph();
-
-                        for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
-                            double x_val = std::stod(NEIGHBOR_THRESHOLD_[n]);
-                            double y_clustersize = vMeanClusterSize[i][j][k][l][n];
-                            gr_clustersize->SetPoint(n, x_val, y_clustersize);
-                        }
-
-                        gr_clustersize->SetMarkerStyle(20 + k);
-                        gr_clustersize->SetMarkerColor(kRed - 3*k);
-                        gr_clustersize->SetLineColor(kRed - 3*k);
-                        gr_clustersize->SetLineWidth(2);
-
-                        mg_clustersize->Add(gr_clustersize, "PL");
-                        legend_cs->AddEntry(gr_clustersize, Form("%sV", VOLTAGE_[k].c_str()), "pl");
-                    }
-
-                    mg_clustersize->Draw("A");
-                    mg_clustersize->SetTitle(";Neighbor Threshold [e];Mean Cluster Size");
-
-                    mg_clustersize->GetXaxis()->SetTitleSize(0.05);
-                    mg_clustersize->GetXaxis()->SetLabelSize(0.04);
-                    mg_clustersize->GetYaxis()->SetTitleSize(0.05);
-                    mg_clustersize->GetYaxis()->SetLabelSize(0.04);
-
-                    legend_cs->Draw();
-                    title.DrawLatexNDC(0.15, 0.91, chip_variation_text.c_str());
-
-                    canvas->SaveAs(Form("plot/ClusterSize_vs_NeighborThd_CompV_%s.pdf", Form("%s_%s_Seed%s",PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str())));
-                    tgraph->cd();
-                    canvas->Write(Form("ClusterSize_vs_NeighborThd_CompV_%s", Form("%s_%s_Seed%s",PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str())));
+    //                 canvas->SaveAs(Form("plot/Resolution_vs_NeighborThd_CompV_%s.pdf", Form("%s_%s_Seed%s",PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str())));
+    //                 tgraph->cd();
+    //                 canvas->Write(Form("Resolution_vs_NeighborThd_CompV_%s", Form("%s_%s_Seed%s",PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str())));
 
 
-                }
-            }
-        }
-    }
+    //                 // --- 2. クラスターサイズ (Cluster Size) のプロット ---
+    //                 canvas->Clear();
+    //                 canvas->SetGrid();
+
+    //                 TMultiGraph* mg_clustersize = new TMultiGraph();
+    //                 TLegend* legend_cs = new TLegend(0.65, 0.70, 0.88, 0.88);
+    //                 legend_cs->SetFillStyle(0);
+    //                 legend_cs->SetBorderSize(0);
+
+    //                 for(int k=0; k<VOLTAGE_.size(); k++) {
+    //                     TGraph* gr_clustersize = new TGraph();
+
+    //                     for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
+    //                         double x_val = std::stod(NEIGHBOR_THRESHOLD_[n]);
+    //                         double y_clustersize = vMeanClusterSize[i][j][k][l][n];
+    //                         gr_clustersize->SetPoint(n, x_val, y_clustersize);
+    //                     }
+
+    //                     gr_clustersize->SetMarkerStyle(20 + k);
+    //                     gr_clustersize->SetMarkerColor(kRed - 3*k);
+    //                     gr_clustersize->SetLineColor(kRed - 3*k);
+    //                     gr_clustersize->SetLineWidth(2);
+
+    //                     mg_clustersize->Add(gr_clustersize, "PL");
+    //                     legend_cs->AddEntry(gr_clustersize, Form("%sV", VOLTAGE_[k].c_str()), "pl");
+    //                 }
+
+    //                 mg_clustersize->Draw("A");
+    //                 mg_clustersize->SetTitle(";Neighbor Threshold [e];Mean Cluster Size");
+
+    //                 mg_clustersize->GetXaxis()->SetTitleSize(0.05);
+    //                 mg_clustersize->GetXaxis()->SetLabelSize(0.04);
+    //                 mg_clustersize->GetYaxis()->SetTitleSize(0.05);
+    //                 mg_clustersize->GetYaxis()->SetLabelSize(0.04);
+
+    //                 legend_cs->Draw();
+    //                 title.DrawLatexNDC(0.15, 0.91, chip_variation_text.c_str());
+
+    //                 canvas->SaveAs(Form("plot/ClusterSize_vs_NeighborThd_CompV_%s.pdf", Form("%s_%s_Seed%s",PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str())));
+    //                 tgraph->cd();
+    //                 canvas->Write(Form("ClusterSize_vs_NeighborThd_CompV_%s", Form("%s_%s_Seed%s",PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), SEED_THRESHOLD_[l].c_str())));
+
+
+    //             }
+    //         }
+    //     }
+    // }
 
     // bool residual_plots = true;
     // if(residual_plots) {
@@ -496,8 +524,13 @@ void plot_ExperimentData::run_Analysis() {
 
     // } // residual_plots
 
-    bool tgraph_all = false;
+    bool tgraph_all = true;
     if(tgraph_all) {
+        std::vector<double> vThreshold;
+        for (const auto& s : NEIGHBOR_THRESHOLD_) {
+            vThreshold.push_back(std::stod(s)); // stod: string to double
+        }
+
                 // --- 1. 分解能 (Resolution) のプロット ---
         for(int i=0; i<PIXEL_PITCH_.size(); i++) {
             for(int l=0; l<SEED_THRESHOLD_.size(); l++) {
@@ -506,51 +539,76 @@ void plot_ExperimentData::run_Analysis() {
                 canvas->SetBottomMargin(0.14);
                 canvas->SetLeftMargin(0.13);
                 canvas->SetRightMargin(0.07);
-                canvas->SetGrid();
+                //canvas->SetGrid();
                     
                 TMultiGraph* mg_resolution = new TMultiGraph();
-                TLegend* legend_res = new TLegend(0.55, 0.65, 0.88, 0.88); // 凡例のサイズを調整
+                TLegend* legend_res = new TLegend(0.75, 0.18, 0.92, 0.48); // 凡例のサイズを調整
                 legend_res->SetFillStyle(0);
                 legend_res->SetBorderSize(0);
+                legend_res->SetTextSize(0.04);
                     
                 // j (チップ) と k (電圧) の両方でループ
                 for(int j=0; j<CHIP_TYPE_.size(); j++) {
                     for(int k=0; k<VOLTAGE_.size(); k++) {
-                        TGraph* gr_resolution = new TGraph();
-                    
-                        for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
-                            double x_val = std::stod(NEIGHBOR_THRESHOLD_[n]);
-                            double y_resolution = vResolutionX[i][j][k][l][n];
-                            gr_resolution->SetPoint(n, x_val, y_resolution);
-                        }
+                        //TGraph* gr_resolution = new TGraph();
+                        TGraphErrors* gr_resolution = new TGraphErrors(NEIGHBOR_THRESHOLD_.size(), &vThreshold[0], &vResolutionX[i][j][k][l][0], 0, &vResolutionXError[i][j][k][l][0]);
+                        TGraphErrors* gr_resolution_line = new TGraphErrors(NEIGHBOR_THRESHOLD_.size(), &vThreshold[0], &vResolutionX[i][j][k][l][0], 0, &vResolutionXError[i][j][k][l][0]);
+
+
+                        // for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
+                        //     double x_val = std::stod(NEIGHBOR_THRESHOLD_[n]);
+                        //     double y_resolution = vResolutionX[i][j][k][l][n];
+                        //     gr_resolution->SetPoint(n, x_val, y_resolution);
+                        // }
                     
                         // 色で電圧、線の種類でチップを表現
-                        gr_resolution->SetMarkerStyle(20 + k + j*VOLTAGE_.size());
-                        gr_resolution->SetMarkerColor(kBlue - 3*k);
-                        gr_resolution->SetLineColor(kBlue - 3*k);
-                        gr_resolution->SetLineStyle(j + 1); // 1: 実線, 2: 破線
-                        gr_resolution->SetLineWidth(1.5);
+                        gr_resolution->SetMarkerStyle(20 + k);
+                        //gr_resolution->SetMarkerColor(kBlue - 3*k);
+                        gr_resolution->SetMarkerSize(1.25);
+                        //gr_resolution->SetLineColor(kBlue - 3*k);
+                        gr_resolution->SetLineStyle(1); // 1: 実線, 2: 破線
+                        gr_resolution->SetLineWidth(2);
+
+                        if(j == 0) {
+                            gr_resolution->SetMarkerColor(kRed -3*k);
+                            gr_resolution->SetLineColor(kRed - 3*k);
+                            gr_resolution_line->SetLineColorAlpha(kRed - 3*k, 0.6);
+                        } else {
+                            gr_resolution->SetMarkerColor(kBlue - 3*k);
+                            gr_resolution->SetLineColor(kBlue - 3*k);
+                            gr_resolution_line->SetLineColorAlpha(kBlue - 3*k, 0.6);
+                        }
+
+                        //gr_resolution_line->SetLineColor(kBlue - 3*k);
+                        gr_resolution_line->SetLineStyle(2);
+                        gr_resolution_line->SetLineWidth(2);
                     
-                        mg_resolution->Add(gr_resolution, "PL");
-                        legend_res->AddEntry(gr_resolution, Form("%s, %sV", CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str()), "pl");
+                        mg_resolution->Add(gr_resolution_line, "L");
+                        mg_resolution->Add(gr_resolution, "EP");
+                        legend_res->AddEntry(gr_resolution, Form("%s, %sV", CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str()), "PE");
                     }
                 }
             
                 mg_resolution->Draw("A");
                 mg_resolution->SetTitle(";threshold [ADC];resolution in x [um]");
-                mg_resolution->GetYaxis()->SetRangeUser(0, 10);
-                mg_resolution->GetXaxis()->SetLimits(40,510);
+                //mg_resolution->GetYaxis()->SetRangeUser(7, 9);
+                mg_resolution->GetYaxis()->SetRangeUser(2, 9);
+                //mg_resolution->GetXaxis()->SetLimits(40,510);
+                mg_resolution->GetXaxis()->SetLimits(190, 1010);
                 //mg_resolution->GetYaxis()->SetLimits(0,10);
-                mg_resolution->GetXaxis()->SetTitleSize(0.06);
+                mg_resolution->GetXaxis()->SetTitleSize(0.05);
                 mg_resolution->GetXaxis()->SetLabelSize(0.04);
-                mg_resolution->GetXaxis()->SetTitleOffset(0.6);
-                mg_resolution->GetYaxis()->SetTitleSize(0.06);
+                mg_resolution->GetXaxis()->SetTitleOffset(0.8);
+                mg_resolution->GetYaxis()->SetTitleSize(0.05);
                 mg_resolution->GetYaxis()->SetLabelSize(0.04);
-                mg_resolution->GetYaxis()->SetTitleOffset(0.7);
+                mg_resolution->GetYaxis()->SetTitleOffset(0.8);
             
                 legend_res->Draw();
                 chip_variation_text = Form("p%s/SeedThd%sADC", PIXEL_PITCH_[i].c_str(), SEED_THRESHOLD_[l].c_str());
-                title.DrawLatexNDC(0.15, 0.91, chip_variation_text.c_str());
+                //title.DrawLatexNDC(0.15, 0.91, chip_variation_text.c_str());
+                condition.DrawLatexNDC(0.15, 0.91, "e^{-} 3GeV/c @KEK (Dec. 2024)");
+                condition.DrawLatexNDC(0.15,0.87, "pixel pitch = 22.5 um");
+                condition.DrawLatexNDC(0.68, 0.91, Form("Plotted on %s", TIME_.c_str()));
             
                 canvas->SaveAs(Form("plot/Resolution_CompAll_%s.pdf", Form("%s_Seed%s",PIXEL_PITCH_[i].c_str(), SEED_THRESHOLD_[l].c_str())));
             
@@ -560,48 +618,71 @@ void plot_ExperimentData::run_Analysis() {
                 canvas->SetBottomMargin(0.14);
                 canvas->SetLeftMargin(0.13);
                 canvas->SetRightMargin(0.07);
-                canvas->SetGrid();
+                //canvas->SetGrid();
             
                 TMultiGraph* mg_clustersize = new TMultiGraph();
-                TLegend* legend_cs = new TLegend(0.55, 0.65, 0.88, 0.88);
+                TLegend* legend_cs = new TLegend(0.75, 0.58, 0.92, 0.88);
                 legend_cs->SetFillStyle(0);
                 legend_cs->SetBorderSize(0);
+                legend_cs->SetTextSize(0.04);
             
                 for(int j=0; j<CHIP_TYPE_.size(); j++) {
                     for(int k=0; k<VOLTAGE_.size(); k++) {
-                        TGraph* gr_clustersize = new TGraph();
+                        // TGraph* gr_clustersize = new TGraph();
+                        TGraphErrors* gr_clustersize = new TGraphErrors(NEIGHBOR_THRESHOLD_.size(), &vThreshold[0], &vMeanClusterSize[i][j][k][l][0], 0, &vMeanClusterSizeError[i][j][k][l][0]);
+                        TGraphErrors* gr_clustersize_line = new TGraphErrors(NEIGHBOR_THRESHOLD_.size(), &vThreshold[0], &vMeanClusterSize[i][j][k][l][0], 0, &vMeanClusterSizeError[i][j][k][l][0]);
                     
-                        for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
-                            double x_val = std::stod(NEIGHBOR_THRESHOLD_[n]);
-                            double y_clustersize = vMeanClusterSize[i][j][k][l][n];
-                            gr_clustersize->SetPoint(n, x_val, y_clustersize);
+                        // for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
+                        //     double x_val = std::stod(NEIGHBOR_THRESHOLD_[n]);
+                        //     double y_clustersize = vMeanClusterSize[i][j][k][l][n];
+                        //     gr_clustersize->SetPoint(n, x_val, y_clustersize);
+                        // }
+                    
+                        gr_clustersize->SetMarkerStyle(20 + k);
+                        //gr_clustersize->SetMarkerColor(kRed - 3*k);
+                        gr_clustersize->SetMarkerSize(1.25);
+                        //gr_clustersize->SetLineColor(kRed - 3*k);
+                        gr_clustersize->SetLineStyle(1); // 1: 実線, 2: 破線
+                        gr_clustersize->SetLineWidth(2);
+
+                        if(j == 0) {
+                            gr_clustersize->SetMarkerColor(kRed - 3*k);
+                            gr_clustersize->SetLineColor(kRed - 3*k);
+                            gr_clustersize_line->SetLineColorAlpha(kRed - 3*k, 0.6);
+                        } else {
+                            gr_clustersize->SetMarkerColor(kBlue - 3*k);
+                            gr_clustersize->SetLineColor(kBlue - 3*k);
+                            gr_clustersize_line->SetLineColorAlpha(kBlue - 3*k, 0.6);
                         }
+
+                        //gr_clustersize_line->SetLineColor(kRed - 3*k);
+                        gr_clustersize_line->SetLineStyle(2);
+                        gr_clustersize_line->SetLineWidth(2);
                     
-                        gr_clustersize->SetMarkerStyle(20 + k + j*VOLTAGE_.size());
-                        gr_clustersize->SetMarkerColor(kRed - 3*k);
-                        gr_clustersize->SetLineColor(kRed - 3*k);
-                        gr_clustersize->SetLineStyle(j + 1); // 1: 実線, 2: 破線
-                        gr_clustersize->SetLineWidth(1.5);
-                    
-                        mg_clustersize->Add(gr_clustersize, "PL");
-                        legend_cs->AddEntry(gr_clustersize, Form("%s, %sV", CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str()), "pl");
+                        mg_clustersize->Add(gr_clustersize_line, "L");
+                        mg_clustersize->Add(gr_clustersize, "EP");
+                        legend_cs->AddEntry(gr_clustersize, Form("%s, %sV", CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str()), "pe");
                     }
                 }
             
                 mg_clustersize->Draw("A");
                 mg_clustersize->SetTitle(";threshold [ADC];mean cluster size");
-                mg_clustersize->GetXaxis()->SetLimits(40,510);
-                mg_clustersize->GetYaxis()->SetRangeUser(0, 6);
-                mg_clustersize->GetXaxis()->SetTitleSize(0.06);
+                //mg_clustersize->GetXaxis()->SetLimits(40,510);
+                mg_clustersize->GetXaxis()->SetLimits(190, 1010);
+                mg_clustersize->GetYaxis()->SetRangeUser(0.5, 4);
+                mg_clustersize->GetXaxis()->SetTitleSize(0.05);
                 mg_clustersize->GetXaxis()->SetLabelSize(0.04);
-                mg_clustersize->GetXaxis()->SetTitleOffset(0.6);
-                mg_clustersize->GetYaxis()->SetTitleSize(0.06);
+                mg_clustersize->GetXaxis()->SetTitleOffset(0.8);
+                mg_clustersize->GetYaxis()->SetTitleSize(0.05);
                 mg_clustersize->GetYaxis()->SetLabelSize(0.04);
-                mg_clustersize->GetYaxis()->SetTitleOffset(0.7);
+                mg_clustersize->GetYaxis()->SetTitleOffset(0.8);
             
                 legend_cs->Draw();
-                title.DrawLatexNDC(0.15, 0.91, chip_variation_text.c_str()); // chip_variation_textは前のプロットから流用
-            
+                //title.DrawLatexNDC(0.15, 0.91, chip_variation_text.c_str()); // chip_variation_textは前のプロットから流用
+                condition.DrawLatexNDC(0.15, 0.91, "e^{-} 3GeV/c @KEK (Dec. 2024)");
+                condition.DrawLatexNDC(0.15,0.87, "pixel pitch = 22.5 um");
+                condition.DrawLatexNDC(0.68, 0.91, Form("Plotted on %s", TIME_.c_str()));
+
                 canvas->SaveAs(Form("plot/ClusterSize_CompAll_%s.pdf", Form("%s_Seed%s",PIXEL_PITCH_[i].c_str(), SEED_THRESHOLD_[l].c_str())));
             
                     // --- 3. 2軸比較プロット (左: Resolution, 右: Cluster Size) ---
@@ -615,7 +696,7 @@ void plot_ExperimentData::run_Analysis() {
                 // pad1->SetBottomMargin(0.14);
                 // pad1->SetRightMargin(0.16);
                 // pad1->SetLeftMargin(0.16);
-                pad1->SetGrid();
+                //pad1->SetGrid();
                 pad1->Draw();
             
                 canvas->cd();
@@ -730,6 +811,187 @@ void plot_ExperimentData::run_Analysis() {
         
             }
         }
+
+        // --- 4. 全ピクセルピッチ・全チップタイプを1枚のキャンバスに描画 ---
+        // このブロックは、すべてのピクセルピッチとチップタイプのデータを1つのグラフにまとめて描画します。
+        bool plot_all_in_one = true;
+        if(plot_all_in_one) {
+            // vThresholdは既に tgraph_all ブロックで準備されているはずですが、念のため再作成します。
+            std::vector<double> vThreshold;
+            for (const auto& s : NEIGHBOR_THRESHOLD_) {
+                vThreshold.push_back(std::stod(s));
+            }
+
+            // SEED_THRESHOLD_ごとにプロットを作成
+            for(int l=0; l<SEED_THRESHOLD_.size(); l++) {
+            
+                // --- 4-1. 分解能 (Resolution) の全比較プロット ---
+                canvas->Clear();
+                canvas->SetTopMargin(0.062);
+                canvas->SetBottomMargin(0.14);
+                canvas->SetLeftMargin(0.13);
+                canvas->SetRightMargin(0.07);
+
+                TMultiGraph* mg_res_all = new TMultiGraph();
+                TMultiGraph* mg_res_all_line = new TMultiGraph();
+                TLegend* legend_res_all = new TLegend(0.50, 0.71, 0.90, 0.91); // 凡例のサイズと位置を調整
+                legend_res_all->SetFillStyle(0);
+                legend_res_all->SetBorderSize(0);
+                legend_res_all->SetTextSize(0.03); // テキストサイズを少し小さく
+                legend_res_all->SetNColumns(2); // 凡例を2列にする
+
+                TLegend* legend_res_line_all = new TLegend(0.50, 0.71, 0.90, 0.91); // 凡例のサイズと位置を調整
+                legend_res_line_all->SetFillStyle(0);
+                legend_res_line_all->SetBorderSize(0);
+                legend_res_line_all->SetTextSize(0.03); // テキストサイズを少し小さく
+                legend_res_line_all->SetTextColor(kWhite);
+                legend_res_line_all->SetNColumns(2); // 凡例を2列にする
+
+                // i(ピッチ), j(チップ), k(電圧) の全てでループ
+                for(int i=0; i<PIXEL_PITCH_.size(); i++) {
+                    for(int j=0; j<CHIP_TYPE_.size(); j++) {
+                        for(int k=0; k<VOLTAGE_.size(); k++) {
+                            TGraphErrors* gr_resolution = new TGraphErrors(NEIGHBOR_THRESHOLD_.size(), &vThreshold[0], &vResolutionX[i][j][k][l][0], 0, &vResolutionXError[i][j][k][l][0]);
+                            TGraphErrors* gr_line_resolution = new TGraphErrors(NEIGHBOR_THRESHOLD_.size(), &vThreshold[0], &vResolutionX[i][j][k][l][0], 0, &vResolutionXError[i][j][k][l][0]);
+
+                            // --- スタイルの設定 ---
+                            // マーカーのスタイルで電圧 (k) を区別
+                            if(i == 0) {
+                                gr_resolution->SetMarkerStyle(20 + k);
+                                gr_resolution->SetMarkerSize(1.2);
+                            } else {
+                                gr_resolution->SetMarkerStyle(22 + k);
+                                gr_resolution->SetMarkerSize(1.4);
+                            }
+                            //gr_resolution->SetMarkerStyle(20 + k); 
+                            //gr_resolution->SetMarkerSize(1.2);
+
+                            // 線のスタイルでピクセルピッチ (i) を区別
+                            gr_line_resolution->SetLineStyle(i + 1); // 1:実線, 2:破線, 3:点線...
+                            gr_resolution->SetLineStyle(1);
+                            gr_line_resolution->SetLineWidth(2);
+                            gr_resolution->SetLineWidth(2);
+
+                            // 色でチップタイプ (j) を区別
+                            if(j == 0) { // CHIP_TYPE_[0]
+                                gr_resolution->SetMarkerColor(kRed - 3*k);
+                                gr_line_resolution->SetMarkerColor(kRed - 3*k);
+                                gr_resolution->SetLineColor(kRed - 3*k);
+                                gr_line_resolution->SetLineColorAlpha(kRed - 3*k, 0.6);
+                            } else { // CHIP_TYPE_[1]
+                                gr_resolution->SetMarkerColor(kBlue - 3*k);
+                                gr_line_resolution->SetMarkerColor(kBlue - 3*k);
+                                gr_resolution->SetLineColor(kBlue - 3*k);
+                                gr_line_resolution->SetLineColorAlpha(kBlue - 3*k, 0.6);
+                            }
+
+                            mg_res_all->Add(gr_line_resolution, "L");
+                            mg_res_all->Add(gr_resolution, "PE");
+                            legend_res_all->AddEntry(gr_resolution, Form("p%s/%s/%sV", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str()), "pe");
+                            legend_res_line_all->AddEntry(gr_line_resolution, Form("p%s/%s/%sV", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str()), "l");                            
+                        }
+                    }
+                }
+
+                mg_res_all->Draw("A");
+                mg_res_all->SetTitle(";threshold [ADC];resolution in x [um]");
+                mg_res_all->GetYaxis()->SetRangeUser(2, 8);
+                mg_res_all->GetXaxis()->SetLimits(190, 1010);
+                // 軸のスタイル設定は元のコードと同様
+                mg_res_all->GetXaxis()->SetTitleSize(0.05);
+                mg_res_all->GetXaxis()->SetLabelSize(0.04);
+                mg_res_all->GetXaxis()->SetTitleOffset(0.8);
+                mg_res_all->GetYaxis()->SetTitleSize(0.05);
+                mg_res_all->GetYaxis()->SetLabelSize(0.04);
+                mg_res_all->GetYaxis()->SetTitleOffset(0.8);
+
+                legend_res_line_all->Draw();
+                legend_res_all->Draw();
+                condition.DrawLatexNDC(0.15, 0.91, "hadron 120GeV/c @CERN-SPS (Apr. 2024)");
+                condition.DrawLatexNDC(0.68, 0.91, Form("Plotted on %s", TIME_.c_str()));
+
+                canvas->SaveAs(Form("plot/AllInOne_Resolution_Seed%s.pdf", SEED_THRESHOLD_[l].c_str()));
+
+                // --- 4-2. クラスターサイズ (Cluster Size) の全比較プロット ---
+                canvas->Clear(); // キャンバスを再利用
+
+                TMultiGraph* mg_cs_all = new TMultiGraph();
+                TMultiGraph* mg_cs_all_line = new TMultiGraph();
+                TLegend* legend_cs_all = new TLegend(0.50, 0.71, 0.90, 0.91); // 凡例のサイズと位置を調整
+                legend_cs_all->SetFillStyle(0);
+                legend_cs_all->SetBorderSize(0);
+                legend_cs_all->SetTextSize(0.03);
+                legend_cs_all->SetNColumns(2);
+
+                TLegend* legend_cs_line_all = new TLegend(0.50, 0.71, 0.90, 0.91); // 凡例のサイズと位置を調整
+                legend_cs_line_all->SetFillStyle(0);
+                legend_cs_line_all->SetBorderSize(0);
+                legend_cs_line_all->SetTextSize(0.03);
+                legend_cs_line_all->SetNColumns(2);
+                legend_cs_line_all->SetTextColor(kWhite);
+
+                // i(ピッチ), j(チップ), k(電圧) の全てでループ
+                for(int i=0; i<PIXEL_PITCH_.size(); i++) {
+                    for(int j=0; j<CHIP_TYPE_.size(); j++) {
+                        for(int k=0; k<VOLTAGE_.size(); k++) {
+                            TGraphErrors* gr_clustersize = new TGraphErrors(NEIGHBOR_THRESHOLD_.size(), &vThreshold[0], &vMeanClusterSize[i][j][k][l][0], 0, &vMeanClusterSizeError[i][j][k][l][0]);
+                            TGraphErrors* gr_line_clustersize = new TGraphErrors(NEIGHBOR_THRESHOLD_.size(), &vThreshold[0], &vMeanClusterSize[i][j][k][l][0], 0, &vMeanClusterSizeError[i][j][k][l][0]);
+
+                            // --- スタイルの設定（分解能プロットと統一） ---
+                            if(i == 0) {
+                                gr_clustersize->SetMarkerStyle(20 + k);
+                                gr_clustersize->SetMarkerSize(1.2);
+                            } else {
+                                gr_clustersize->SetMarkerStyle(22 + k);
+                                gr_clustersize->SetMarkerSize(1.4);
+                            }
+                            //gr_clustersize->SetMarkerStyle(20 + k); 
+                            //gr_clustersize->SetMarkerSize(1.2);
+                            gr_line_clustersize->SetLineStyle(i + 1);
+                            gr_clustersize->SetLineStyle(1);
+                            gr_clustersize->SetLineWidth(2);
+                            gr_line_clustersize->SetLineWidth(2);
+
+                            if(j == 0) {
+                                gr_clustersize->SetMarkerColor(kRed - 3*k);
+                                gr_line_clustersize->SetMarkerColor(kRed - 3*k);
+                                gr_clustersize->SetLineColor(kRed - 3*k);
+                                gr_line_clustersize->SetLineColorAlpha(kRed - 3*k, 0.6);
+                            } else {
+                                gr_clustersize->SetMarkerColor(kBlue - 3*k);
+                                gr_line_clustersize->SetMarkerColor(kBlue - 3*k);
+                                gr_clustersize->SetLineColor(kBlue - 3*k);
+                                gr_line_clustersize->SetLineColorAlpha(kBlue - 3*k, 0.6);
+                            }
+
+                            mg_cs_all->Add(gr_line_clustersize, "L");
+                            mg_cs_all->Add(gr_clustersize, "PE");
+                            legend_cs_all->AddEntry(gr_clustersize, Form("p%s/%s/%sV", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str()), "pe");
+                            legend_cs_line_all->AddEntry(gr_line_clustersize, Form("p%s/%s/%sV", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str()), "l");
+                        }
+                    }
+                }
+            
+                mg_cs_all->Draw("A");
+                mg_cs_all->SetTitle(";threshold [ADC];mean cluster size");
+                mg_cs_all->GetXaxis()->SetLimits(190, 1010);
+                mg_cs_all->GetYaxis()->SetRangeUser(1, 5);
+                // 軸のスタイル設定
+                mg_cs_all->GetXaxis()->SetTitleSize(0.05);
+                mg_cs_all->GetXaxis()->SetLabelSize(0.04);
+                mg_cs_all->GetXaxis()->SetTitleOffset(0.8);
+                mg_cs_all->GetYaxis()->SetTitleSize(0.05);
+                mg_cs_all->GetYaxis()->SetLabelSize(0.04);
+                mg_cs_all->GetYaxis()->SetTitleOffset(0.8);
+
+                legend_cs_line_all->Draw();
+                legend_cs_all->Draw();
+                condition.DrawLatexNDC(0.15, 0.91, "hadron 120GeV/c @CERN-SPS (Apr. 2024)");
+                condition.DrawLatexNDC(0.68, 0.91, Form("Plotted on %s", TIME_.c_str()));
+
+                canvas->SaveAs(Form("plot/AllInOne_ClusterSize_Seed%s.pdf", SEED_THRESHOLD_[l].c_str()));
+            }
+        }
     }
 
 
@@ -744,10 +1006,10 @@ void plot_ExperimentData::run_Analysis() {
 
         std::vector<TH1D*> h_blks;
 
-        TFile* file_std = TFile::Open(Form("%skek202412_22p5_std_10V_SeedThd60e_NeighborThd60e.root", data_dir_path.c_str()));
-        TFile* file_gap = TFile::Open(Form("%skek202412_22p5_blk_10V_SeedThd60e_NeighborThd60e.root", data_dir_path.c_str()));
-        TH1D* h_std = (TH1D*)file_std->Get("AnalysisCE65/CE65_3/cluster/clusterCharge");
-        TH1D* h_gap = (TH1D*)file_gap->Get("AnalysisCE65/CE65_3/cluster/clusterCharge");
+        TFile* file_std = TFile::Open(Form("%s%s_22p5_std_10V_SeedThd60e_NeighborThd60e.root", data_dir_path.c_str(), NAME_.c_str()));
+        TFile* file_gap = TFile::Open(Form("%s%s_22p5_blk_10V_SeedThd60e_NeighborThd60e.root", data_dir_path.c_str(), NAME_.c_str()));
+        TH1D* h_std = (TH1D*)file_std->Get(Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str()));
+        TH1D* h_gap = (TH1D*)file_gap->Get(Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str()));
 
         h_std->SetTitle(";charge [ADC];#counts");
         plot_ExperimentData::set_1DStyle(h_std);
@@ -771,13 +1033,13 @@ void plot_ExperimentData::run_Analysis() {
         h_gap->Draw("same PE");
         h_gap->Draw("same C");
 
-        TFile* file_blk_4v = TFile::Open(Form("%skek202412_22p5_gap_4V_SeedThd60e_NeighborThd60e.root", data_dir_path.c_str()));
-        TFile* file_blk_7v = TFile::Open(Form("%skek202412_22p5_gap_7V_SeedThd60e_NeighborThd60e.root", data_dir_path.c_str()));
-        TFile* file_blk_10v = TFile::Open(Form("%skek202412_22p5_gap_10V_SeedThd60e_NeighborThd60e.root", data_dir_path.c_str()));
+        TFile* file_blk_4v = TFile::Open(Form("%s%s_22p5_gap_4V_SeedThd60e_NeighborThd60e.root", data_dir_path.c_str(), NAME_.c_str()));
+        TFile* file_blk_7v = TFile::Open(Form("%s%s_22p5_gap_7V_SeedThd60e_NeighborThd60e.root", data_dir_path.c_str(), NAME_.c_str()));
+        TFile* file_blk_10v = TFile::Open(Form("%s%s_22p5_gap_10V_SeedThd60e_NeighborThd60e.root", data_dir_path.c_str(), NAME_.c_str()));
 
-        TH1D* h_blk_4v = (TH1D*)file_blk_4v->Get("AnalysisCE65/CE65_3/cluster/clusterCharge");
-        TH1D* h_blk_7v = (TH1D*)file_blk_7v->Get("AnalysisCE65/CE65_3/cluster/clusterCharge");
-        TH1D* h_blk_10v = (TH1D*)file_blk_10v->Get("AnalysisCE65/CE65_3/cluster/clusterCharge");
+        TH1D* h_blk_4v = (TH1D*)file_blk_4v->Get(Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str()));
+        TH1D* h_blk_7v = (TH1D*)file_blk_7v->Get(Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str()));
+        TH1D* h_blk_10v = (TH1D*)file_blk_10v->Get(Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str()));
 
         plot_ExperimentData::set_1DStyle(h_blk_4v);
         plot_ExperimentData::set_1DStyle(h_blk_7v);
@@ -823,9 +1085,9 @@ void plot_ExperimentData::run_Analysis() {
         canvas->SaveAs("plot/clusterCharge_blk_check.root");
     }
 
-    bool cluster_charge_plots = true;
+    bool cluster_charge_plots = false;
     if(cluster_charge_plots) {
-        std::vector<std::string> chip_types = {"std", "blk", "gap"};
+        std::vector<std::string> chip_types = {"std", "gap"};
         std::vector<TH1D*> hists_to_delete;
 
         for(int i = 0; i < chip_types.size(); i++) {
@@ -849,9 +1111,9 @@ void plot_ExperimentData::run_Analysis() {
             legend_sub->SetTextSize(0.05);
 
             //  --- ノイズのプロット ---
-            TFile* noiseFile = TFile::Open(Form("%skek202412_22p5_%s_10V_SeedThd60e_NeighborThd60e_noise.root", data_dir_path.c_str(), chip_types[i].c_str()));
+            TFile* noiseFile = TFile::Open(Form("%s%s_15_%s_10V_SeedThd300e_NeighborThd300e_noise.root", data_dir_path.c_str(), NAME_.c_str(), chip_types[i].c_str()));
             if (noiseFile && !noiseFile->IsZombie()) {
-                TH1D* hNoise = (TH1D*)noiseFile->Get("ClusteringAnalog/CE65_3/clusterCharge");
+                TH1D* hNoise = (TH1D*)noiseFile->Get(Form("ClusteringAnalog/%s/clusterCharge", DUT_NAME_.c_str()));
                 if (hNoise) {
                     TH1D* hNoiseClone = (TH1D*)hNoise->Clone(Form("hNoiseClone_%s", chip_types[i].c_str()));
                     hists_to_delete.push_back(hNoiseClone); // 解放リストに追加
@@ -860,7 +1122,7 @@ void plot_ExperimentData::run_Analysis() {
                     hNoiseClone->Scale(1.0 / hNoiseClone->GetMaximum());
                     hNoiseClone->SetStats(0);
                     hNoiseClone->SetTitle(";charge [ADC];normalized counts");
-                    hNoiseClone->GetXaxis()->SetRangeUser(60, 4000);
+                    hNoiseClone->GetXaxis()->SetRangeUser(300, 10000);
                     hNoiseClone->GetYaxis()->SetRangeUser(0, 1.2); // 上限に少し余裕を持たせる
                     hNoiseClone->GetXaxis()->SetTitleSize(0.05); hNoiseClone->GetXaxis()->SetLabelSize(0.04); hNoiseClone->GetXaxis()->SetTitleOffset(0.8);
                     hNoiseClone->GetYaxis()->SetTitleSize(0.05); hNoiseClone->GetYaxis()->SetLabelSize(0.04); hNoiseClone->GetYaxis()->SetTitleOffset(0.8);
@@ -878,7 +1140,7 @@ void plot_ExperimentData::run_Analysis() {
                     TF1* fNoise = new TF1(Form("fNoise_%s", chip_types[i].c_str()), "[0]*exp([1]*x)", 60, 500);
                     // fNoise->SetParameter(0, 1);
                     // fNoise->SetParameter(1, -0.01);
-                    hNoiseClone->Fit(fNoise, "NLS+", "", 60, 600);
+                    hNoiseClone->Fit(fNoise, "NLS+", "", 300, 600);
                     fNoise->SetLineColor(kGray);
                     fNoise->SetLineWidth(2);
                     fNoise->SetLineStyle(3);
@@ -893,18 +1155,20 @@ void plot_ExperimentData::run_Analysis() {
             // --- サブチップのプロット（背景として先に描画） ---
             for (int j = 0; j < chip_types.size(); j++) {
                 if (i == j) continue; // メインチップ自身はスキップ
-                TFile* subFile = TFile::Open(Form("%skek202412_22p5_%s_10V_SeedThd60e_NeighborThd60e.root", data_dir_path.c_str(), chip_types[j].c_str()));
+                TFile* subFile = TFile::Open(Form("%s%s_15_%s_10V_SeedThd1000e_NeighborThd300e.root", data_dir_path.c_str(), NAME_.c_str(), chip_types[j].c_str()));
                 if (subFile && !subFile->IsZombie()) {
-                    TH1D* hSub = (TH1D*)subFile->Get("AnalysisCE65/CE65_3/cluster/clusterCharge");
+                    TH1D* hSub = (TH1D*)subFile->Get(Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str()));
                     if (hSub) {
                         TH1D* hSubClone = (TH1D*)hSub->Clone(Form("hSubClone_%s_10v", chip_types[j].c_str()));
                         hists_to_delete.push_back(hSubClone); // 解放リストに追加
 
+                        //hSubClone->GetXaxis()->SetRangeUser(300, 10000);
                         hSubClone->Rebin(10);
                         if (hSubClone->GetMaximum() > 0) hSubClone->Scale(1.0 / hSubClone->GetMaximum());
 
                         // サブチップは薄い色で統一
                         //int color = kSpring - 3 - j;
+                        hSubClone->GetXaxis()->SetRangeUser(300, 10000);
                         hSubClone->SetMarkerColor(kGray+2);
                         hSubClone->SetLineColor(kGray+2);
                         hSubClone->SetMarkerStyle(24+j);
@@ -950,27 +1214,28 @@ void plot_ExperimentData::run_Analysis() {
 
             // --- メインチップのプロット（一番手前に描画） ---
             for (int j = 0; j < VOLTAGE_.size(); j++) {
-                TFile* mainFile = TFile::Open(Form("%skek202412_22p5_%s_%sV_SeedThd60e_NeighborThd60e.root", data_dir_path.c_str(), chip_types[i].c_str(), VOLTAGE_[j].c_str()));
+                TFile* mainFile = TFile::Open(Form("%s%s_15_%s_%sV_SeedThd1000e_NeighborThd300e.root", data_dir_path.c_str(), NAME_.c_str(), chip_types[i].c_str(), VOLTAGE_[j].c_str()));
                 if (mainFile && !mainFile->IsZombie()) {
-                    TH1D* hMain = (TH1D*)mainFile->Get("AnalysisCE65/CE65_3/cluster/clusterCharge");
+                    TH1D* hMain = (TH1D*)mainFile->Get(Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str()));
                     if (hMain) {
                         TH1D* hMainClone = (TH1D*)hMain->Clone(Form("hMainClone_%s_%s", chip_types[i].c_str(), VOLTAGE_[j].c_str()));
                         hists_to_delete.push_back(hMainClone); // 解放リストに追加
 
+                        //hMainClone->GetXaxis()->SetRangeUser(300, 10000);
                         hMainClone->Rebin(10);
                         if (hMainClone->GetMaximum() > 0) hMainClone->Scale(1.0 / hMainClone->GetMaximum());
 
                         int color = kAzure - 3 + (2 * j); // 色のバリエーション
-                        hMainClone->GetXaxis()->SetRangeUser(60, 4000);
+                        hMainClone->GetXaxis()->SetRangeUser(300, 10000);
                         hMainClone->SetMarkerColor(color);
                         hMainClone->SetLineColor(color);
                         hMainClone->SetMarkerStyle(20+i); // メインとサブでマーカーを変える
-                        hMainClone->SetMarkerSize(1.2);
+                        hMainClone->SetMarkerSize(1.0);
                         if(i == 2) {
-                            hMainClone->SetMarkerSize(1.4);
+                            hMainClone->SetMarkerSize(1.1);
                         }
                         hMainClone->SetLineStyle(1);
-                        hMainClone->SetLineWidth(2);
+                        hMainClone->SetLineWidth(1);
                         hMainClone->Draw("SAME PE"); // マーカー、線、エラーバーを描画
 
                         // TF1* fMain = new TF1(Form("fMain_%s_%s", chip_types[i].c_str(), VOLTAGE_[j].c_str()), langaufun, 60, 5000);
@@ -993,9 +1258,10 @@ void plot_ExperimentData::run_Analysis() {
             // --- 凡例とプロットの保存 ---
             legend->Draw();
             legend_sub->Draw();
-            condition.DrawLatexNDC(0.15, 0.90, "e^{-} 3GeV/c @KEK (Dec. 2024)");
+            condition.DrawLatexNDC(0.15, 0.90, "hadron 120GeV/c @CERN-SPS (Apr. 2024)");
             condition.DrawLatexNDC(0.15, 0.87, Form("Plotted on %s", TIME_.c_str()));
-            canvas->SaveAs(Form("plot/ClusterCharge_for_%s_with_Others.pdf", chip_types[i].c_str()));
+            condition.DrawLatexNDC(0.60, 0.90, "pixel pitch = 15 um");
+            canvas->SaveAs(Form("plot/ClusterCharge_for_%s_with_Others_sps_p15_.pdf", chip_types[i].c_str()));
         } // end of the main loop
     } // if(cluster_charge_plots)
 
@@ -1089,7 +1355,7 @@ void plot_ExperimentData::run_Analysis() {
     //     } // main CHIP_TYPE_
     // } // if cluster charge plots
 
-    bool blk_reso_clsize = true;
+    bool blk_reso_clsize = false;
     if(blk_reso_clsize) {
         TFile* tmpROOTFile = nullptr;
         TH1D* tmpClusterSizeTH1D = nullptr;
@@ -1105,9 +1371,9 @@ void plot_ExperimentData::run_Analysis() {
         std::vector<double> blk_resolution = {};
         std::vector<double> blk_clusterSize = {};
         for(int i=0; i<blk_neighbor_thresholds_1.size(); i++) {
-            tmpROOTFile = TFile::Open(Form("%skek202412_22p5_blk_10V_SeedThd300e_NeighborThd%se.root", data_dir_path.c_str(), blk_neighbor_thresholds_1[i].c_str()));
-            tmpClusterSizeTH1D = (TH1D*)tmpROOTFile->Get("AnalysisCE65/CE65_3/cluster/clusterSize");
-            tmpResidualTH1D = (TH1D*)tmpROOTFile->Get("AnalysisCE65/CE65_3/local_residuals/residualsX");
+            tmpROOTFile = TFile::Open(Form("%s%s_22p5_blk_10V_SeedThd300e_NeighborThd%se.root", data_dir_path.c_str(), NAME_.c_str(), blk_neighbor_thresholds_1[i].c_str()));
+            tmpClusterSizeTH1D = (TH1D*)tmpROOTFile->Get(Form("AnalysisCE65/%s/cluster/clusterSize", DUT_NAME_.c_str()));
+            tmpResidualTH1D = (TH1D*)tmpROOTFile->Get(Form("AnalysisCE65/%s/local_residuals/residualsX", DUT_NAME_.c_str()));
             
             tmpResidualTF1 = new TF1("tmpResidualTF1","gaus",-50,50);
             tmpResidualTH1D->Fit(tmpResidualTF1, "RQ");
@@ -1139,9 +1405,9 @@ void plot_ExperimentData::run_Analysis() {
         std::vector<double> std_resolution = {};
         std::vector<double> std_clusterSize = {};
         for(int i=0; i<neighbor_thresholds.size(); i++) {
-            tmpROOTFile = TFile::Open(Form("%skek202412_22p5_std_10V_SeedThd500e_NeighborThd%se.root", data_dir_path.c_str(), neighbor_thresholds[i].c_str()));
-            tmpClusterSizeTH1D = (TH1D*)tmpROOTFile->Get("AnalysisCE65/CE65_3/cluster/clusterSize");
-            tmpResidualTH1D = (TH1D*)tmpROOTFile->Get("AnalysisCE65/CE65_3/local_residuals/residualsX");
+            tmpROOTFile = TFile::Open(Form("%s%s_22p5_std_10V_SeedThd1000e_NeighborThd%se.root", data_dir_path.c_str(), NAME_.c_str(), neighbor_thresholds[i].c_str()));
+            tmpClusterSizeTH1D = (TH1D*)tmpROOTFile->Get(Form("AnalysisCE65/%s/cluster/clusterSize", DUT_NAME_.c_str()));
+            tmpResidualTH1D = (TH1D*)tmpROOTFile->Get(Form("AnalysisCE65/%s/local_residuals/residualsX", DUT_NAME_.c_str()));
             
             tmpResidualTF1 = new TF1("tmpResidualTF1","gaus",-50,50);
             tmpResidualTH1D->Fit(tmpResidualTF1, "RQ");
@@ -1156,9 +1422,9 @@ void plot_ExperimentData::run_Analysis() {
         std::vector<double> gap_resolution = {};
         std::vector<double> gap_clusterSize = {};
         for(int i=0; i<neighbor_thresholds.size(); i++) {
-            tmpROOTFile = TFile::Open(Form("%skek202412_22p5_gap_10V_SeedThd500e_NeighborThd%se.root", data_dir_path.c_str(), neighbor_thresholds[i].c_str()));
-            tmpClusterSizeTH1D = (TH1D*)tmpROOTFile->Get("AnalysisCE65/CE65_3/cluster/clusterSize");
-            tmpResidualTH1D = (TH1D*)tmpROOTFile->Get("AnalysisCE65/CE65_3/local_residuals/residualsX");
+            tmpROOTFile = TFile::Open(Form("%s%s_22p5_gap_10V_SeedThd1000e_NeighborThd%se.root", data_dir_path.c_str(), NAME_.c_str(), neighbor_thresholds[i].c_str()));
+            tmpClusterSizeTH1D = (TH1D*)tmpROOTFile->Get(Form("AnalysisCE65/%s/cluster/clusterSize", DUT_NAME_.c_str()));
+            tmpResidualTH1D = (TH1D*)tmpROOTFile->Get(Form("AnalysisCE65/%s/local_residuals/residualsX", DUT_NAME_.c_str()));
             
             tmpResidualTF1 = new TF1("tmpResidualTF1","gaus",-50,50);
             tmpResidualTH1D->Fit(tmpResidualTF1, "RQ");
@@ -1173,16 +1439,34 @@ void plot_ExperimentData::run_Analysis() {
         TGraph* gr_cs_std  = new TGraph(thresholds.size(), &thresholds[0], &std_clusterSize[0]);
         TGraph* gr_res_gap = new TGraph(thresholds.size(), &thresholds[0], &gap_resolution[0]);
         TGraph* gr_cs_gap  = new TGraph(thresholds.size(), &thresholds[0], &gap_clusterSize[0]);
+        
+        TGraph* gr_res_blk_line = new TGraph(blk_thresholds.size(), &blk_thresholds[0], &blk_resolution[0]);
+        TGraph* gr_cs_blk_line  = new TGraph(blk_thresholds.size(), &blk_thresholds[0], &blk_clusterSize[0]);
+        TGraph* gr_res_std_line = new TGraph(thresholds.size(), &thresholds[0], &std_resolution[0]);
+        TGraph* gr_cs_std_line  = new TGraph(thresholds.size(), &thresholds[0], &std_clusterSize[0]);
+        TGraph* gr_res_gap_line = new TGraph(thresholds.size(), &thresholds[0], &gap_resolution[0]);
+        TGraph* gr_cs_gap_line  = new TGraph(thresholds.size(), &thresholds[0], &gap_clusterSize[0]);
 
         // Style Resolution graphs (blue tones, different markers)
         gr_res_blk->SetMarkerStyle(20); gr_res_blk->SetMarkerColorAlpha(kAzure+2,   1); gr_res_blk->SetLineColorAlpha(kAzure+2,   1); gr_res_blk->SetLineStyle(1); gr_res_blk->SetLineWidth(2); gr_res_blk->SetMarkerSize(1.1);
-        gr_res_std->SetMarkerStyle(21); gr_res_std->SetMarkerColorAlpha(kAzure-4,   1); gr_res_std->SetLineColorAlpha(kAzure-4, 0.6); gr_res_std->SetLineStyle(2); gr_res_std->SetLineWidth(2); gr_res_std->SetMarkerSize(1.1);
-        gr_res_gap->SetMarkerStyle(22); gr_res_gap->SetMarkerColorAlpha(kAzure-7, 0.6); gr_res_gap->SetLineColorAlpha(kAzure-7, 0.6); gr_res_gap->SetLineStyle(3); gr_res_gap->SetLineWidth(2); gr_res_gap->SetMarkerSize(1.3);
+        gr_res_std->SetMarkerStyle(21); gr_res_std->SetMarkerColorAlpha(kAzure-4,   1); gr_res_std->SetLineColorAlpha(kAzure-4, 0.6); gr_res_std->SetLineStyle(1); gr_res_std->SetLineWidth(2); gr_res_std->SetMarkerSize(1.1);
+        gr_res_gap->SetMarkerStyle(22); gr_res_gap->SetMarkerColorAlpha(kAzure-7, 0.6); gr_res_gap->SetLineColorAlpha(kAzure-7, 0.6); gr_res_gap->SetLineStyle(1); gr_res_gap->SetLineWidth(2); gr_res_gap->SetMarkerSize(1.3);
         
         // Style Cluster Size graphs (red tones, different markers)
         gr_cs_blk->SetMarkerStyle(20); gr_cs_blk->SetMarkerColorAlpha(kRed+1,   1); gr_cs_blk->SetLineColorAlpha(kRed+1,   1); gr_cs_blk->SetLineStyle(1); gr_cs_blk->SetLineWidth(2); gr_cs_blk->SetMarkerSize(1.1);
-        gr_cs_std->SetMarkerStyle(21); gr_cs_std->SetMarkerColorAlpha(kRed-4, 0.7); gr_cs_std->SetLineColorAlpha(kRed-4, 0.6); gr_cs_std->SetLineStyle(2); gr_cs_std->SetLineWidth(2); gr_cs_std->SetMarkerSize(1.1);
-        gr_cs_gap->SetMarkerStyle(22); gr_cs_gap->SetMarkerColorAlpha(kRed-7,   1); gr_cs_gap->SetLineColorAlpha(kRed-7, 0.6); gr_cs_gap->SetLineStyle(3); gr_cs_gap->SetLineWidth(2); gr_cs_gap->SetMarkerSize(1.3);
+        gr_cs_std->SetMarkerStyle(21); gr_cs_std->SetMarkerColorAlpha(kRed-4, 0.7); gr_cs_std->SetLineColorAlpha(kRed-4, 0.6); gr_cs_std->SetLineStyle(1); gr_cs_std->SetLineWidth(2); gr_cs_std->SetMarkerSize(1.1);
+        gr_cs_gap->SetMarkerStyle(22); gr_cs_gap->SetMarkerColorAlpha(kRed-7,   1); gr_cs_gap->SetLineColorAlpha(kRed-7, 0.6); gr_cs_gap->SetLineStyle(1); gr_cs_gap->SetLineWidth(2); gr_cs_gap->SetMarkerSize(1.3);
+
+        // Style Resolution graphs (blue tones, different markers)
+        gr_res_blk_line->SetLineColorAlpha(kAzure+2,   1); gr_res_blk_line->SetLineStyle(1); gr_res_blk_line->SetLineWidth(2);
+        gr_res_std_line->SetLineColorAlpha(kAzure-4, 0.6); gr_res_std_line->SetLineStyle(2); gr_res_std_line->SetLineWidth(2);
+        gr_res_gap_line->SetLineColorAlpha(kAzure-7, 0.6); gr_res_gap_line->SetLineStyle(3); gr_res_gap_line->SetLineWidth(2);
+        
+        // Style Cluster Size graphs (red tones, different markers)
+        gr_cs_blk_line->SetLineColorAlpha(kRed+1,   1); gr_cs_blk_line->SetLineStyle(1); gr_cs_blk_line->SetLineWidth(2);
+        gr_cs_std_line->SetLineColorAlpha(kRed-4, 0.6); gr_cs_std_line->SetLineStyle(2); gr_cs_std_line->SetLineWidth(2);
+        gr_cs_gap_line->SetLineColorAlpha(kRed-7, 0.6); gr_cs_gap_line->SetLineStyle(3); gr_cs_gap_line->SetLineWidth(2);
+
 
         // --- 3. Plotting ---
         canvas->Clear();
@@ -1193,15 +1477,18 @@ void plot_ExperimentData::run_Analysis() {
 
         // Pad for left axis (Resolution)
         TPad *pad1 = new TPad("pad1", "pad1", 0, 0, 1, 1);
-        pad1->SetGrid();
+        //pad1->SetGrid();
         pad1->Draw();
         pad1->cd();
 
         TMultiGraph* mg_resolution = new TMultiGraph();
         //mg_resolution->Add(gr_res_blk, "PL");
-        mg_resolution->Add(gr_res_std, "PL");
-        mg_resolution->Add(gr_res_gap, "PL");
-        mg_resolution->Add(gr_res_blk, "PL");
+        mg_resolution->Add(gr_res_std_line, "L");
+        mg_resolution->Add(gr_res_gap_line, "L");
+        mg_resolution->Add(gr_res_blk_line, "L");
+        mg_resolution->Add(gr_res_std, "PE");
+        mg_resolution->Add(gr_res_gap, "PE");
+        mg_resolution->Add(gr_res_blk, "PE");
         
         mg_resolution->Draw("A");
         mg_resolution->SetTitle(";threshold [ADC];resolution in x [um]");
@@ -1209,12 +1496,12 @@ void plot_ExperimentData::run_Analysis() {
         mg_resolution->GetYaxis()->SetRangeUser(3.5, 9.5); // Set Y-axis range for resolution
 
         // Axis styling
-        mg_resolution->GetXaxis()->SetTitleSize(0.06);
+        mg_resolution->GetXaxis()->SetTitleSize(0.05);
         mg_resolution->GetXaxis()->SetLabelSize(0.04);
-        mg_resolution->GetXaxis()->SetTitleOffset(0.6);
-        mg_resolution->GetYaxis()->SetTitleSize(0.06);
+        mg_resolution->GetXaxis()->SetTitleOffset(0.8);
+        mg_resolution->GetYaxis()->SetTitleSize(0.05);
         mg_resolution->GetYaxis()->SetLabelSize(0.04);
-        mg_resolution->GetYaxis()->SetTitleOffset(0.7);
+        mg_resolution->GetYaxis()->SetTitleOffset(0.8);
         //mg_resolution->GetYaxis()->SetTitleColor(kAzure-4);
         //mg_resolution->GetYaxis()->SetLabelColor(kAzure-4);
 
@@ -1228,9 +1515,12 @@ void plot_ExperimentData::run_Analysis() {
 
         TMultiGraph* mg_clustersize = new TMultiGraph();
         //mg_clustersize->Add(gr_cs_blk, "PL");
-        mg_clustersize->Add(gr_cs_std, "PL");
-        mg_clustersize->Add(gr_cs_gap, "PL");
-        mg_clustersize->Add(gr_cs_blk, "PL");
+        mg_clustersize->Add(gr_cs_std_line, "L");
+        mg_clustersize->Add(gr_cs_gap_line, "L");
+        mg_clustersize->Add(gr_cs_blk_line, "L");
+        mg_clustersize->Add(gr_cs_std, "PE");
+        mg_clustersize->Add(gr_cs_gap, "PE");
+        mg_clustersize->Add(gr_cs_blk, "PE");
         
         // Draw with invisible axes to align with pad1
         mg_clustersize->Draw("A"); 
@@ -1251,39 +1541,78 @@ void plot_ExperimentData::run_Analysis() {
         //axis_cs->SetTitleColor(kRed+1);
         //axis_cs->SetLineColor(kRed+1);
         //axis_cs->SetLabelColor(kRed+1);
-        axis_cs->SetTitleSize(0.06);
+        axis_cs->SetTitleSize(0.05);
         axis_cs->SetLabelSize(0.04);
-        axis_cs->SetTitleOffset(0.7);
+        axis_cs->SetTitleOffset(0.8);
         axis_cs->SetLabelFont(42);
         axis_cs->SetTitleFont(42);
         axis_cs->Draw();
 
         // Legend
         canvas->cd();
-        TLegend* legend_comp_residual = new TLegend(0.70, 0.4, 0.93, 0.63);
+        TLegend* legend_comp_residual = new TLegend(0.64, 0.4, 0.88, 0.63);
         legend_comp_residual->SetFillStyle(0);
         legend_comp_residual->SetBorderSize(0);
         legend_comp_residual->SetTextSize(0.04);
         //legend_comp_residual->SetHeader("resolution", "C");
-        legend_comp_residual->AddEntry(gr_res_blk, "blk, 10V", "pl");
-        legend_comp_residual->AddEntry(gr_res_std, "std, 10V", "pl");
-        legend_comp_residual->AddEntry(gr_res_gap, "gap, 10V", "pl");
+        legend_comp_residual->AddEntry(gr_res_blk, " ", "pe");
+        legend_comp_residual->AddEntry(gr_res_std, " ", "pe");
+        legend_comp_residual->AddEntry(gr_res_gap, " ", "pe");
         legend_comp_residual->Draw();
 
-        TLegend* legend_comp_clsize = new TLegend(0.65, 0.4, 0.88, 0.63);
+        TLegend* legend_comp_clsize = new TLegend(0.70, 0.4, 0.93, 0.63);
         legend_comp_clsize->SetFillStyle(0);
         legend_comp_clsize->SetBorderSize(0);
-        legend_comp_clsize->AddEntry(gr_cs_blk, " ", "pl");
-        legend_comp_clsize->AddEntry(gr_cs_std, " ", "pl");
-        legend_comp_clsize->AddEntry(gr_cs_gap, " ", "pl");
+        legend_comp_clsize->SetTextSize(0.04);
+        //legend_comp_clsize->SetHeader("cluster size", "C");
+        legend_comp_clsize->AddEntry(gr_cs_blk, "blk, 10V", "pe");
+        legend_comp_clsize->AddEntry(gr_cs_std, "std, 10V", "pe");
+        legend_comp_clsize->AddEntry(gr_cs_gap, "gap, 10V", "pe");
         legend_comp_clsize->Draw();
         
+        condition.DrawLatexNDC(0.12, 0.87, "e^{-} 3GeV/c @KEK(Dec. 2024)");
+        condition.DrawLatexNDC(0.12, 0.84, "pixel pitch = 22.5 um");
+        condition.DrawLatexNDC(0.65,0.87, Form("Plotted on %s", TIME_.c_str()));
+        // condition.DrawLatexNDC(0.12, 0.87, "e^{-} 3GeV/c @KEK (Dec. 2024)");
+        // condition.DrawLatexNDC(0.65, 0.87, Form("Plotted on %s", TIME_.c_str()));
 
-        condition.DrawLatexNDC(0.12, 0.87, "e^{-} 3GeV/c @KEK (Dec. 2024)");
-        condition.DrawLatexNDC(0.65, 0.87, Form("Plotted on %s", TIME_.c_str()));
+        TLatex legend_name;
+        legend_name.SetTextSize(0.02);
+        legend_name.SetTextFont(62);
+        legend_name.DrawLatexNDC(0.71, 0.63, "clsize");
+        legend_name.DrawLatexNDC(0.66, 0.63, "res");
 
         // Save the plot
         canvas->SaveAs("plot/Resolution_vs_ClusterSize_Comparison_forBLK.pdf");
+
+        // // resolution plots
+        // canvas->Clear();
+        // canvas->SetTopMargin(0.062);
+        // canvas->SetBottomMargin(0.14);
+        // canvas->SetLeftMargin(0.13);
+        // canvas->SetRightMargin(0.07);
+        // //canvas->SetGrid();
+
+        // TLegend* legend_res = new TLegend(0.75, 0.18, 0.92, 0.48); // 凡例のサイズを調整
+        // legend_res->SetFillStyle(0);
+        // legend_res->SetBorderSize(0);
+        // legend_res->SetTextSize(0.04);
+
+
+
+
+        // // cluster size plots
+        // canvas->Clear();
+        // canvas->SetTopMargin(0.062);
+        // canvas->SetBottomMargin(0.14);
+        // canvas->SetLeftMargin(0.13);
+        // canvas->SetRightMargin(0.07);
+        // //canvas->SetGrid();
+
+        // TLegend* legend_res = new TLegend(0.75, 0.18, 0.92, 0.48); // 凡例のサイズを調整
+        // legend_res->SetFillStyle(0);
+        // legend_res->SetBorderSize(0);
+        // legend_res->SetTextSize(0.04);
     }
 
     bool seed_charge = true;
@@ -1299,7 +1628,7 @@ void plot_ExperimentData::run_inPixel() {
     LOG_STATUS.source("plot_ExperimentData::run_inPixel") << "Start run for in-pixel analysis.";
     
     std::string output_file_name = "/home/towa/alice3/plotter/plot/experimentalData_inPixel.root";
-    std::string data_dir_path = "/home/towa/alice3/hist/kek202412/";
+    std::string data_dir_path = "/home/towa/alice3/hist/" + NAME_ + "/";
     TFile* output = TFile::Open(output_file_name.c_str(), "RECREATE");
 
     TDirectory* clsize = output->mkdir("cluster_size");
@@ -1337,15 +1666,15 @@ void plot_ExperimentData::run_inPixel() {
             for(int k=0; k<VOLTAGE_.size(); k++) {
                 for(int l=0; l<SEED_THRESHOLD_.size(); l++) {
                     for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
-                        inputROOTFile = TFile::Open(Form("%skek202412_%s_%s_%sV_SeedThd%se_NeighborThd%se.root", data_dir_path.c_str(), PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), SEED_THRESHOLD_[l].c_str(), NEIGHBOR_THRESHOLD_[n].c_str()));
+                        inputROOTFile = TFile::Open(Form("%s%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root", data_dir_path.c_str(), NAME_.c_str(), PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), SEED_THRESHOLD_[l].c_str(), NEIGHBOR_THRESHOLD_[n].c_str()));
                         chip_variation = Form("%s_%s_%sV_SeedThd%se_NeighborThd%se", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), SEED_THRESHOLD_[l].c_str(), NEIGHBOR_THRESHOLD_[n].c_str());
                         chip_variation_text = Form("p%s/%s/%sV/SeedThd%s/NeighborThd%s", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), SEED_THRESHOLD_[l].c_str(), NEIGHBOR_THRESHOLD_[n].c_str());
                         gStyle->SetPalette(kViridis);
 
-                        p_clSize = (TProfile2D*)inputROOTFile->Get("AnalysisCE65/CE65_3/npxvsxmym");
-                        p_clusterCharge = (TProfile2D*)inputROOTFile->Get("AnalysisCE65/CE65_3/qvsxmym");
-                        p_seedCharge = (TProfile2D*)inputROOTFile->Get("AnalysisCE65/CE65_3/pxqvsxmym");
-                        p_residual = (TProfile2D*)inputROOTFile->Get("AnalysisCE65/CE65_3/rmsxyvsxmym");
+                        p_clSize = (TProfile2D*)inputROOTFile->Get(Form("AnalysisCE65/%s/npxvsxmym", DUT_NAME_.c_str()));
+                        p_clusterCharge = (TProfile2D*)inputROOTFile->Get(Form("AnalysisCE65/%s/qvsxmym", DUT_NAME_.c_str()));
+                        p_seedCharge = (TProfile2D*)inputROOTFile->Get(Form("AnalysisCE65/%s/pxqvsxmym", DUT_NAME_.c_str()));
+                        p_residual = (TProfile2D*)inputROOTFile->Get(Form("AnalysisCE65/%s/rmsxyvsxmym", DUT_NAME_.c_str()));
 
                         hClSize = convert_toTH2D(p_clSize);
                         hClusterCharge = convert_toTH2D(p_clusterCharge);
@@ -1363,40 +1692,44 @@ void plot_ExperimentData::run_inPixel() {
                         clsize->cd();
                         canvas->Write(Form("clsize_ce65_%s", chip_variation.c_str()));
                         //canvas->SaveAs(Form("inPixel/experimentalData_clsize_ce65_%s.pdf", chip_variation.c_str()));
+                        canvas->SaveAs(Form("plot/inPixel/%s/clusterSize/clusterSize_ce65_%s.pdf", NAME_.c_str(), chip_variation.c_str()));
                     
                         hResidual->Scale(1000.0);
                         hResidual->SetMinimum(0);
                         hResidual->SetMaximum(15);
                         hResidual->SetTitle(";x w/in pixel [um];y w/in pixel [um];r_{exp}-r_{hit} [um]");
                         plot_ExperimentData::set_2DSURFStyle(canvas, hResidual);
-                        title.DrawLatexNDC(0.20, 0.89, "Mean of the Residual (r_{exp} - r_{hit})");
-                        condition.DrawLatexNDC(0.20, 0.85, "Electron:3GeV/c");
-                        condition.DrawLatexNDC(0.20, 0.82, Form("Plotted on %s", TIME_.c_str()));
-                        condition.DrawLatexNDC(0.20, 0.79, chip_variation_text.c_str());
+                        title.DrawLatexNDC(0.10, 0.92, "Mean of the Residual (r_{exp} - r_{hit})");
+                        condition.DrawLatexNDC(0.10, 0.88, "e^{-} 3GeV/c @KEK_PF-AR(Dec. 2024)");
+                        condition.DrawLatexNDC(0.10, 0.85, Form("Plotted on %s", TIME_.c_str()));
+                        condition.DrawLatexNDC(0.10, 0.82, chip_variation_text.c_str());
                         residual->cd();
                         canvas->Write(Form("residual_ce65_%s", chip_variation.c_str()));
+                        canvas->SaveAs(Form("plot/inPixel/%s/residual/residual_ce65_%s.pdf", NAME_.c_str(), chip_variation.c_str()));
 
                         hClusterCharge->SetMinimum(0);
-                        hClusterCharge->SetMaximum(3000);
+                        hClusterCharge->SetMaximum(8000);
                         hClusterCharge->SetTitle(";x w/in pixel [um];y w/in pixel [um];cluster charge [adu]");
                         plot_ExperimentData::set_2DSURFStyle(canvas, hClusterCharge);
-                        title.DrawLatexNDC(0.20, 0.89, "Mean of the Cluster Charge");
-                        condition.DrawLatexNDC(0.20, 0.85, "Electron:3GeV/c");
-                        condition.DrawLatexNDC(0.20, 0.82, Form("Plotted on %s", TIME_.c_str()));
-                        condition.DrawLatexNDC(0.20, 0.79, chip_variation_text.c_str());
+                        title.DrawLatexNDC(0.10, 0.92, "Mean of the Cluster Charge");
+                        condition.DrawLatexNDC(0.10, 0.88, "e^{-} 3GeV/c @KEK_PF-AR(Dec. 2024)");
+                        condition.DrawLatexNDC(0.10, 0.85, Form("Plotted on %s", TIME_.c_str()));
+                        condition.DrawLatexNDC(0.10, 0.82, chip_variation_text.c_str());
                         clusterCharge->cd();
                         canvas->Write(Form("clusterCharge_ce65_%s", chip_variation.c_str()));
+                        canvas->SaveAs(Form("plot/inPixel/%s/clusterCharge/clusterCharge_ce65_%s.pdf", NAME_.c_str(), chip_variation.c_str()));
 
                         hSeedCharge->SetMinimum(0);
-                        hSeedCharge->SetMaximum(1600);
+                        hSeedCharge->SetMaximum(8000);
                         hSeedCharge->SetTitle(";x w/in pixel [um];y w/in pixel [um];seed charge [adu]");
                         plot_ExperimentData::set_2DSURFStyle(canvas, hSeedCharge);
-                        title.DrawLatexNDC(0.20, 0.89, "Mean of the Seed Charge");
-                        condition.DrawLatexNDC(0.20, 0.85, "Electron:3GeV/c");
-                        condition.DrawLatexNDC(0.20, 0.82, Form("Plotted on %s", TIME_.c_str()));
-                        condition.DrawLatexNDC(0.20, 0.79, chip_variation_text.c_str());
+                        title.DrawLatexNDC(0.10, 0.92, "Mean of the Seed Charge");
+                        condition.DrawLatexNDC(0.10, 0.88, "e^{-} 3GeV/c @KEK_PF-AR(Dec. 2024)");
+                        condition.DrawLatexNDC(0.10, 0.85, Form("Plotted on %s", TIME_.c_str()));
+                        condition.DrawLatexNDC(0.10, 0.82, chip_variation_text.c_str());
                         seedCharge->cd();
                         canvas->Write(Form("seedCharge_ce65_%s", chip_variation.c_str()));
+                        canvas->SaveAs(Form("plot/inPixel/%s/seedCharge/seedCharge_ce65_%s.pdf", NAME_.c_str(), chip_variation.c_str()));
 
                         inputROOTFile->Close();
                     } // NEIGHBOR_THRESHOLD_
@@ -1412,4 +1745,129 @@ void plot_ExperimentData::run_inPixel() {
     plot_histogram::saveCanvasesToPDF(output_file_name.c_str(), "cluster_charge", Form("plot/clusterCharge_ce65_inPixel.pdf"));
     plot_histogram::saveCanvasesToPDF(output_file_name.c_str(), "seed_charge", Form("plot/seedCharge_ce65_inPixel.pdf"));
 
+}
+
+void plot_ExperimentData::run_SPSAnalysis() {
+    LOG_STATUS.source("plot_ExperimentData::run_SPSAnalysis") << "Start SPS Analysis.";
+
+    bool charge_plots = true;
+    bool cluster_size_plots = true;
+    bool residual_plots = true;
+    bool reso_clsize_plots = true;
+
+    std::string data_dir_path = "/home/towa/alice3/hist/sps202404/";
+
+    std::vector<std::string> seed_thresholds = {"1000"};
+    std::vector<std::string> neighbor_thresholds = {"200", "300", "400", "500", "600", "700", "800", "900", "1000"};
+
+    std::vector<std::string> chip_types = {"std", "gap"};
+    std::vector<std::string> voltages = {"4", "10"};
+
+    std::string file;
+    TFile* tmpROOTFile = nullptr;
+    TH1D* tmpClusterSizeTH1D = nullptr;
+    TH1D* tmpClusterChargeTH1D = nullptr;
+    TH1D* tmpResidualTH1D = nullptr;
+    TF1* tmpClusterChargeTF1 = nullptr;
+    TF1* tmpResidualTF1 = nullptr;
+
+    std::vector<std::vector<std::vector<std::vector<std::vector<TH1D*>>>>> vClusterChargeTH1D;
+    std::vector<std::vector<std::vector<std::vector<std::vector<TH1D*>>>>> vClusterSizeTH1D;
+    std::vector<std::vector<std::vector<std::vector<std::vector<TH1D*>>>>> vResidualTH1D;
+    std::vector<std::vector<std::vector<std::vector<std::vector<TH1D*>>>>> vClusterChargeTF1;
+    std::vector<std::vector<std::vector<std::vector<std::vector<TH1D*>>>>> vResidualTF1;
+
+    vClusterChargeTH1D.resize(PIXEL_PITCH_.size());
+    vClusterSizeTH1D.resize(PIXEL_PITCH_.size());
+    vResidualTH1D.resize(PIXEL_PITCH_.size());
+    vClusterChargeTF1.resize(PIXEL_PITCH_.size());
+    vResidualTF1.resize(PIXEL_PITCH_.size());
+    for(size_t i=0; i<PIXEL_PITCH_.size(); i++) {
+        vClusterChargeTH1D[i].resize(chip_types.size());
+        vClusterSizeTH1D[i].resize(chip_types.size());
+        vResidualTH1D[i].resize(chip_types.size());
+        vClusterChargeTF1[i].resize(chip_types.size());
+        vResidualTF1[i].resize(chip_types.size());
+        for(size_t j=0; j<chip_types.size(); j++) {
+            vClusterChargeTH1D[i][j].resize(voltages.size());
+            vClusterSizeTH1D[i][j].resize(voltages.size());
+            vResidualTH1D[i][j].resize(voltages.size());
+            vClusterChargeTF1[i][j].resize(voltages.size());
+            vResidualTF1[i][j].resize(voltages.size());
+            for(size_t k=0; k<voltages.size(); k++) {
+                vClusterChargeTH1D[i][j][k].resize(seed_thresholds.size());
+                vClusterSizeTH1D[i][j][k].resize(seed_thresholds.size());
+                vResidualTH1D[i][j][k].resize(seed_thresholds.size());
+                vClusterChargeTF1[i][j][k].resize(seed_thresholds.size());
+                vResidualTF1[i][j][k].resize(seed_thresholds.size());
+                for(size_t l=0; l<seed_thresholds.size(); l++) {
+                    vClusterChargeTH1D[i][j][k][l].resize(neighbor_thresholds.size());
+                    vClusterSizeTH1D[i][j][k][l].resize(neighbor_thresholds.size());
+                    vResidualTH1D[i][j][k][l].resize(neighbor_thresholds.size());
+                    vClusterChargeTF1[i][j][k][l].resize(neighbor_thresholds.size());
+                    vResidualTF1[i][j][k][l].resize(neighbor_thresholds.size());
+                }
+            }
+        }
+    }
+
+    if(charge_plots) {
+        LOG_STATUS.source("plot_ExperimentData::run_SPSAnalysis") << "Run for charge distribution plots.";
+
+        for(int i=0; i<PIXEL_PITCH_.size(); i++) {
+            for(int j=0; j<chip_types.size(); j++) {
+                for(int k=0; k<voltages.size(); k++) {
+                    for(int l=0; l<seed_thresholds.size(); l++) {
+                        for(int n=0; n<neighbor_thresholds.size(); n++) {
+                            file = Form("%s%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
+                                        data_dir_path.c_str(),
+                                        NAME_.c_str(),
+                                        PIXEL_PITCH_[i].c_str(),
+                                        chip_types[j].c_str(),
+                                        voltages[k].c_str(),
+                                        seed_thresholds[l].c_str(),
+                                        neighbor_thresholds[n].c_str());
+
+                            tmpROOTFile = TFile::Open(file.c_str());
+                            if(!tmpROOTFile || tmpROOTFile->IsZombie()) {
+                                LOG_STATUS.source("plot_ExperimentData::run_SPSAnalysis") << "Cannnot open file: " << file << ".";
+                                if(tmpROOTFile) {
+                                    tmpROOTFile = nullptr;
+                                }
+                                break;
+                            }
+
+                            tmpClusterChargeTH1D = (TH1D*)tmpROOTFile->Get(Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str()));
+                            if(!tmpClusterChargeTH1D || tmpClusterChargeTH1D->IsZombie()) {
+                                LOG_STATUS.source("plot_ExperimentData::run_SPSAnalysis") << "Cannot open cluster charge plot.";
+                                if(tmpClusterChargeTH1D) {
+                                    tmpClusterChargeTH1D = nullptr;
+                                }
+                                break;
+                            }
+                            tmpClusterChargeTH1D->SetTitle(";charge [ADC];counts");
+                            tmpClusterChargeTH1D->Rebin(10);
+                            tmpClusterChargeTH1D->GetXaxis()->SetRangeUser(0, 10000);
+                            tmpClusterChargeTH1D->SetStats(0);
+                            tmpClusterChargeTH1D->GetXaxis()->SetTitleOffset(0.7);
+                            tmpClusterChargeTH1D->GetXaxis()->SetTitleSize(0.05);
+                            tmpClusterChargeTH1D->GetXaxis()->SetLabelSize(0.04);
+                            tmpClusterChargeTH1D->GetYaxis()->SetTitleOffset(0.7);
+                            tmpClusterChargeTH1D->GetYaxis()->SetTitleSize(0.05);
+                            tmpClusterChargeTH1D->GetYaxis()->SetLabelSize(0.04);
+                            tmpClusterChargeTH1D->SetTitleFont(42, "XYZ");
+                            tmpClusterChargeTH1D->SetLabelFont(42, "XYZ");
+                            tmpClusterChargeTH1D->SetMarkerSize(1);
+                            tmpClusterChargeTH1D->SetMarkerStyle(20);
+
+                            vClusterChargeTH1D[i][j][k][l].push_back(tmpClusterChargeTH1D);
+
+                            //tmpClusterChargeTF1 = plot_histogram::optimise
+
+                        } // neighbor_thresholds
+                    } // seed_thresholds
+                } // voltages
+            } // chip_types
+        } // PIXEL_PITCH_
+    }
 }
