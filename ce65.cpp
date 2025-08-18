@@ -7,6 +7,7 @@
 #include "plot_inPixel.h"
 #include "plot_LabTest.h"
 #include "plot_ExperimentData.h"
+#include "plot_BeamTest.h"
 #include <time.h>
 
 // plot_histogram::plot_histogram() {
@@ -35,12 +36,18 @@ int main() {
     // plot_driftTime.run_driftTime();
     //plot_inPixel.run_inPixel();
     //track.run();
-    plot_ExperimentData.run_inPixel();
+    //plot_ExperimentData.run_inPixel();
     //plot_ExperimentData.run_Analysis();
     //plot_ExperimentData.run_NoiseScan();
     //plot_LabTest.run_LabTest();
 
-    LOG_STATUS.source("ce65.cpp/main") << "Main process  is complete.";
+    //
+    plot_BeamTest kek202412_plotter(DataSource::KEK202412);
+    kek202412_plotter.run_kek_plots();
+    plot_BeamTest sps202404_plotter(DataSource::SPS202404);
+    sps202404_plotter.run_sps_plots();
+
+    LOG_STATUS.source("ce65.cpp/main") << "Main process finished";
 
     clock_t end = clock();
     const double time = static_cast<double>(end - start) / CLOCKS_PER_SEC * 1000.0;
