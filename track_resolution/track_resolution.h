@@ -1,7 +1,22 @@
 #ifndef TRACK_RESOLUTION_HPP
 #define TRACK_RESOLUTION_HPP
 
-#include "plot_histogram/plot_histogram.h"
+#include <string>
+#include <map>
+#include <cmath>
+#include <numeric>
+#include <vector>
+#include <iostream>
+#include <stdexcept>
+#include <limits>
+#include <fstream>
+
+#include <TCanvas.h>
+#include <TGraph.h>
+#include <TMultiGraph.h>
+#include <TLegend.h>
+#include <TAxis.h>
+
 #include "Messenger/Messenger.h"
 
 struct detector_information {
@@ -33,7 +48,13 @@ struct ScatteringEffect {
     double displacement_rms_mm;
 };
 
-class track_resolution : public plot_histogram {
+struct Particle {
+    std::string name;
+    double mass_MeV_c2;
+    int charge_z;
+};
+
+class track_resolution{
     public:
         /**
         * @brief Constructor for this track_resolution object
@@ -70,6 +91,9 @@ class track_resolution : public plot_histogram {
         void get_multipleScatteringEffect();
         /**
         **/
+
+        double calculate_beta(double momentum_MeV_c, double mass_MeV_c2);
+
         // std::vector<detector_information> import_detectorInformation(std::ifstream& file);
 
         void run();

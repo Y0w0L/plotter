@@ -6,6 +6,10 @@ const double RAD_LENGTH_ALUMINUM = 89.0; //mm
 const double RAD_LENGTH_MYLAR = 286.0; // mm PET
 const double RAD_LENGTH_SCINTI = 438.0; // mm
 
+const Particle ELECTRON = {"electron", 0.511, -1};
+const Particle PION_M = {"pi-", 139.6, -1};
+const Particle PROTON = {"proton", 938.3, 1};
+
 track_resolution::track_resolution() {
     std::cout << "track_resolution object is created" << std::endl;
 }
@@ -16,6 +20,17 @@ double track_resolution::calculate_mean(const std::vector<double>& data) {
         throw std::invalid_argument("Input data vector cannot be empty for calculata_mean.");
     }
     return std::accumulate(data.begin(), data.end(), 0.0) / data.size();
+}
+
+double track_resolution::calculate_beta(
+    double momentum_MeV_c,
+    double mass_MeV_c2
+) {
+    if(momentum_MeV_c <= 0) return 0.0;
+    double total_energy_MeV = std::sqrt(momentum_MeV_c*momentum_MeV_c + mass_MeV_c2*mass_MeV_c2);
+    if(total_energy_MeV == 0) return 0.0;
+
+    return momentum_MeV_c / total_energy_MeV;
 }
 
 // calculation of track resolution
@@ -31,9 +46,10 @@ double track_resolution::calculate_mean(const std::vector<double>& data) {
 //     }
 // }
 
-double track_resolution::calculate_extrapolationResolution(const std::vector<double>& ref_position,
-                                                           const std::vector<double>& ref_resolution,
-                                                           double extr_position) {
+double track_resolution::calculate_extrapolationResolution(
+    const std::vector<double>& ref_position,
+    const std::vector<double>& ref_resolution,
+    double extr_position) {
     LOG_DEBUG.source("track_resolution::calculate_extrapolationResolution") << "Calculate extrapolation resolution.";
     if(ref_position.size() != ref_resolution.size() || ref_resolution.empty()) {
         throw std::invalid_argument("Input vectors mismatch or empty for calculate_extrapolationResolution.");
@@ -233,7 +249,7 @@ void track_resolution::get_multipleScatteringEffect() {
 
     std::vector<std::string> materialOrder = {"Air", "Scinti", "Mylar", "Silicon", "Aluminum"};
 
-    const double particle_momentum = 3000; // Mev/c
+    const double particle_momentum =120000; // Mev/c
     const double beta = 1;
     const int z = 1;
 
@@ -314,10 +330,12 @@ void track_resolution::run() {
     std::vector<double> ref_resolution(6, 0.007);
     std::vector<double> ref_position;
     // ref_resolution = {0.007, 0.007, 0.007, 0.007, 0.007, 0.007}; // mm
-    ref_position = {0, 25.4, 50.8, 127, 152.4, 177.8}; // mm
+    //ref_position = {0, 25.4, 50.8, 127, 152.4, 177.8}; // mm
+    ref_position = {0, 25, 50, 150, 175, 200}; // mm
     //ref_position = {0, 25.4, 50.8, 127, 152.4}; // mm
     //ref_position = {25.4, 50.8, 127, 152.4};
-    double dut_position = 76.2;
+    //double dut_position = 76.2;
+    double dut_position = 100;
 
     double track_resolution = track_resolution::calculate_trackResolution(ref_resolution, ref_position, dut_position);
     LOG_INFO.source("track_resolution::run") << "Track resolution: " << track_resolution * 1000 << " um";
@@ -329,9 +347,23 @@ void track_resolution::run() {
 
     LOG_STATUS.source("track_resolution::run") << "Start considering multiple scattering effect.";
 
-    double p = 3000.0; //momentum 3 GeV/c
+    //double p = 3000.0; //momentum 3 GeV/c
+    double p = 120000.0;
     double beta = 1.0; // almost speed of light
     int z = 1; // charge
+
+    const double mass_electron = 0.511;
+    const double mass_pion = 140;
+    const double mass_proton = 938.3;
+
+    auto calculate_beta = [&](double mass) {
+        return p / std::sqrt(p*p + mass*mass);
+    };
+
+    double beta_electron  = calculate_beta(mass_electron);
+    double beta_pion      = calculate_beta(mass_pion);
+    double beta_proton    = calculate_beta(mass_proton);
+    std::cout << beta_pion << std::endl;
 
     std::vector<MaterialLayer> geometry = {
         {"ALPIDE_0",   0.05, RAD_LENGTH_SILICON}, // Silicon: 50um
@@ -351,20 +383,24 @@ void track_resolution::run() {
         {"ALPIDE_6",   0.05, RAD_LENGTH_SILICON},
     };
 
-    std::vector<ScatteringEffect> effects = this->calculate_multilayer_scattering(p, beta, z, geometry);
+    //std::vector<ScatteringEffect> effects = this->calculate_multilayer_scattering(p, beta, z, geometry);
+    std::vector<ScatteringEffect> effects_electron = this->calculate_multilayer_scattering(p, beta_electron, z, geometry);
+    std::vector<ScatteringEffect> effects_pion = this->calculate_multilayer_scattering(p, beta_pion, z, geometry);
+    std::vector<ScatteringEffect> effects_proton = this->calculate_multilayer_scattering(p, beta_proton, z, geometry);
+
 
     LOG_STATUS.source("track_resolution::run") << p / 1000 << " GeV/c, z = " << z;
     LOG_STATUS.source("track_resolution::run") << "=====================================================================";
     for(size_t i=0; i<geometry.size(); i++) {
         LOG_STATUS.source("track_resolution::run") << " - " << geometry[i].name << " Thickness: " << geometry[i].thickness_mm << " mm";
-        LOG_STATUS.source("track_resolution::run") << ">>> Angle RMS       : " << effects[i].angle_rms_rad * 1000 << " mrad";
-        LOG_STATUS.source("track_resolution::run") << ">>> Displacement RMS: " << effects[i].displacement_rms_mm * 1000.0 << " um";
+        LOG_STATUS.source("track_resolution::run") << ">>> Angle RMS       : " << effects_pion[i].angle_rms_rad * 1000 << " mrad";
+        LOG_STATUS.source("track_resolution::run") << ">>> Displacement RMS: " << effects_pion[i].displacement_rms_mm * 1000.0 << " um";
         LOG_STATUS.source("track_resolution::run") << "-----------------------------------------------------------------";
     }
     LOG_STATUS.source("track_resolution::run") << "Track resolution: " << track_resolution * 1000.0 << " um";
-    LOG_STATUS.source("track_resolution::run") << "Multiple scattering effect: " << effects[5].displacement_rms_mm * 1000.0 << " um";
+    LOG_STATUS.source("track_resolution::run") << "Multiple scattering effect: " << effects_pion[5].displacement_rms_mm * 1000.0 << " um";
     double TR2 = (track_resolution * 1000.0) * (track_resolution * 1000.0);
-    double MSE2 = (effects[5].displacement_rms_mm * 1000.0)*(effects[5].displacement_rms_mm * 1000.0);
+    double MSE2 = (effects_pion[5].displacement_rms_mm * 1000.0)*(effects_pion[5].displacement_rms_mm * 1000.0);
     LOG_STATUS.source("track_resolution::run") << "TR^2: " << TR2;
     LOG_STATUS.source("track_resolution::run") << "MSE^2: " << MSE2;
     LOG_STATUS.source("track_resolution::run") << "SUM(TR^2 + MSE^2): " << TR2 + MSE2;

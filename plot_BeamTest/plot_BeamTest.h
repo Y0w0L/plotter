@@ -7,6 +7,7 @@
 #include <functional>
 #include <cmath>
 #include <algorithm>
+#include <map>
 
 // ROOT headers
 #include <TGraphErrors.h>
@@ -19,10 +20,15 @@
 #include <TH2D.h>
 #include <TF1.h>
 #include <TStyle.h>
+#include <TColor.h>
 
 // My function headers
 #include "Messenger/Messenger.h"
 #include "plot_histogram/plot_histogram.h"
+
+// Other function headers
+#include "tools/json.hpp"
+#include "tools/cxxopts.hpp"
 
 // Data source
 enum class DataSource {
@@ -31,6 +37,7 @@ enum class DataSource {
 };
 
 struct PlotConfig {
+    DataSource source;
     std::string pixel_pitch;
     std::string chip_type;
     std::string voltage;
@@ -41,18 +48,31 @@ struct PlotConfig {
     std::string legend_label;
     int color = kBlack;
     int marker_style = 20;
+    double marker_size = 1.2;
     int line_style = 1;
 };
 
 class plot_BeamTest {
 public:
     // Assign data source in constructer
-    plot_BeamTest(DataSource source);
+    //plot_BeamTest(DataSource source);
+    plot_BeamTest();
     ~plot_BeamTest();
 
     // plot for each data surce
     void run_kek_plots();
     void run_sps_plots();
+
+    void run_plots(const std::vector<PlotConfig>& configs);
+
+    void check_residual_fits(
+        const PlotConfig& config,
+        const std::string& quantity_to_extract
+    );
+
+    static std::vector<PlotConfig> load_jsonConfigs(const std::string& filename);
+
+    void BeamTest_main(int argc, char* argv[]);
 
 private:
     // helper functions
@@ -77,12 +97,14 @@ private:
         const std::vector<PlotConfig>& configs,
         const std::string& neighbor_thd_for_all,
         const std::pair<double, double>& x_range
-    ); 
-
-    void check_residual_fits(
-        const PlotConfig& config,
-        const std::string& output_filename
     );
+
+    static Color_t string_to_ROOTColor(const std::string& color_str);
+
+    // void check_residual_fits(
+    //     const PlotConfig& config,
+    //     const std::string& output_filename
+    // );
 
     // class member parameters
     DataSource source_;

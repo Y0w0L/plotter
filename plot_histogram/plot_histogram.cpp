@@ -374,13 +374,13 @@ TF1* plot_histogram::optimise_hist_langaus(TH1D* hist, int color) {
         fit->SetParLimits(i, parlimitlow[i], parlimithigh[i]);
     }
 
-    LOG_INFO.source("plot_histogram::optimise_hist_langaus") << "Hist name is " << hist->GetName() << "/Fit name is " << fitname;
-    LOG_INFO.source("plot_histogram::optimise_hist_langaus") << "Fit range: " << fit_range[0] << " -> " << fit_range[1]; 
+    //LOG_INFO.source("plot_histogram::optimise_hist_langaus") << "Hist name is " << hist->GetName() << "/Fit name is " << fitname;
+    //LOG_INFO.source("plot_histogram::optimise_hist_langaus") << "Fit range: " << fit_range[0] << " -> " << fit_range[1]; 
     hist->Fit(fit, "NSLQ+", "", fit_range[0], fit_range[1]);
     fit->SetRange(hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax());
     fit->Draw("SAME");
-    print_fitResult(fit);
-    LOG_INFO.source("plot_histogram::optimise_hist_langaus") << "Chi2/ndf: " << fit->GetChisquare() << "/" << fit->GetNDF();
+    //print_fitResult(fit);
+    //LOG_INFO.source("plot_histogram::optimise_hist_langaus") << "Chi2/ndf: " << fit->GetChisquare() << "/" << fit->GetNDF();
     if(fit->GetChisquare() / fit->GetNDF() > 10) {
         //print_message("Chi2/ndf is large, check the fitting!", RED);
         LOG_WARNING.source("plot_histogram::optimise_hist_langaus()") << "Chi2/ndf in [" << hist->GetName() << "] is larger than 10.";
@@ -409,16 +409,16 @@ TF1* plot_histogram::optimise_hist_gaus(TH1D* hist, int color) {
     fit_range_min = center - fit_range;
     fit_range_max = center + fit_range;
 
-    LOG_INFO.source("plot_histogram::optimise_hist_gaus") << "Hist name is " << hist->GetName() << "/Fit name is " << fit_name;
-    LOG_INFO.source("plot_histogram::optimise_hist_gaus") << "Fit range: " << fit_range_min << " -> " << fit_range_max; 
+    //LOG_INFO.source("plot_histogram::optimise_hist_gaus") << "Hist name is " << hist->GetName() << "/Fit name is " << fit_name;
+    //LOG_INFO.source("plot_histogram::optimise_hist_gaus") << "Fit range: " << fit_range_min << " -> " << fit_range_max; 
     
     TF1* fit = new TF1(fit_name.c_str(), "gaus", -60, 60);
     set_tf1Style(fit, color);
     hist->Fit(fit, "NSLQ+", "", fit_range_min, fit_range_max);
     fit->SetRange(hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax());
     fit->Draw("SAME");
-    print_fitResult(fit);
-    LOG_INFO.source("plot_histogram::optimise_hist_gaus") << "Chi2/ndf: " << fit->GetChisquare() << "/" << fit->GetNDF();
+    //print_fitResult(fit);
+    //LOG_INFO.source("plot_histogram::optimise_hist_gaus") << "Chi2/ndf: " << fit->GetChisquare() << "/" << fit->GetNDF();
     if(fit->GetChisquare() / fit->GetNDF() > 10) {
         LOG_WARNING.source("plot_histogram::optimise_hist_gaus()") << "Chi2/ndf in [" << hist->GetName() << "] is larger than 10.";
     }

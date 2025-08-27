@@ -70,18 +70,18 @@ ADD_SUBDIRECTORY(plot_ExperimentData)
 ADD_SUBDIRECTORY(plot_BeamTest)
 ADD_SUBDIRECTORY(Messenger)
 
-ADD_EXECUTABLE(ce65_model
+ADD_EXECUTABLE(ce65_analysis
     ce65.cpp)
 
-SET_TARGET_PROPERTIES(ce65_model PROPERTIES
+SET_TARGET_PROPERTIES(ce65_analysis PROPERTIES
                     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}")
 
 # Add root include directory to target
-TARGET_INCLUDE_DIRECTORIES(ce65_model 
+TARGET_INCLUDE_DIRECTORIES(ce65_analysis 
                     PUBLIC
                         ${PROJECT_SOURCE_DIR}
                         ${ROOT_INCLUDE_DIRS})
-TARGET_LINK_LIBRARIES(ce65_model
+TARGET_LINK_LIBRARIES(ce65_analysis
                     PUBLIC
                         plot_histogram_lib
                         plot_simulation_lib

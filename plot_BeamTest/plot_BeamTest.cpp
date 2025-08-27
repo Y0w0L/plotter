@@ -1,27 +1,11 @@
 #include "plot_BeamTest.h"
 
-// Constructer
-plot_BeamTest::plot_BeamTest(DataSource source) : source_(source) {
+plot_BeamTest::plot_BeamTest() {
     LOG_STATUS.source("plot_BeamTest::plot_BeamTest") << "plot_BeamTest object is created.";
 
-    if (source == DataSource::KEK202412) {
-        NAME_ = "kek202412";
-        DUT_NAME_ = "CE65_3";
-        BEAM_INFO_ = "e^{-} 3GeV/c @KEK-PFAR (Dec. 2024)";
-    } else if (source == DataSource::SPS202404) {
-        NAME_ = "sps202404";
-        DUT_NAME_ = "CE65_6";
-        BEAM_INFO_ = "hadron 120GeV/c @CERN-SPS (Apr. 2024)";
-    }
-    else {
-        LOG_ERROR.source("plot_BeamTest::plot_BeamTest") << "DataSource is NOT assigned!";
-        return;
-    }
-
-    // Common intialize
-    DATA_DIR_PATH_ = "/home/towa/alice3/hist/"; // 自動で取得できるようにしたい
+    DATA_DIR_PATH_ = "/home/towa/alice3/hist/";
     TIME_ = plot_histogram::currentDateTime();
-    canvas_  = new TCanvas("canvas", "canvas", 800, 600);
+    canvas_ = new TCanvas("canvas", "canvas", 800, 600);
     gStyle->SetOptStat(0);
 
     title_latex_.SetTextSize(0.04);
@@ -33,149 +17,54 @@ plot_BeamTest::plot_BeamTest(DataSource source) : source_(source) {
 plot_BeamTest::~plot_BeamTest() {
 }
 
-// Plot for KEK202412 results
-void plot_BeamTest::run_kek_plots() {
-    if (source_ != DataSource::KEK202412) {
-        LOG_ERROR.source("plot_BeamTest::run_kek_plots") << "This method is for KEKE data.";
-        return;
-    }
-    LOG_STATUS.source("plot_BeamTest::run_kek_plots") << "Starting KEK plot generation.";
-
-    // plot1--Cluster Charge (blk, std, gap)
-    std::vector<PlotConfig> threshold_configs = {
-        {"22p5", "std", "10", "500",
-         {"50", "60" ,"70", "80", "90", "100", "150", "200", "250", "300", "350", "400", "450", "500"},
-         "22.5um, std, 10V", kRed, 20, 1},
-        {"22p5", "std", "7", "500",
-         {"50", "60" ,"70", "80", "90", "100", "150", "200", "250", "300", "350", "400", "450", "500"},
-         "22.5um, std, 7V", kRed+2, 20, 1},
-        {"22p5", "std", "4", "500",
-         {"50", "60" ,"70", "80", "90", "100", "150", "200", "250", "300", "350", "400", "450", "500"},
-         "22.5um, std, 4V", kRed+3, 20, 1},
-        {"22p5", "blk", "10", "300",
-         {"50", "60" ,"70", "80", "90", "100", "150", "200", "250", "300"},
-         "22.5um, blk, 10V", kBlack, 21, 2},
-        // {"22p5", "blk", "7", "300",
-        //  {"50", "60" ,"70", "80", "90", "100", "150", "200", "250", "300"},
-        //  "22.5um, blk, 7V", kBlack, 21, 2},
-        // {"22p5", "blk", "4", "300",
-        //  {"50", "60" ,"70", "80", "90", "100", "150", "200", "250", "300"},
-        //  "22.5um, blk, 4V", kBlack, 21, 2},
-        {"22p5", "gap", "10", "500",
-         {"50", "60" ,"70", "80", "90", "100", "150", "200", "250", "300", "350", "400", "450", "500"},
-         "22.5um, gap, 10V", kBlue, 22, 3},
-        {"22p5", "gap", "7", "500",
-         {"50", "60" ,"70", "80", "90", "100", "150", "200", "250", "300", "350", "400", "450", "500"},
-         "22.5um, gap, 7V", kBlue+2, 22, 3},
-        {"22p5", "gap", "4", "500",
-         {"50", "60" ,"70", "80", "90", "100", "150", "200", "250", "300", "350", "400", "450", "500"},
-         "22.5um, gap, 4V", kBlue+3, 22, 3},
-    };
-
-    std::vector<TGraphErrors*> kek_reso_graphs;
-    for(const auto& conf : threshold_configs) {
-        kek_reso_graphs.push_back(create_graph_data(conf, "resolution"));
-    }
-
-    draw_multigraph("kek_resolution",
-                    ";threshold [ADC];resolution in x [um]",
-                    Form("plot/%s/kek_resolution_thresholdScan.pdf", NAME_.c_str()),
-                    threshold_configs,
-                    kek_reso_graphs,
-                    {3, 10},
-                    {40, 610});
-
-    std::vector<TGraphErrors*> kek_clsize_graphs;
-    for(const auto& conf : threshold_configs) {
-        kek_clsize_graphs.push_back(create_graph_data(conf, "clustersize"));
-    }
-
-    draw_multigraph("kek_clustersize",
-                    ";threshold [ADC];mean cluster size",
-                    Form("plot/%s/kek_clustersize_thresholdScan.pdf", NAME_.c_str()),
-                    threshold_configs,
-                    kek_clsize_graphs,
-                    {1, 10},
-                    {40, 610});
-
-    LOG_STATUS.source("plot_BeamTest::run_kek_plots") << "Creating residual check plots.";
-
-    if(!threshold_configs.empty()) {
-        //check_residual_fits(threshold_configs[0], Form("plot/%s/residuals/check_residuals_std_10V.pdf", NAME_.c_str()));
-        for(const auto& config_to_check : threshold_configs) {
-            std::string safe_label = config_to_check.legend_label;
-
-            std::replace(safe_label.begin(), safe_label.end(), ' ', '_');
-            //sstd::replace(safe_label.begin(), safe_label.end(), ',', ""); // 空白に変換できない
-            std::replace(safe_label.begin(), safe_label.end(), '.', 'p');
-            safe_label.erase(std::remove(safe_label.begin(), safe_label.end(), ','), safe_label.end());
-
-            std::string output_filename = Form("plot/%s/residuals/check_residuals_%s.pdf", NAME_.c_str(), safe_label.c_str());
-
-            check_residual_fits(config_to_check, output_filename);
-        }
-    }
-}
-
-void plot_BeamTest::run_sps_plots() {
-    if(source_ != DataSource::SPS202404) {
-        LOG_ERROR.source("plot_BeamTest::run_sps_plots") << "This method is for SPS data.";
+void plot_BeamTest::run_plots(const std::vector<PlotConfig>& configs) {
+    if(configs.empty()) {
+        LOG_WARNING.source("plot_BeamTest::run_plots") << "No plot configuration provided.";
         return;
     }
 
-    LOG_STATUS.source("plot_BeamTest::run_sps_plots") << "Starting SPS plot generation.";
-
-    std::vector<PlotConfig> threshold_configs = {
-        {"15", "std", "10", "1000",
-         {"200", "300", "400", "500", "600", "700", "800", "900", "1000"},
-         "15um, std, 10V", kRed, 20, 1},
-        {"15", "std", "4", "1000",
-         {"200", "300", "400", "500", "600", "700", "800", "900", "1000"},
-         "15um, std, 4V", kRed+3, 20, 1},
-        {"22p5", "std", "10", "1000",
-         {"200", "300", "400", "500", "600", "700", "800", "900", "1000"},
-         "22.5um, std, 10V", kRed, 21, 1},
-        {"22p5", "std", "4", "1000",
-         {"200", "300", "400", "500", "600", "700", "800", "900", "1000"},
-         "22.5um, std, 4V", kRed+3, 21, 1},
-        {"15", "gap", "10", "1000",
-         {"200", "300", "400", "500", "600", "700", "800", "900", "1000"},
-         "15um, gap, 10V", kBlue, 20, 1},
-        {"15", "gap", "4", "1000",
-         {"200", "300", "400", "500", "600", "700", "800", "900", "1000"},
-         "15um, gap, 4V", kBlue+3, 20, 1},
-        {"22p5", "gap", "10", "1000",
-         {"200", "300", "400", "500", "600", "700", "800", "900", "1000"},
-         "22.5um, gap, 10V", kBlue, 21, 1},
-        {"22p5", "gap", "4", "1000",
-         {"200", "300", "400", "500", "600", "700", "800", "900", "1000"},
-         "22.5um, gap, 4V", kBlue+3, 21, 1},
-    };
-
-    std::vector<TGraphErrors*> sps_reso_graphs;
-    for(const auto& conf : threshold_configs) {
-        sps_reso_graphs.push_back(create_graph_data(conf ,"resolution"));
+    // resolution plot
+    std::vector<TGraphErrors*> reso_graphs;
+    for(const auto& conf : configs) {
+        reso_graphs.push_back(create_graph_data(conf, "resolution"));
     }
-    draw_multigraph("sps_resolution",
+    draw_multigraph("Resolution Comparison",
                     ";threshold [ADC];resolution in x [um]",
-                    Form("plot/%s/sps_resolution_thresholdScan.pdf", NAME_.c_str()),
-                    threshold_configs,
-                    sps_reso_graphs,
-                    {0, 10},
-                    {190, 1010});
+                    "plot/Combined_resolution.pdf",
+                    configs,
+                    reso_graphs,
+                    //{2, 10.5},
+                    {2, 13},
+                    {40, 2510});
+    //for(auto g : reso_graphs) delete g;
 
-    std::vector<TGraphErrors*> sps_clsize_graphs;
-    for(const auto& conf : threshold_configs) {
-        sps_clsize_graphs.push_back(create_graph_data(conf, "clustersize"));
+    // cluster size plot
+    std::vector<TGraphErrors*> clsize_graphs;
+    for(const auto& conf : configs) {
+        clsize_graphs.push_back(create_graph_data(conf, "clustersize"));
     }
-
-    draw_multigraph("sps_clustersize",
+    draw_multigraph("Cluster Size Comparison",
                     ";threshold [ADC];mean cluster size",
-                    Form("plot/%s/sps_clustersize_thresholdScan.pdf", NAME_.c_str()),
-                    threshold_configs,
-                    sps_clsize_graphs,
-                    {1, 10},
-                    {40, 1010});
+                    "plot/Combined_ClusterSize.pdf",
+                    configs,
+                    clsize_graphs,
+                    {1, 5.1},
+                    {40, 2510});
+    //for(auto g : clsize_graphs) delete g;
+
+    // residual check
+    LOG_STATUS.source("plot_BeamTest::run_plots") << "Creating residual check plots for all configurations.";
+    for(const auto& config_to_check : configs) {
+        std::string safe_label = config_to_check.legend_label;
+
+        std::replace(safe_label.begin(), safe_label.end(), ' ', '_');
+        std::replace(safe_label.begin(), safe_label.end(), '.', 'p');
+        safe_label.erase(std::remove(safe_label.begin(), safe_label.end(), ','), safe_label.end());
+
+
+        std::string output_filename = Form("plot/residuals/check_residuals_%s.pdf", safe_label.c_str());
+        check_residual_fits(config_to_check, output_filename);
+    }
 }
 
 void plot_BeamTest::draw_overlay_histograms(
@@ -191,10 +80,10 @@ void plot_BeamTest::draw_overlay_histograms(
     canvas_->SetLeftMargin(0.13);
     canvas_->SetRightMargin(0.07);
 
-    TLegend* legend_point = new TLegend(0.55, 0.6, 0.9, 0.9);
+    TLegend* legend_point = new TLegend(0.50, 0.71, 0.90, 0.91);
     legend_point->SetFillStyle(0);
     legend_point->SetBorderSize(0);
-    legend_point->SetTextSize(0.04);
+    legend_point->SetTextSize(0.03);
 
     bool first_hist = true;
     std::vector<TH1D*> hists_to_draw;
@@ -261,9 +150,27 @@ void plot_BeamTest::draw_overlay_histograms(
 TGraphErrors* plot_BeamTest::create_graph_data(
     const PlotConfig& config,
     const std::string& quantity_to_extract) {
+    std::string name, dut_name;
+    if(config.source == DataSource::KEK202412) {
+        NAME_ = "kek202412";
+        DUT_NAME_ = "CE65_3";
+    } else if(config.source == DataSource::SPS202404) {
+        NAME_ = "sps202404";
+        DUT_NAME_ = "CE65_6";
+    }
+    
     std::vector<double> x_vals, y_vals, x_errs, y_errs;
 
     for(const auto& thd : config.scan_values) {
+        double neighbor_val = std::stod(thd);
+        double seed_val = std::stod(config.seed_thd);
+
+        std::string seed_thd_for_file = config.seed_thd;
+        const std::string& neighbor_thd_for_file = thd;
+        if(neighbor_val > seed_val) {
+            seed_thd_for_file = thd;
+        }
+
         std::string input_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
                                            DATA_DIR_PATH_.c_str(),
                                            NAME_.c_str(),
@@ -271,7 +178,7 @@ TGraphErrors* plot_BeamTest::create_graph_data(
                                            config.pixel_pitch.c_str(),
                                            config.chip_type.c_str(),
                                            config.voltage.c_str(),
-                                           config.seed_thd.c_str(),
+                                           seed_thd_for_file.c_str(), //config.seed_thd.c_str(),
                                            thd.c_str());
 
         TFile* inputFile = TFile::Open(input_file_path.c_str());
@@ -326,22 +233,29 @@ void plot_BeamTest::draw_multigraph(
     const std::pair<double, double>& x_range) {
     canvas_->Clear();
     canvas_->SetTopMargin(0.062);
+    canvas_->SetBottomMargin(0.14);
     canvas_->SetLeftMargin(0.13);
     canvas_->SetRightMargin(0.07);
+    canvas_->SetGrid();
+    gStyle->SetGridStyle(1);
+    gStyle->SetGridColor(kGray);
 
     TMultiGraph* mg = new TMultiGraph();
     mg->SetTitle(title.c_str());
 
-    TLegend* legend_point = new TLegend(0.50, 0.65, 0.90, 0.91);
+    double y_size = graphs.size() * 0.02;
+    double legend_y_min = 0.91 - y_size;
+
+    TLegend* legend_point = new TLegend(0.40, legend_y_min, 0.90, 0.91);
     legend_point->SetFillStyle(0);
     legend_point->SetBorderSize(0);
-    legend_point->SetTextSize(0.035);
+    legend_point->SetTextSize(0.03);
     legend_point->SetNColumns(2);
 
-    TLegend* legend_line = new TLegend(0.50, 0.65, 0.90, 0.91);
+    TLegend* legend_line = new TLegend(0.40, legend_y_min, 0.90, 0.91);
     legend_line->SetFillStyle(0);
     legend_line->SetBorderSize(0);
-    legend_line->SetTextSize(0.035);
+    legend_line->SetTextSize(0.03);
     legend_line->SetTextColor(kWhite);
     legend_line->SetNColumns(2);
 
@@ -351,17 +265,23 @@ void plot_BeamTest::draw_multigraph(
             continue; 
         }
 
-        graphs[i]->SetLineColor(configs[i].color);
+        //graphs[i]->SetLineColorAlpha(configs[i].color, 0.5);
         graphs[i]->SetMarkerColor(configs[i].color);
         graphs[i]->SetMarkerStyle(configs[i].marker_style);
         graphs[i]->SetLineStyle(configs[i].line_style);
         graphs[i]->SetLineWidth(2);
-        graphs[i]->SetMarkerSize(1.1);
+        graphs[i]->SetMarkerSize(configs[i].marker_size);
+
+        TGraphErrors* graph_point = (TGraphErrors*)graphs[i]->Clone("graph_point");
+        graph_point->SetLineStyle(1);
+
+        graphs[i]->SetLineColorAlpha(configs[i].color, 0.5);
+        graph_point->SetLineColor(configs[i].color);
 
         mg->Add(graphs[i], "L");
-        mg->Add(graphs[i], "PE");
+        mg->Add(graph_point, "PE");
         legend_line->AddEntry(graphs[i], configs[i].legend_label.c_str(), "l");
-        legend_point->AddEntry(graphs[i], configs[i].legend_label.c_str(), "pe");
+        legend_point->AddEntry(graph_point, configs[i].legend_label.c_str(), "pe");
     }
 
     if(mg->GetListOfGraphs() == nullptr) {
@@ -384,7 +304,7 @@ void plot_BeamTest::draw_multigraph(
 
     legend_line->Draw();
     legend_point->Draw();
-    condition_latex_.DrawLatexNDC(0.15, 0.91, BEAM_INFO_.c_str());
+    //condition_latex_.DrawLatexNDC(0.15, 0.91, BEAM_INFO_.c_str());
     condition_latex_.DrawLatexNDC(0.68, 0.91, Form("Plotted on %s", TIME_.c_str()));
     //title_latex_.DrawLatexNDC(0.15, 0.83, canvas_title.c_str());
 
@@ -395,6 +315,19 @@ void plot_BeamTest::check_residual_fits(
     const PlotConfig& config,
     const std::string& output_filename) {
     LOG_STATUS.source("plot_BeamTest::check_residual_fits") << "Creating residual check plots for " << config.legend_label;
+
+    //std::string name, dut_name, beam_info;
+    if (config.source == DataSource::KEK202412) {
+        NAME_ = "kek202412";
+        DUT_NAME_ = "CE65_3";
+        BEAM_INFO_ = "e^{-} 3GeV/c @KEK-PFAR (Dec. 2024)";
+    } else { // DataSource::SPS202404
+        NAME_ = "sps202404";
+        DUT_NAME_ = "CE65_6";
+        BEAM_INFO_ = "hadron 120GeV/c @CERN-SPS (Apr. 2024)";
+    }
+    const std::string DATA_DIR_PATH_ = "/home/towa/alice3/hist/";
+
 
     const int max_pads_per_canvas = 12;
     const int n_cols = 4;
@@ -460,6 +393,16 @@ void plot_BeamTest::check_residual_fits(
             check_canvas->cd(i + 1)->SetMargin(0.15, 0.05, 0.12, 0.05);
 
             const std::string& thd = thresholds[current_index];
+            double neighbor_val = std::stod(thd);
+            double seed_val = std::stod(config.seed_thd);
+
+            std::string seed_thd_for_file = config.seed_thd;
+            //const std::string7 neighbor_thd_for_file = thd;
+            if(neighbor_val >  seed_val) {
+                seed_thd_for_file = thd;
+            }
+
+            //const std::string& thd = thresholds[current_index];
             std::string input_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
                                                DATA_DIR_PATH_.c_str(),
                                                NAME_.c_str(),
@@ -467,7 +410,7 @@ void plot_BeamTest::check_residual_fits(
                                                config.pixel_pitch.c_str(),
                                                config.chip_type.c_str(),
                                                config.voltage.c_str(),
-                                               config.seed_thd.c_str(),
+                                               seed_thd_for_file.c_str(),  //config.seed_thd.c_str(),
                                                thd.c_str());
             
             TFile* inputFile = TFile::Open(input_file_path.c_str());
@@ -495,6 +438,7 @@ void plot_BeamTest::check_residual_fits(
             h_res->GetXaxis()->SetLabelSize(0.05);
             h_res->GetYaxis()->SetLabelSize(0.05);
             h_res->Rebin(2);
+
             h_res->Draw("PE");
 
             // fitting
@@ -519,4 +463,116 @@ void plot_BeamTest::check_residual_fits(
 
     check_canvas->Print(Form("%s]", output_filename.c_str()));
     delete check_canvas;
+}
+
+Color_t plot_BeamTest::string_to_ROOTColor(const std::string& color_str) {
+    static const std::map<std::string, Color_t> color_map = {
+        {"kBlack", kBlack},
+        {"kWhite", kWhite},
+        {"kGray", kGray},
+        {"kRed", kRed},
+        {"kRed+1", kRed + 1},
+        {"kRed+2", kRed + 2},
+        {"kRed+3", kRed + 3},
+        {"kGreen", kGreen},
+        {"kGreen+1", kGreen + 1},
+        {"kGreen+2", kGreen + 2},
+        {"kBlue", kBlue},
+        {"kBlue+1", kBlue + 1},
+        {"kBlue+2", kBlue + 2},
+        {"kYellow", kYellow},
+        {"kMagenta", kMagenta},
+        {"kCyan", kCyan},
+        {"kAzure+2", kAzure + 2},
+        {"kPink+7", kPink + 7}
+    };
+
+    auto it = color_map.find(color_str);
+    if(it != color_map.end()) {
+        return it->second;
+    }
+
+    LOG_WARNING.source("plot_BeamTest::string_to_ROOTColor") << "Color string '" << color_str << "' not found. Using kBlack.";
+    return kBlack;
+}
+
+std::vector<PlotConfig> plot_BeamTest::load_jsonConfigs(const std::string& filename) {
+    std::vector<PlotConfig> configs;
+    std::ifstream file(filename);
+    if(!file.is_open()) {
+        LOG_ERROR.source("plot_BeamTest::load_jsonConfigs") << "Could not open config file: " << filename;
+        return configs;
+    }
+
+    nlohmann::json j;
+    try {
+        file >> j;
+    } catch (nlohmann::json::parse_error& e) {
+        LOG_ERROR.source("plot_BeamTest::load_jsonConfigs") << "JSON parse error: " << e.what();
+        return configs;
+    }
+
+    for(const auto& item : j) {
+        PlotConfig conf;
+
+        // Conversion to DataSource enum
+        std::string source_str = item.at("source");
+        if(source_str == "KEK202412") {
+            conf.source = DataSource::KEK202412;
+        } else if (source_str == "SPS202404") {
+            conf.source = DataSource::SPS202404;
+        } else {
+            LOG_WARNING.source("plot_BeamTest::load_jsonConfigs") << "Unknown data source: " << source_str;
+            continue;
+        }
+
+        conf.pixel_pitch    = item.at("pixel_pitch").get<std::string>();
+        conf.chip_type      = item.at("chip_type").get<std::string>();
+        conf.voltage        = item.at("voltage").get<std::string>();
+        conf.seed_thd       = item.at("seed_thd").get<std::string>();
+        conf.scan_values    = item.at("scan_values").get<std::vector<std::string>>();
+        conf.legend_label   = item.at("legend_label").get<std::string>();
+        //conf.color          = item.at("color").get<std::string>();
+        conf.marker_style   = item.at("marker_style").get<int>();
+        conf.marker_size    = item.at("marker_size").get<double>();
+        conf.line_style     = item.at("line_style").get<int>();
+
+        std::string color_string  = item.at("color").get<std::string>();
+        conf.color          = string_to_ROOTColor(color_string);
+
+        configs.push_back(conf);
+    }
+
+    return configs;
+}
+
+void plot_BeamTest::BeamTest_main(int argc, char* argv[]) {
+    cxxopts::Options options("plot_BeamTest::BeamTest_main", "Beamtest object code");
+    options.add_options()
+        ("f,file", "Json file name", cxxopts::value<std::string>())
+        ("h,help", "show help message");
+    
+    auto result = options.parse(argc, argv);
+
+    if(result.count("help")) {
+        std::cout << options.help() << std::endl;
+        return;
+    }
+
+    std::string config_filename;
+    if(result.count("file")) {
+        config_filename = result["file"].as<std::string>();
+    } else {
+        LOG_WARNING.source("plot_BeamTest::BeamTest_main") << "JSON file name is NOT defined. Using default file name: plot_BeamTest/json/analysis.json";
+        config_filename = "plot_BeamTest/json/analysis.json";
+    }
+
+    std::vector<PlotConfig> my_comparison = plot_BeamTest::load_jsonConfigs(config_filename);
+
+    if(my_comparison.empty()) {
+        LOG_ERROR.source("plot_BeamTest::BeamTest_main") << "No configurations were loaded.";
+        return;
+    }
+
+    plot_BeamTest::run_plots(my_comparison);
 }

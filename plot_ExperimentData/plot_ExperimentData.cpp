@@ -2,20 +2,23 @@
 
 plot_ExperimentData::plot_ExperimentData() {
     LOG_STATUS.source("plot_ExperimentData::plot_ExperimentData") << "Plot_ExperimentData object is created.";
+    //PIXEL_PITCH_ = {"15","22p5"};
     PIXEL_PITCH_ = {"22p5"};
     CHIP_TYPE_ = {"std", "gap"};
     //CHIP_TYPE_ = {"blk"};
     VOLTAGE_ = {"10", "7", "4"};
-    //VOLTAGE_ = {"10"};
+    //VOLTAGE_ = {"10", "4"};
     //SEED_THRESHOLD_ = {"400"};
     //SEED_THRESHOLD_ = {"1000"};
     SEED_THRESHOLD_ = {"500"};
     NEIGHBOR_THRESHOLD_ = {"50", "60" ,"70", "80", "90", "100", "150", "200", "250", "300", "350", "400", "450", "500"}; 
     //NEIGHBOR_THRESHOLD_ = {"50","60" ,"70", "80", "90", "100"}; 
     //NEIGHBOR_THRESHOLD_ = {"50", "80", "100", "200", "300", "350", "400", "450", "500"};
-    //NEIGHBOR_THRESHOLD_ = {"200", "300", "400", "500", "600", "700", "800", "900", "1000"};
+    //NEIGHBOR_THRESHOLD_ = {"200", "300", "400", "500", "600", "700", "800", "900", "1000","1100","1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900", "2000", "2100", "2200", "2300", "2400", "2500"};
     TIME_ = plot_histogram::currentDateTime();
+    //NAME_ = "sps202404";
     NAME_ = "kek202412";
+    //DUT_NAME_ = "CE65_6";
     DUT_NAME_ = "CE65_3";
 }
 
@@ -301,7 +304,15 @@ void plot_ExperimentData::run_Analysis() {
                     chip_variation_text = Form("p%s/%s/%sV/SeedThd%s", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), SEED_THRESHOLD_[l].c_str());
                         
                     for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
-                        inputROOTFile = TFile::Open(Form("%s%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root", data_dir_path.c_str(), NAME_.c_str(), PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), SEED_THRESHOLD_[l].c_str(), NEIGHBOR_THRESHOLD_[n].c_str()));
+                        double neighbor_val = std::stod(NEIGHBOR_THRESHOLD_[n]);
+                        double seed_val = std::stod(SEED_THRESHOLD_[l]);
+                        std::string seed_thd_for_file = SEED_THRESHOLD_[l];
+                        if(neighbor_val > seed_val) {
+                            seed_thd_for_file  = NEIGHBOR_THRESHOLD_[n];
+                        }
+
+
+                        inputROOTFile = TFile::Open(Form("%s%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root", data_dir_path.c_str(), NAME_.c_str(), PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), seed_thd_for_file.c_str(), NEIGHBOR_THRESHOLD_[n].c_str()));
                         if (!inputROOTFile || inputROOTFile->IsZombie()) {
                             LOG_STATUS.source("plot_ExperimentData::run_Analysis") << "Error: Cannot open file. Breaking from voltage loop.";
                             if(inputROOTFile) delete inputROOTFile;
@@ -357,11 +368,19 @@ void plot_ExperimentData::run_Analysis() {
                     legend->SetBorderSize(0);
 
                     for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
-                        inputROOTFile = TFile::Open(Form("%s%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root", data_dir_path.c_str(), NAME_.c_str(), PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), SEED_THRESHOLD_[l].c_str(), NEIGHBOR_THRESHOLD_[n].c_str()));
+                        double seed_val = std::stod(SEED_THRESHOLD_[l]);
+                        double neighbor_val = std::stod(NEIGHBOR_THRESHOLD_[n]);
+
+                        std::string seed_thd_for_file = SEED_THRESHOLD_[l];
+                        if(neighbor_val > seed_val) {
+                            seed_thd_for_file = NEIGHBOR_THRESHOLD_[n];
+                        }
+
+                        inputROOTFile = TFile::Open(Form("%s%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root", data_dir_path.c_str(), NAME_.c_str(), PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), seed_thd_for_file.c_str(), NEIGHBOR_THRESHOLD_[n].c_str()));
                         if (!inputROOTFile || inputROOTFile->IsZombie()) {
                             LOG_STATUS.source("plot_ExperimentData::run_NoiseScan") << "Error: Cannot open file. Breaking from voltage loop.";
                             if(inputROOTFile) delete inputROOTFile;
-                            break; 
+                            continue; 
                         }
 
                         hResidualX = (TH1D*)inputROOTFile->Get(Form("AnalysisCE65/%s/local_residuals/residualsX", DUT_NAME_.c_str()));
@@ -594,7 +613,7 @@ void plot_ExperimentData::run_Analysis() {
                 //mg_resolution->GetYaxis()->SetRangeUser(7, 9);
                 mg_resolution->GetYaxis()->SetRangeUser(2, 9);
                 //mg_resolution->GetXaxis()->SetLimits(40,510);
-                mg_resolution->GetXaxis()->SetLimits(190, 1010);
+                mg_resolution->GetXaxis()->SetLimits(190, 2510);
                 //mg_resolution->GetYaxis()->SetLimits(0,10);
                 mg_resolution->GetXaxis()->SetTitleSize(0.05);
                 mg_resolution->GetXaxis()->SetLabelSize(0.04);
@@ -668,7 +687,7 @@ void plot_ExperimentData::run_Analysis() {
                 mg_clustersize->Draw("A");
                 mg_clustersize->SetTitle(";threshold [ADC];mean cluster size");
                 //mg_clustersize->GetXaxis()->SetLimits(40,510);
-                mg_clustersize->GetXaxis()->SetLimits(190, 1010);
+                mg_clustersize->GetXaxis()->SetLimits(190, 2510);
                 mg_clustersize->GetYaxis()->SetRangeUser(0.5, 4);
                 mg_clustersize->GetXaxis()->SetTitleSize(0.05);
                 mg_clustersize->GetXaxis()->SetLabelSize(0.04);
@@ -816,6 +835,7 @@ void plot_ExperimentData::run_Analysis() {
         // このブロックは、すべてのピクセルピッチとチップタイプのデータを1つのグラフにまとめて描画します。
         bool plot_all_in_one = true;
         if(plot_all_in_one) {
+            LOG_STATUS.source("plot_ExperimentData::run_Analysis") << "Start writing plot_all_in_one.";
             // vThresholdは既に tgraph_all ブロックで準備されているはずですが、念のため再作成します。
             std::vector<double> vThreshold;
             for (const auto& s : NEIGHBOR_THRESHOLD_) {
@@ -831,6 +851,9 @@ void plot_ExperimentData::run_Analysis() {
                 canvas->SetBottomMargin(0.14);
                 canvas->SetLeftMargin(0.13);
                 canvas->SetRightMargin(0.07);
+                canvas->SetGrid();
+                gStyle->SetGridStyle(1);
+                gStyle->SetGridColor(kGray);
 
                 TMultiGraph* mg_res_all = new TMultiGraph();
                 TMultiGraph* mg_res_all_line = new TMultiGraph();
@@ -893,10 +916,30 @@ void plot_ExperimentData::run_Analysis() {
                     }
                 }
 
+                // double pitch15_r12 = 15 / std::sqrt(12);
+                // double pitch225_r12 = 22.5 / std::sqrt(12);
+
+                // double x_min_line = mg_res_all->GetXaxis()->GetXmin();
+                // double x_max_line = mg_res_all->GetXaxis()->GetXmax();
+
+                // TLine* line_pitch15 = new TLine(x_min_line, pitch15_r12, x_max_line, pitch15_r12);
+                // TLine* line_pitch225 = new TLine(x_min_line, pitch225_r12, x_max_line, pitch225_r12);
+
+                // line_pitch15->SetLineColor(kGray + 2);
+                // line_pitch15->SetLineStyle(2);
+                // line_pitch15->SetLineWidth(2);
+
+                // line_pitch225->SetLineColor(kGray + 2);
+                // line_pitch225->SetLineStyle(3);
+                // line_pitch225->SetLineWidth(2);
+
+                // line_pitch15->Draw();
+                // line_pitch225->Draw("same");
+
                 mg_res_all->Draw("A");
                 mg_res_all->SetTitle(";threshold [ADC];resolution in x [um]");
-                mg_res_all->GetYaxis()->SetRangeUser(2, 8);
-                mg_res_all->GetXaxis()->SetLimits(190, 1010);
+                mg_res_all->GetYaxis()->SetRangeUser(2, 8.1);
+                mg_res_all->GetXaxis()->SetLimits(190, 2510);
                 // 軸のスタイル設定は元のコードと同様
                 mg_res_all->GetXaxis()->SetTitleSize(0.05);
                 mg_res_all->GetXaxis()->SetLabelSize(0.04);
@@ -905,15 +948,39 @@ void plot_ExperimentData::run_Analysis() {
                 mg_res_all->GetYaxis()->SetLabelSize(0.04);
                 mg_res_all->GetYaxis()->SetTitleOffset(0.8);
 
+                double pitch15_r12 = 15 / std::sqrt(12);
+                double pitch225_r12 = 22.5 / std::sqrt(12);
+
+                double x_min_line = mg_res_all->GetXaxis()->GetXmin();
+                double x_max_line = mg_res_all->GetXaxis()->GetXmax();
+
+                TLine* line_pitch15 = new TLine(x_min_line, pitch15_r12, x_max_line, pitch15_r12);
+                TLine* line_pitch225 = new TLine(x_min_line, pitch225_r12, x_max_line, pitch225_r12);
+
+                line_pitch15->SetLineColor(kGray + 2);
+                line_pitch15->SetLineStyle(2);
+                line_pitch15->SetLineWidth(2);
+
+                line_pitch225->SetLineColor(kGray + 2);
+                line_pitch225->SetLineStyle(3);
+                line_pitch225->SetLineWidth(2);
+
+                line_pitch15->Draw("same");
+                line_pitch225->Draw("same");
+                mg_res_all->Draw("same LP");
+
                 legend_res_line_all->Draw();
                 legend_res_all->Draw();
                 condition.DrawLatexNDC(0.15, 0.91, "hadron 120GeV/c @CERN-SPS (Apr. 2024)");
                 condition.DrawLatexNDC(0.68, 0.91, Form("Plotted on %s", TIME_.c_str()));
 
+                gPad->RedrawAxis();
+
                 canvas->SaveAs(Form("plot/AllInOne_Resolution_Seed%s.pdf", SEED_THRESHOLD_[l].c_str()));
 
                 // --- 4-2. クラスターサイズ (Cluster Size) の全比較プロット ---
                 canvas->Clear(); // キャンバスを再利用
+                canvas->SetGrid();
 
                 TMultiGraph* mg_cs_all = new TMultiGraph();
                 TMultiGraph* mg_cs_all_line = new TMultiGraph();
@@ -974,7 +1041,7 @@ void plot_ExperimentData::run_Analysis() {
             
                 mg_cs_all->Draw("A");
                 mg_cs_all->SetTitle(";threshold [ADC];mean cluster size");
-                mg_cs_all->GetXaxis()->SetLimits(190, 1010);
+                mg_cs_all->GetXaxis()->SetLimits(190, 2510);
                 mg_cs_all->GetYaxis()->SetRangeUser(1, 5);
                 // 軸のスタイル設定
                 mg_cs_all->GetXaxis()->SetTitleSize(0.05);
@@ -1636,6 +1703,14 @@ void plot_ExperimentData::run_inPixel() {
     TDirectory* seedCharge = output->mkdir("seed_charge");
     TDirectory* residual = output->mkdir("residual");
 
+    std::string beam_info;
+    if(NAME_ == "sps202404") {
+        beam_info = "hadron 120GeV/c @CERN-SPS (Apr. 2024)";
+    }
+    if(NAME_ == "kek202412") {
+        beam_info = "e^{-} 3GeV/c @KEK-PFAR (Dec. 2024)";
+    }
+
     std::vector<TDirectory*> outputDir = {clsize, clusterCharge, seedCharge, residual};
 
     TFile* inputROOTFile;
@@ -1666,9 +1741,17 @@ void plot_ExperimentData::run_inPixel() {
             for(int k=0; k<VOLTAGE_.size(); k++) {
                 for(int l=0; l<SEED_THRESHOLD_.size(); l++) {
                     for(int n=0; n<NEIGHBOR_THRESHOLD_.size(); n++) {
-                        inputROOTFile = TFile::Open(Form("%s%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root", data_dir_path.c_str(), NAME_.c_str(), PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), SEED_THRESHOLD_[l].c_str(), NEIGHBOR_THRESHOLD_[n].c_str()));
-                        chip_variation = Form("%s_%s_%sV_SeedThd%se_NeighborThd%se", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), SEED_THRESHOLD_[l].c_str(), NEIGHBOR_THRESHOLD_[n].c_str());
-                        chip_variation_text = Form("p%s/%s/%sV/SeedThd%s/NeighborThd%s", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), SEED_THRESHOLD_[l].c_str(), NEIGHBOR_THRESHOLD_[n].c_str());
+                        double seed_val = std::stod(SEED_THRESHOLD_[l]);
+                        double neighbor_val = std::stod(NEIGHBOR_THRESHOLD_[n]);
+
+                        std::string seed_thd_for_file = SEED_THRESHOLD_[l];
+                        if(neighbor_val > seed_val) {
+                            seed_thd_for_file = NEIGHBOR_THRESHOLD_[n];
+                        }
+                        
+                        inputROOTFile = TFile::Open(Form("%s%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root", data_dir_path.c_str(), NAME_.c_str(), PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), seed_thd_for_file.c_str(), NEIGHBOR_THRESHOLD_[n].c_str()));
+                        chip_variation = Form("%s_%s_%sV_SeedThd%se_NeighborThd%se", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), seed_thd_for_file.c_str(), NEIGHBOR_THRESHOLD_[n].c_str());
+                        chip_variation_text = Form("p%s/%s/%sV/SeedThd%s/NeighborThd%s", PIXEL_PITCH_[i].c_str(), CHIP_TYPE_[j].c_str(), VOLTAGE_[k].c_str(), seed_thd_for_file.c_str(), NEIGHBOR_THRESHOLD_[n].c_str());
                         gStyle->SetPalette(kViridis);
 
                         p_clSize = (TProfile2D*)inputROOTFile->Get(Form("AnalysisCE65/%s/npxvsxmym", DUT_NAME_.c_str()));
@@ -1682,11 +1765,11 @@ void plot_ExperimentData::run_inPixel() {
                         hResidual = convert_toTH2D(p_residual);
                     
                         hClSize->SetMinimum(0);
-                        hClSize->SetMaximum(8);
+                        hClSize->SetMaximum(5);
                         hClSize->SetTitle(";x w/in pixel [um];y w/in pixel [um];cluster size");
                         plot_ExperimentData::set_2DSURFStyle(canvas, hClSize);
                         title.DrawLatexNDC(0.20, 0.89, "Mean of the Cluster Size");
-                        condition.DrawLatexNDC(0.20, 0.85, "Electron:3GeV/c");
+                        condition.DrawLatexNDC(0.20, 0.85, beam_info.c_str());
                         condition.DrawLatexNDC(0.20, 0.82, Form("Plotted on %s", TIME_.c_str()));
                         condition.DrawLatexNDC(0.20, 0.79, chip_variation_text.c_str());
                         clsize->cd();
@@ -1700,7 +1783,7 @@ void plot_ExperimentData::run_inPixel() {
                         hResidual->SetTitle(";x w/in pixel [um];y w/in pixel [um];r_{exp}-r_{hit} [um]");
                         plot_ExperimentData::set_2DSURFStyle(canvas, hResidual);
                         title.DrawLatexNDC(0.10, 0.92, "Mean of the Residual (r_{exp} - r_{hit})");
-                        condition.DrawLatexNDC(0.10, 0.88, "e^{-} 3GeV/c @KEK_PF-AR(Dec. 2024)");
+                        condition.DrawLatexNDC(0.10, 0.88, beam_info.c_str());
                         condition.DrawLatexNDC(0.10, 0.85, Form("Plotted on %s", TIME_.c_str()));
                         condition.DrawLatexNDC(0.10, 0.82, chip_variation_text.c_str());
                         residual->cd();
@@ -1712,7 +1795,7 @@ void plot_ExperimentData::run_inPixel() {
                         hClusterCharge->SetTitle(";x w/in pixel [um];y w/in pixel [um];cluster charge [adu]");
                         plot_ExperimentData::set_2DSURFStyle(canvas, hClusterCharge);
                         title.DrawLatexNDC(0.10, 0.92, "Mean of the Cluster Charge");
-                        condition.DrawLatexNDC(0.10, 0.88, "e^{-} 3GeV/c @KEK_PF-AR(Dec. 2024)");
+                        condition.DrawLatexNDC(0.10, 0.88, beam_info.c_str());
                         condition.DrawLatexNDC(0.10, 0.85, Form("Plotted on %s", TIME_.c_str()));
                         condition.DrawLatexNDC(0.10, 0.82, chip_variation_text.c_str());
                         clusterCharge->cd();
@@ -1724,7 +1807,7 @@ void plot_ExperimentData::run_inPixel() {
                         hSeedCharge->SetTitle(";x w/in pixel [um];y w/in pixel [um];seed charge [adu]");
                         plot_ExperimentData::set_2DSURFStyle(canvas, hSeedCharge);
                         title.DrawLatexNDC(0.10, 0.92, "Mean of the Seed Charge");
-                        condition.DrawLatexNDC(0.10, 0.88, "e^{-} 3GeV/c @KEK_PF-AR(Dec. 2024)");
+                        condition.DrawLatexNDC(0.10, 0.88, beam_info.c_str());
                         condition.DrawLatexNDC(0.10, 0.85, Form("Plotted on %s", TIME_.c_str()));
                         condition.DrawLatexNDC(0.10, 0.82, chip_variation_text.c_str());
                         seedCharge->cd();
