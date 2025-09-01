@@ -21,10 +21,13 @@
 #include <TF1.h>
 #include <TStyle.h>
 #include <TColor.h>
+#include <TArrow.h>
+#include <TMarker.h>
 
 // My function headers
 #include "Messenger/Messenger.h"
 #include "plot_histogram/plot_histogram.h"
+#include "plot_ExperimentData/plot_ExperimentData.h"
 
 // Other function headers
 #include "tools/json.hpp"
@@ -52,6 +55,24 @@ struct PlotConfig {
     int line_style = 1;
 };
 
+struct ChipParameters {
+    std::string pixel_pitch;
+    std::string chip_type;
+    std::string voltage;
+    std::string seed_thd;
+    std::string neighbor_thd;
+};
+
+struct InPixelPlotConfig {
+    std::string name;
+    std::string hist_path;
+    std::string title;
+    std::string z_axis_title;
+    double z_min;
+    double z_max;
+    double scale_factor = 1.0;
+};
+
 class plot_BeamTest {
 public:
     // Assign data source in constructer
@@ -70,9 +91,14 @@ public:
         const std::string& quantity_to_extract
     );
 
-    static std::vector<PlotConfig> load_jsonConfigs(const std::string& filename);
+    std::vector<PlotConfig> load_jsonConfigs(const nlohmann::json& j);
+    std::vector<InPixelPlotConfig> load_jsonInPixelPlotConfigs(const nlohmann::json& j);
 
     void BeamTest_main(int argc, char* argv[]);
+
+    void run_inPixelAnalysis(const std::vector<PlotConfig>& configs, const std::vector<InPixelPlotConfig>& plot_types);
+
+    void run_inPixelPathAnalysis(const std::vector<PlotConfig>& configs, const std::vector<InPixelPlotConfig>& plot_types);
 
 private:
     // helper functions
@@ -97,6 +123,18 @@ private:
         const std::vector<PlotConfig>& configs,
         const std::string& neighbor_thd_for_all,
         const std::pair<double, double>& x_range
+    );
+
+    void drawBeamInfo(const std::string& beam_info, double x, double y);
+    void drawChipInfo(const ChipParameters& params, double x, double y);
+    void createAndSaveInPixelPlot(
+        TH2D* hist,
+        const InPixelPlotConfig& config,
+        const ChipParameters& params,
+        const std::string& beam_info,
+        TDirectory* output_dir,
+        const std::string& base_path,
+        const std::string& chip_variation_name
     );
 
     static Color_t string_to_ROOTColor(const std::string& color_str);

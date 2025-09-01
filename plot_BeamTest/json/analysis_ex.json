@@ -1,44 +1,5 @@
-{
-  "inpixel_plot_types": [
-    {
-      "name": "cluster_size",
-      "hist_path": "AnalysisCE65/%s/npxvsxmym",
-      "title": "Mean Cluster Size",
-      "z_axis_title": "cluster size",
-      "z_min": 0,
-      "z_max": 5.0,
-      "scale_factor": 1.0
-    },
-    {
-      "name": "cluster_charge",
-      "hist_path": "AnalysisCE65/%s/qvsxmym",
-      "title": "Mean Cluster Charge",
-      "z_axis_title": "cluster charge [ADCu]",
-      "z_min": 0,
-      "z_max": 8000,
-      "scale_factor": 1.0
-    },
-    {
-      "name": "seed_charge",
-      "hist_path": "AnalysisCE65/%s/pxqvsxmym",
-      "title": "Mean Seed Charge",
-      "z_axis_title": "seed charge [ADCu]",
-      "z_min": 0,
-      "z_max": 8000,
-      "scale_factor": 1.0
-    },
-    {
-      "name": "residual",
-      "hist_path": "AnalysisCE65/%s/rmsxyvsxmym",
-      "title": "Mean Residual (r_{exp} - r_{hit})",
-      "z_axis_title": "residual [um]",
-      "z_min": 0,
-      "z_max": 16,
-      "scale_factor": 1000
-    }
-  ],
-  "comparison_configs": [
-    {
+[
+  {
     "source": "KEK202412",
     "pixel_pitch": "22p5",
     "chip_type": "std",
@@ -194,5 +155,4 @@
     "marker_size": 1.4,
     "line_style": 2
   }
-  ]
-}
+]

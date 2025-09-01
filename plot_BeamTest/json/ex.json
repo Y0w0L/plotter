@@ -1,0 +1,55 @@
+{
+  "inpixel_plot_types": [
+    {
+      "name": "cluster_size",
+      "hist_path": "AnalysisCE65/%s/npxvsxmym",
+      "title": "Mean Cluster Size",
+      "z_axis_title": "cluster size",
+      "z_min": 0,
+      "z_max": 5.0,
+      "scale_factor": 1.0
+    },
+    {
+      "name": "cluster_charge",
+      "hist_path": "AnalysisCE65/%s/qvsxmym",
+      "title": "Mean Cluster Charge",
+      "z_axis_title": "cluster charge [adu]",
+      "z_min": 0,
+      "z_max": 8000,
+      "scale_factor": 1.0
+    },
+    {
+      "name": "seed_charge",
+      "hist_path": "AnalysisCE65/%s/pxqvsxmym",
+      "title": "Mean Seed Charge",
+      "z_axis_title": "seed charge [adu]",
+      "z_min": 0,
+      "z_max": 8000,
+      "scale_factor": 1.0
+    },
+    {
+      "name": "residual",
+      "hist_path": "AnalysisCE65/%s/rmsxyvsxmym",
+      "title": "Mean Residual (r_{exp} - r_{hit})",
+      "z_axis_title": "residual [um]",
+      "z_min": 0,
+      "z_max": 15,
+      "scale_factor": 1000.0
+    }
+  ],
+  "comparison_configs": [
+    {
+      "source": "SPS202404",
+      "pixel_pitch": "25",
+      "chip_type": "TJ-C2",
+      "voltage": "-3",
+      "seed_thd": "150",
+      "scan_values": ["50", "100", "150", "200"],
+      "legend_label": "SPS, p25, TJ-C2, -3V, Seed 150",
+      "color": "kRed",
+      "marker_style": 20,
+      "marker_size": 1.2,
+      "line_style": 1
+    }
+  ]
+}

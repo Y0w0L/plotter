@@ -496,60 +496,557 @@ Color_t plot_BeamTest::string_to_ROOTColor(const std::string& color_str) {
     return kBlack;
 }
 
-std::vector<PlotConfig> plot_BeamTest::load_jsonConfigs(const std::string& filename) {
+std::vector<PlotConfig> plot_BeamTest::load_jsonConfigs(const nlohmann::json& j) {
     std::vector<PlotConfig> configs;
-    std::ifstream file(filename);
-    if(!file.is_open()) {
-        LOG_ERROR.source("plot_BeamTest::load_jsonConfigs") << "Could not open config file: " << filename;
-        return configs;
-    }
 
-    nlohmann::json j;
-    try {
-        file >> j;
-    } catch (nlohmann::json::parse_error& e) {
+    try{
+        for(const auto& item : j.at("comparison_configs")) {
+            PlotConfig conf;
+            std::string source_str = item.at("source");
+            if(source_str == "KEK202412") conf.source = DataSource::KEK202412;
+            else if(source_str == "SPS202404") conf.source = DataSource::SPS202404;
+            else {
+                LOG_WARNING.source("plot_BeamTest::load_jsonConfigs") << "Unknown data source in JSON: " << source_str;
+                continue;
+            }
+
+            conf.pixel_pitch = item.at("pixel_pitch").get<std::string>();
+            conf.chip_type = item.at("chip_type").get<std::string>();
+            conf.voltage = item.at("voltage").get<std::string>();
+            conf.seed_thd = item.at("seed_thd").get<std::string>();
+            conf.scan_values = item.at("scan_values").get<std::vector<std::string>>();
+            conf.legend_label = item.at("legend_label").get<std::string>();
+            conf.marker_style = item.at("marker_style").get<int>();
+            conf.marker_size = item.at("marker_size").get<double>();
+            conf.line_style = item.at("line_style").get<int>();
+            std::string color_string = item.at("color").get<std::string>();
+            conf.color = string_to_ROOTColor(color_string);
+            configs.push_back(conf);
+        }
+    } catch(nlohmann::json::exception& e) {
         LOG_ERROR.source("plot_BeamTest::load_jsonConfigs") << "JSON parse error: " << e.what();
-        return configs;
+    }
+    return configs;
+}
+
+std::vector<InPixelPlotConfig> plot_BeamTest::load_jsonInPixelPlotConfigs(const nlohmann::json& j) {
+    std::vector<InPixelPlotConfig> configs;
+    // std::ifstream file(filename);
+    // if(!file.is_open()) {
+    //     LOG_ERROR.source("plot_BeamTest::load_jsonInPixelPlotConfigs") << "Could not open config file: " << filename;
+    //     return configs;
+    // }
+
+    // nlohmann::json j;
+    try{
+        for(const auto& item : j.at("inpixel_plot_types")) {
+            InPixelPlotConfig pt;
+            pt.name = item.at("name").get<std::string>();
+            pt.hist_path = item.at("hist_path").get<std::string>();
+            pt.title = item.at("title").get<std::string>();
+            pt.z_axis_title = item.at("z_axis_title").get<std::string>();
+            pt.z_min = item.at("z_min").get<double>();
+            pt.z_max = item.at("z_max").get<double>();
+            if(item.contains("scale_factor")) {
+                pt.scale_factor = item.at("scale_factor").get<double>();
+            }
+            configs.push_back(pt);
+        }
+    } catch (nlohmann::json::exception& e) {
+            LOG_ERROR.source("plot_BeamTest::load_jsonInPixelPlotConfigs") << "JSON parse error: " << e.what();
+    }
+    return configs;
+}
+
+void plot_BeamTest::drawBeamInfo(
+    const std::string& beam_info,
+    double x = 0.15,
+    double y = 0.92
+) {
+    TLatex info;
+    info.SetTextSize(0.035);
+    info.SetTextFont(42);
+    info.SetTextAlign(12);
+
+    //info.DrawLatexNDC(x, y, "Beam Test")
+    info.SetTextSize(0.03);
+    info.DrawLatexNDC(x, y-0.04, beam_info.c_str());
+    info.DrawLatexNDC(x, y-0.07, Form("Plotted on %s", TIME_.c_str()));
+}
+
+void plot_BeamTest::drawChipInfo(
+    const ChipParameters& params,
+    double x = 0.65,
+    double y = 0.92
+) {
+    TLatex info;
+    info.SetTextSize(0.028);
+    info.SetTextFont(42);
+    info.SetTextAlign(12);
+
+    info.DrawLatexNDC(x, y, Form("Pitch: %s um", params.pixel_pitch.c_str()));
+    info.DrawLatexNDC(x, y - 0.035, Form("Type: %s", params.chip_type.c_str()));
+    info.DrawLatexNDC(x, y - 0.07, Form("Voltage: %s V", params.voltage.c_str()));
+    info.DrawLatexNDC(x, y - 0.105, Form("Seed Thd: %s ADC", params.seed_thd.c_str()));
+    info.DrawLatexNDC(x, y - 0.14, Form("Neighbor Thd: %s ADC", params.neighbor_thd.c_str()));
+}
+
+void plot_BeamTest::createAndSaveInPixelPlot(
+    TH2D* hist,
+    const InPixelPlotConfig& config,
+    const ChipParameters& params,
+    const std::string& beam_info,
+    TDirectory* output_dir,
+    const std::string& base_path,
+    const std::string& chip_variation_name
+) {
+    canvas_->Clear();
+
+    hist->Scale(config.scale_factor);
+    hist->SetMinimum(config.z_min);
+    hist->SetMaximum(config.z_max);
+    hist->SetTitle(Form(";x w/in pixel [um];y w/in pixel [um];%s", config.z_axis_title.c_str()));
+
+    canvas_->SetRightMargin(0.15);
+    hist->Draw("COLZ");
+
+    TLatex main_title;
+    main_title.SetTextSize(0.045);
+    main_title.SetTextFont(62);
+    main_title.SetTextAlign(22);
+    main_title.DrawLatexNDC(0.5, 0.96, config.title.c_str());
+
+    drawBeamInfo(beam_info);
+    drawChipInfo(params);
+
+    std::string output_pdf_path = Form("%s/%s/%s_ce65_%s.pdf", 
+                                       base_path.c_str(), 
+                                       config.name.c_str(), 
+                                       config.name.c_str(), 
+                                       chip_variation_name.c_str());
+    
+    TString dir_path = gSystem->DirName(output_pdf_path.c_str());
+    gSystem->mkdir(dir_path, kTRUE); // kTRUE makes it recursive
+
+    output_dir->cd();
+    //canvas_->Write(Form("%s_ce65_%s", config.name.c_str(), chip_variation_name.c_str()));
+    canvas_->SaveAs(Form("%s/%s/%s_ce65_%s.pdf", base_path.c_str(), config.name.c_str(), config.name.c_str(), chip_variation_name.c_str()));
+}
+
+void plot_BeamTest::run_inPixelAnalysis(
+    const std::vector<PlotConfig>& configs,
+    const std::vector<InPixelPlotConfig>& plot_types
+) {
+    LOG_STATUS.source("plot_BeamTest::run_inPixelAnalysis") << "Start run for in-pixel analysis using JSON config.";
+
+    if(plot_types.empty()) {
+        LOG_ERROR.source("plot_BeamTest::run_inPixelAnalysis") << "No in-pixel plot types were difined in the JSON.";
+        return;
     }
 
-    for(const auto& item : j) {
-        PlotConfig conf;
+    std::map<std::string, TFile*> output_files;
+    std::map<std::string, std::map<std::string, TDirectory*>> output_dirs;
+    gStyle->SetPalette(kViridis);
 
-        // Conversion to DataSource enum
-        std::string source_str = item.at("source");
-        if(source_str == "KEK202412") {
-            conf.source = DataSource::KEK202412;
-        } else if (source_str == "SPS202404") {
-            conf.source = DataSource::SPS202404;
+    for(const auto& config : configs) {
+        if(config.source == DataSource::KEK202412) {
+            NAME_ = "kek202412";
+            DUT_NAME_ = "CE65_3";
+            BEAM_INFO_ = "e^{-} 3GeV/c @KEK PF-AR (Dec. 2024)";
+        } else if(config.source == DataSource::SPS202404) {
+            NAME_ = "sps202404";
+            DUT_NAME_ = "CE65_6";
+            BEAM_INFO_ = "hadron 120GeV/c @CERN SPS (Apr. 2024)";
         } else {
-            LOG_WARNING.source("plot_BeamTest::load_jsonConfigs") << "Unknown data source: " << source_str;
+            LOG_WARNING.source("plot_BeamTest::run_inPixelAnalysis") << "Unknown data source enum value encountered.";
             continue;
         }
 
-        conf.pixel_pitch    = item.at("pixel_pitch").get<std::string>();
-        conf.chip_type      = item.at("chip_type").get<std::string>();
-        conf.voltage        = item.at("voltage").get<std::string>();
-        conf.seed_thd       = item.at("seed_thd").get<std::string>();
-        conf.scan_values    = item.at("scan_values").get<std::vector<std::string>>();
-        conf.legend_label   = item.at("legend_label").get<std::string>();
-        //conf.color          = item.at("color").get<std::string>();
-        conf.marker_style   = item.at("marker_style").get<int>();
-        conf.marker_size    = item.at("marker_size").get<double>();
-        conf.line_style     = item.at("line_style").get<int>();
+        if(output_files.find(NAME_) == output_files.end()) {
+            std::string output_filename = "plot/experimentData_inPixel_" + NAME_ + ".root";
+            output_files[NAME_] = TFile::Open(output_filename.c_str(), "RECREATE");
+            for(const auto& pt : plot_types) {
+                output_dirs[NAME_][pt.name] = output_files[NAME_]->mkdir(pt.name.c_str());
+            }
+        }
 
-        std::string color_string  = item.at("color").get<std::string>();
-        conf.color          = string_to_ROOTColor(color_string);
+        std::string data_dir_path = DATA_DIR_PATH_ + NAME_ + "/";
+        std::string plot_save_path = "plot/inPixel/" + NAME_;
 
-        configs.push_back(conf);
+        for(const auto& neighbor_thd : config.scan_values) {
+            double seed_val = std::stod(config.seed_thd);
+            double neighbor_val = std::stod(neighbor_thd);
+            std::string seed_thd_for_file = (neighbor_val > seed_val) ? neighbor_thd : config.seed_thd;
+
+            ChipParameters current_params = {config.pixel_pitch, config.chip_type, config.voltage, seed_thd_for_file, neighbor_thd};
+
+            std::string file_path = Form("%s%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
+                                         data_dir_path.c_str(),
+                                         NAME_.c_str(),
+                                         config.pixel_pitch.c_str(),
+                                         config.chip_type.c_str(),
+                                         config.voltage.c_str(),
+                                         seed_thd_for_file.c_str(),
+                                         neighbor_thd.c_str());
+
+            TFile* inputROOTFile = TFile::Open(file_path.c_str());
+            if(!inputROOTFile || inputROOTFile->IsZombie()) {
+                LOG_ERROR.source("plot_BeamTest::run_inPixelAnalysis") << "Failed to open file: " << file_path;
+                if(inputROOTFile) delete inputROOTFile;
+                continue;
+            }
+
+            std::string chip_variation_name = Form("%s_%s_%sV_SeedThd%se_NeighborThd%se",
+                                                   config.pixel_pitch.c_str(),
+                                                   config.chip_type.c_str(),
+                                                   config.voltage.c_str(),
+                                                   seed_thd_for_file.c_str(),
+                                                   neighbor_thd.c_str());
+                                
+            for(auto plot_config : plot_types) {
+                plot_config.hist_path = Form(plot_config.hist_path.c_str(), DUT_NAME_.c_str());
+
+                TProfile2D* prof = (TProfile2D*)inputROOTFile->Get(plot_config.hist_path.c_str());
+                if(!prof) {
+                    LOG_WARNING.source("plot_BeamTest::run_inPixelAnalysis") << "Histogram not found: " << plot_config.hist_path << "in file " << file_path;
+                    continue;
+                }
+
+                //TH2D* hist = prof->Projection2D();
+                TH2D* hist = plot_ExperimentData::convert_toTH2D(prof);
+                hist->SetDirectory(0);
+
+                createAndSaveInPixelPlot(hist,
+                                         plot_config,
+                                         current_params,
+                                         BEAM_INFO_,
+                                         output_dirs[NAME_][plot_config.name],
+                                         plot_save_path,
+                                         chip_variation_name);
+
+                delete hist;
+            }
+            inputROOTFile->Close();
+            delete inputROOTFile;
+        }
     }
+}
 
-    return configs;
+void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& configs, const std::vector<InPixelPlotConfig>& plot_types) {
+    LOG_STATUS.source("plot_BeamTest::run_inPixelPathAnalysis") << "Starting in-pixel path analysis.";
+    TCanvas* canvas_inpixel_ = new TCanvas("canvas_inpixel_", "canvas_inpixel_", 2400, 800);
+
+    for(const auto& config : configs) {
+        if(config.source == DataSource::KEK202412) {
+            NAME_ = "kek202412";
+            DUT_NAME_ = "CE65_3";
+            BEAM_INFO_ = "e^{-} 3GeV/c @KEK PF-AR (Dec. 2024)";
+        } else if(config.source == DataSource::SPS202404) {
+            NAME_ = "sps202404";
+            DUT_NAME_ = "CE65_6";
+            BEAM_INFO_ = "hadron 120GeV/c @CERN SPS (Apr. 2024)";
+        }
+
+        if(config.scan_values.empty()) {
+            LOG_ERROR.source("plot_BeamTest::run_inPixelPathAnalysis") << "No scan_values found in config.";
+            return;
+        }
+        //const std::string& neighbor_thd = config.scan_values[0];
+        for(const auto& neighbor_thd : config.scan_values) {
+            double seed_val = std::stod(config.seed_thd);
+            double neighbor_val = std::stod(neighbor_thd);
+            std::string seed_thd_for_file = (neighbor_val > seed_val) ? neighbor_thd : config.seed_thd;
+
+            std::string file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
+                                        DATA_DIR_PATH_.c_str(),
+                                        NAME_.c_str(),
+                                        NAME_.c_str(),
+                                        config.pixel_pitch.c_str(),
+                                        config.chip_type.c_str(),
+                                        config.voltage.c_str(),
+                                        seed_thd_for_file.c_str(),
+                                        neighbor_thd.c_str());
+                                
+            TFile* inputROOTFile = TFile::Open(file_path.c_str());
+            if(!inputROOTFile || inputROOTFile->IsZombie()) {
+                LOG_ERROR.source("plot_BeamTest::run_inPixelPathAnalysis") << "Failed to open file: " << file_path;
+                if(inputROOTFile) delete inputROOTFile;
+                return;
+            }
+
+            for(const auto plot_type : plot_types) {
+                std::string hist_path = Form(plot_type.hist_path.c_str(), DUT_NAME_.c_str());
+                TProfile2D* prof = (TProfile2D*)inputROOTFile->Get(hist_path.c_str());
+                if(!prof) {
+                    LOG_ERROR.source("plot_BeamTest::run_inPixelPathAnalysis") << "Histogram not found: " << hist_path << " in " << file_path;
+                    inputROOTFile->Close();
+                    delete inputROOTFile;
+                    return;
+                }
+
+                canvas_inpixel_->Clear();
+
+                TH2D* h_inpixel = plot_ExperimentData::convert_toTH2D(prof);
+                h_inpixel->Scale(plot_type.scale_factor);
+                h_inpixel->SetDirectory(0);
+                // inputROOTFile->Close();
+                // delete inputROOTFile;
+
+                // TCanvas* canvas_inpixel_ = new TCanvas("canvas_inpixel_", "canvas_inpixel_", 1600, 700);
+
+                TPad* pad_2d = new TPad("pad_map", "pad_map", 0.0, 0.0, 0.4, 1.0);
+                pad_2d->SetMargin(0.12, 0.18, 0.12, 0.1);
+                pad_2d->Draw();
+
+                TPad* pad_1d = new TPad("pad_1d", "pad_1d", 0.4, 0.0, 0.95, 1.0);
+                pad_1d->SetMargin(0.15, 0.2, 0.12, 0.1);
+                pad_1d->SetGridy();
+                pad_1d->Draw();
+
+                pad_2d->cd();
+                gStyle->SetPalette(kViridis);
+                h_inpixel->SetStats(0);
+                //h_inpixel->SetTitle(";In-pixel track intercept x [um];In-pixel track intercept y [um];#sqrt{#Delta x^{2} + #Delta y^{2}} (um)");
+                h_inpixel->SetTitle(Form(";In-pixel track intercept x [um];In-pixel track intercept y [um];%s", plot_type.z_axis_title.c_str()));
+                //h_inpixel->GetZaxis()->SetTitleOffset(1.2);
+                //h_inpixel->GetYaxis()->SetLimits(3.5,9.5);
+                h_inpixel->GetZaxis()->SetRangeUser(plot_type.z_min, plot_type.z_max);
+                h_inpixel->GetXaxis()->SetTitleSize(0.06);
+                h_inpixel->GetXaxis()->SetLabelSize(0.04);
+                h_inpixel->GetXaxis()->SetTitleOffset(0.7);
+                h_inpixel->GetYaxis()->SetTitleSize(0.06);
+                h_inpixel->GetYaxis()->SetLabelSize(0.04);
+                h_inpixel->GetYaxis()->SetTitleOffset(0.6);
+                h_inpixel->GetXaxis()->SetTitleSize(0.06);
+                h_inpixel->GetXaxis()->SetLabelSize(0.04);
+                h_inpixel->GetXaxis()->SetTitleOffset(0.7);
+                h_inpixel->GetZaxis()->SetTitleSize(0.06);
+                h_inpixel->GetZaxis()->SetLabelSize(0.04);
+                h_inpixel->GetZaxis()->SetTitleOffset(0.9);
+                h_inpixel->GetXaxis()->SetTitleFont(42);
+                h_inpixel->GetYaxis()->SetTitleFont(42);
+                h_inpixel->GetZaxis()->SetTitleFont(42);
+                h_inpixel->GetXaxis()->SetLabelFont(42);
+                h_inpixel->GetYaxis()->SetLabelFont(42);
+                h_inpixel->GetZaxis()->SetLabelFont(42);
+                h_inpixel->Draw("COLZ");
+
+                TLatex info_latex;
+                info_latex.SetTextFont(42);
+                info_latex.SetTextSize(0.03);
+                info_latex.DrawLatexNDC(0.13, 0.18, "@CERN SPS Apr. 2024, 120 GeV/c hadrons");
+                info_latex.DrawLatexNDC(0.13, 0.15, Form("Plotted on %s", TIME_.c_str()));
+
+                double pitch = std::stod(config.pixel_pitch);
+                double half_pitch = pitch / 2.0;
+
+                //double inset = 0.00000001;
+                double bin_width_x = h_inpixel->GetXaxis()->GetBinWidth(1);
+                double bin_width_y = h_inpixel->GetYaxis()->GetBinWidth(1);
+
+                double inset_x = 0.1 * bin_width_x;
+                double inset_y = 0.1 * bin_width_y;
+
+                double pA[2] = {0., 0.};
+                double pB[2] = {0., half_pitch - inset_y};
+                double pC[2] = {half_pitch - inset_x, half_pitch - inset_y};
+                double pD[2] = {half_pitch - inset_x, 0.};
+
+                // TLine* line_AB = new TLine(pA[0], pA[1], pB[0], pB[1]);
+                // TLine* line_BC = new TLine(pB[0], pB[1], pC[0], pC[1]);
+                // TLine* line_AD = new TLine(pA[0], pA[1], pD[0], pD[1]);
+                // TLine* line_AC = new TLine(pA[0], pA[1], pC[0], pC[1]);
+                double arrowSize = 0.015;
+                
+                TArrow* line_AB = new TArrow(pA[0], pA[1], pB[0], pB[1], arrowSize, ">");
+                TArrow* line_BC = new TArrow(pB[0], pB[1], pC[0], pC[1], arrowSize, ">");
+                TArrow* line_CA = new TArrow(pC[0], pC[1], pA[0], pA[1], arrowSize, ">");
+                TArrow* line_AD = new TArrow(pA[0], pA[1], pD[0], pD[1], arrowSize, ">");
+
+                TMarker* markerA = new TMarker(pA[0], pA[1], 24);
+                TMarker* markerB = new TMarker(pB[0], pB[1], 24);
+                TMarker* markerC = new TMarker(pC[0], pC[1], 24);
+                TMarker* markerD = new TMarker(pD[0], pD[1], 24);
+
+                std::vector<TMarker*> markers = {markerA, markerB, markerC, markerD};
+
+                //std::vector<TLine*> lines = {line_AB, line_BC, line_AD, line_AC};
+                std::vector<TArrow*> lines = {line_AB, line_BC, line_CA, line_AD};
+                std::vector<Color_t> colors = {kOrange+7, kPink-3, kRed+1, kViolet-2};
+
+                for(size_t i=0; i<markers.size(); ++i) {
+                    markers[i]->SetMarkerSize(3.5);
+                    markers[i]->SetMarkerColor(colors[i]);
+                    markers[i]->Draw("same");
+                }
+
+                for(size_t i=0; i<lines.size(); ++i) {
+                    lines[i]->SetLineColorAlpha(colors[i], 0.8);
+                    lines[i]->SetLineWidth(3);
+                    lines[i]->SetLineStyle(1);
+                    lines[i]->Draw();
+                }
+
+                TLatex label_latex;
+                label_latex.SetTextSize(0.06);
+                label_latex.SetTextColor(kBlack);
+                label_latex.SetTextAlign(22);
+                label_latex.DrawLatex(pA[0], pA[1] - 1.0, "A");
+                label_latex.DrawLatex(pB[0], pB[1] + 1.0, "B");
+                label_latex.DrawLatex(pC[0], pC[1] + 1.0, "C");
+                label_latex.DrawLatex(pD[0], pD[1] - 1.0, "D");
+
+                auto extract_data_along_path = 
+                    [&](TH2D* hist, double x1, double y1, double x2, double y2, double dist_offset) ->TGraphErrors* {
+                    std::vector<double> dist, val, err_dist, err_val;
+
+                    TAxis* xAxis = hist->GetXaxis();
+                    TAxis* yAxis = hist->GetYaxis();
+
+                    int n_steps = 100;
+                    for(int i=0; i<=n_steps; ++i) {
+                        double t = (double)i / n_steps;
+                        double current_x = x1 + t * (x2 - x1);
+                        double current_y = y1 + t * (y2 - y1);
+
+                        int bin = hist->FindBin(current_x, current_y);
+
+                        if(i > 0 && hist->FindBin(x1 + (double)(i-1)/n_steps * (x2-x1), y1 + (double)(i-1)/n_steps * (y2-y1)) == bin) {
+                            continue;
+                        }
+
+                        double current_dist = dist_offset + std::sqrt(pow(current_x - x1, 2) + pow(current_y - y1, 2));
+
+                        dist.push_back(current_dist);
+                        val.push_back(hist->GetBinContent(bin));
+                        err_dist.push_back(0);
+                        err_val.push_back(hist->GetBinError(bin));
+                    }
+
+                    if(dist.empty()) return new TGraphErrors();
+                    return new TGraphErrors(dist.size(), dist.data(), val.data(), err_dist.data(), err_val.data());
+                };
+
+                double dist_AB = std::sqrt(pow(pB[0] - pA[0], 2) + pow(pB[1] - pA[1], 2));
+                double dist_BC = std::sqrt(pow(pB[0] - pC[0], 2) + pow(pB[1] - pC[1], 2));
+                double dist_AC = std::sqrt(pow(pA[0] - pC[0], 2) + pow(pA[1] - pC[1], 2));
+                double dist_AD = std::sqrt(pow(pA[0] - pD[0], 2) + pow(pA[1] - pD[1], 2));
+                // A-B-C-A-D
+                TGraphErrors* g_path_AB = extract_data_along_path(h_inpixel, pA[0], pA[1], pB[0], pB[1], 0.0);
+                TGraphErrors* g_path_BC = extract_data_along_path(h_inpixel, pB[0], pB[1], pC[0], pC[1], dist_AB);
+                TGraphErrors* g_path_CA = extract_data_along_path(h_inpixel, pC[0], pC[1], pA[0], pA[1], dist_AB + dist_BC);
+                TGraphErrors* g_path_AD = extract_data_along_path(h_inpixel, pA[0], pA[1], pD[0], pD[1], dist_AB + dist_AC + dist_BC);
+
+                pad_1d->cd();
+                TMultiGraph* mg_path = new TMultiGraph();
+                //mg_path->SetTitle(Form(";Distance along the path [um];#sqrt{#Delta x^{2} + #Delta y^{2}} [um]"));
+                mg_path->SetTitle(Form(";Distance along the path [um];%s", plot_type.z_axis_title.c_str()));
+                
+                std::vector<double> x_coords = {
+                    0.0, // A
+                    dist_AB, // B
+                    dist_AB + dist_BC, // C
+                    dist_AB + dist_BC + dist_AC, // A (return)
+                    dist_AB + dist_BC + dist_AC + dist_AD // D
+                };
+
+                std::vector<std::string> point_labels = {"A", "B", "C", "A", "D"};
+                TLine v_line;
+                v_line.SetLineStyle(2);
+                v_line.SetLineColor(kGray+2);
+                v_line.SetLineWidth(1);
+
+                TLatex label;
+                label.SetTextSize(0.04);
+                label.SetTextAlign(23);
+
+                // for(size_t i=0; i<x_coords.size(); i++) {
+                //     v_line.DrawLine(x_coords[i], y_min_range, x_coords[i], y_max_range);
+                //     label.DrawLatex(x_coords[i], y_max_range, point_labels[i].c_str());
+                // }
+
+                std::vector<TGraphErrors*> graphs = {g_path_AB, g_path_BC, g_path_CA, g_path_AD};
+                std::vector<std::string> labels = {"A #rightarrow B", "B #rightarrow C", "C #rightarrow A", "A #rightarrow D"};
+
+                for(size_t i=0; i<graphs.size(); ++i) {
+                    graphs[i]->SetLineColor(colors[i]);
+                    graphs[i]->SetLineWidth(2);
+
+                    TGraphErrors* g_err_band = (TGraphErrors*)graphs[i]->Clone();
+                    g_err_band->SetFillColorAlpha(colors[i], 0.35);
+                    g_err_band->SetFillStyle(1001); // Solid fill
+                    mg_path->Add(g_err_band, "3");
+
+                    mg_path->Add(graphs[i], "L");
+                }
+
+                mg_path->Draw("A");
+                // mg_path->GetYaxis()->SetRangeUser(0, 9);
+                // mg_path->GetXaxis()->SetTitleOffset(1.1);
+                // mg_path->GetYaxis()->SetTitleOffset(1.3);
+                //mg_path->GetYaxis()->SetLimits(y_min_range, y_max_range);
+                mg_path->GetYaxis()->SetRangeUser(plot_type.z_min, plot_type.z_max);
+                mg_path->GetXaxis()->SetTitleSize(0.06);
+                mg_path->GetXaxis()->SetLabelSize(0.04);
+                mg_path->GetXaxis()->SetTitleOffset(0.7);
+                mg_path->GetYaxis()->SetTitleSize(0.06);
+                mg_path->GetYaxis()->SetLabelSize(0.04);
+                mg_path->GetYaxis()->SetTitleOffset(0.6);
+                mg_path->GetXaxis()->SetTitleFont(42);
+                mg_path->GetYaxis()->SetTitleFont(42);
+                mg_path->GetXaxis()->SetLabelFont(42);
+                mg_path->GetYaxis()->SetLabelFont(42);
+
+                TLegend* legend_mg = new TLegend(0.8, 0.3, 1.0, 0.6);
+                legend_mg->SetFillStyle(0);
+                legend_mg->SetTextSize(0.04);
+                legend_mg->SetBorderSize(0);
+                for(size_t i=0; i<labels.size(); ++i) {
+                    legend_mg->AddEntry(graphs[i], labels[i].c_str(), "lf");
+                }
+                legend_mg->Draw();
+
+                // double y_line_min = mg_path->GetYaxis()->GetXmin();
+                // double y_line_max = mg_path->GetYaxis()->GetXmax();
+                for(size_t i=0; i<x_coords.size(); i++) {
+                    v_line.DrawLine(x_coords[i], plot_type.z_min, x_coords[i], plot_type.z_max);
+                    label.DrawLatex(x_coords[i], plot_type.z_max*1.05, point_labels[i].c_str());
+                }
+
+                ChipParameters params = {config.pixel_pitch, config.chip_type, config.voltage, seed_thd_for_file, neighbor_thd};
+                drawChipInfo(params, 0.81, 0.88);
+
+                std::string safe_legend = config.legend_label;
+                std::replace(safe_legend.begin(), safe_legend.end(), ' ', '_');
+                std::replace(safe_legend.begin(), safe_legend.end(), ',', '_'); 
+
+                std::string output_filename = Form("plot/inPixel/%s/%s/%s_%s_inPixelPath_%s_%s_%sV_Seed%s_Neighbor%s.pdf",
+                                                NAME_.c_str(),
+                                                plot_type.name.c_str(),
+                                                NAME_.c_str(),
+                                                plot_type.name.c_str(),
+                                                config.pixel_pitch.c_str(),
+                                                config.chip_type.c_str(),
+                                                config.voltage.c_str(),
+                                                seed_thd_for_file.c_str(),
+                                                neighbor_thd.c_str());
+
+                TString dir_path = gSystem->DirName(output_filename.c_str());
+                gSystem->mkdir(dir_path, kTRUE);
+                canvas_inpixel_->SaveAs(output_filename.c_str());
+            }
+
+            inputROOTFile->Close();
+            delete inputROOTFile;
+        }
+    }
 }
 
 void plot_BeamTest::BeamTest_main(int argc, char* argv[]) {
     cxxopts::Options options("plot_BeamTest::BeamTest_main", "Beamtest object code");
     options.add_options()
         ("f,file", "Json file name", cxxopts::value<std::string>())
+        ("i,inpixel", "Run in-Pixel analysis instead of comparison plots.")
         ("h,help", "show help message");
     
     auto result = options.parse(argc, argv);
@@ -567,12 +1064,37 @@ void plot_BeamTest::BeamTest_main(int argc, char* argv[]) {
         config_filename = "plot_BeamTest/json/analysis.json";
     }
 
-    std::vector<PlotConfig> my_comparison = plot_BeamTest::load_jsonConfigs(config_filename);
+    std::ifstream file(config_filename);
+    nlohmann::json j;
+    file >> j;
 
-    if(my_comparison.empty()) {
-        LOG_ERROR.source("plot_BeamTest::BeamTest_main") << "No configurations were loaded.";
+    if(j.is_null() || !j.is_object()) {
+        LOG_ERROR.source("plot_BeamTest::BeamTest_main") << "Failed to parse JSON or file is empty or invalid: " << config_filename;
         return;
     }
 
-    plot_BeamTest::run_plots(my_comparison);
+    // std::vector<PlotConfig> configs = plot_BeamTest::load_jsonConfigs(config_filename);
+
+    // if(configs.empty()) {
+    //     LOG_ERROR.source("plot_BeamTest::BeamTest_main") << "No configurations were loaded.";
+    //     return;
+    // }
+
+    if(result.count("inpixel")) {
+        LOG_STATUS.source("plot_BeamTest::BeamTest_main") << "Executing In-Pixel Analysis based on " << config_filename;
+        std::vector<PlotConfig> configs = load_jsonConfigs(j);
+        std::vector<InPixelPlotConfig> inpixel_configs = load_jsonInPixelPlotConfigs(j);
+        
+        //run_inPixelAnalysis(configs, inpixel_configs);
+        run_inPixelPathAnalysis(configs, inpixel_configs);
+        LOG_STATUS.source("plot_BeamTest::BeamTest_main") << "In-Pixel Analysis finished.";
+    } else {
+        LOG_STATUS.source("plot_BeamTest::BeamTest_main") << "Executing Comparison Plots based on " << config_filename;
+        std::vector<PlotConfig> configs = load_jsonConfigs(j);
+        
+        run_plots(configs);
+        LOG_STATUS.source("Comparison Plots finished.");
+    }
+
+    //plot_BeamTest::run_plots(my_comparison);
 }
