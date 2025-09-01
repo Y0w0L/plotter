@@ -17,6 +17,69 @@ plot_BeamTest::plot_BeamTest() {
 plot_BeamTest::~plot_BeamTest() {
 }
 
+template<typename THist>
+THist* plot_BeamTest::get_merged_object(
+    const std::string& base_file_path,
+    const std::string& object_name
+) {
+    TString dir_path = gSystem->DirName(base_file_path.c_str());
+    TString base_name = gSystem->BaseName(base_file_path.c_str());
+
+    void* drip = gSystem->OpenDirectory(dir_path);
+    if(!drip) {
+        LOG_WARNING.source("plot_BeamTest::get_merged_object") << "Cannot open directory: " << dir_path.Data();
+        return nullptr;
+    }
+
+    std::vector<std::string> matching_files;
+    const char* entry;
+    while((entry = gSystem->GetDirEntry(drip))) {
+        std::string filename = entry;
+        // search for filename=base_name + ~ + .root
+        if(filename.rfind(base_name.Data(), 0) == 0 && filename.find(".root") != std::string::npos) {
+            matching_files.push_back(std::string(dir_path.Data()) + "/" + filename);
+        }
+    }
+    gSystem->FreeDirectory(drip);
+
+    if(matching_files.empty()) {
+        LOG_WARNING.source("plot_BeamTest::get_merged_object") << "No matching files found for base: " << base_file_path;
+        return nullptr;
+    }
+
+    LOG_DEBUG.source("plot_BeamTest::get_merged_object") << "Found " << matching_files.size() << " files for merging for base: " << base_name.Data();
+    
+    THist* merged_obj = nullptr;
+    for(const auto& file_path : matching_files) {
+        TFile* file = TFile::Open(file_path.c_str());
+        if(!file || file->IsZombie()) {
+            LOG_WARNING.source("plot_BeamTest::get_merged_object") << "Cannot open file " << file_path;
+            if(file) delete file;
+            continue;
+        }
+
+        THist* h = (THist*)file->Get(object_name.c_str());
+        if(!h) {
+            LOG_WARNING.source("plot_BeamTest::get_merged_object") << "Object '" << object_name << "' not found in " << file_path;
+            file->Close();
+            delete file;
+            continue;
+        }
+
+        if(!merged_obj) {
+            merged_obj = (THist*)h->Clone();
+            merged_obj->SetDirectory(0);
+        } else {
+            merged_obj->Add(h);
+        }
+
+        file->Close();
+        delete file;
+    }
+
+    return merged_obj;
+}
+
 void plot_BeamTest::run_plots(const std::vector<PlotConfig>& configs) {
     if(configs.empty()) {
         LOG_WARNING.source("plot_BeamTest::run_plots") << "No plot configuration provided.";
@@ -89,7 +152,32 @@ void plot_BeamTest::draw_overlay_histograms(
     std::vector<TH1D*> hists_to_draw;
 
     for(const auto& config : configs) {
-        std::string input_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
+        // std::string input_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
+        //                                    DATA_DIR_PATH_.c_str(),
+        //                                    NAME_.c_str(),
+        //                                    NAME_.c_str(),
+        //                                    config.pixel_pitch.c_str(),
+        //                                    config.chip_type.c_str(),
+        //                                    config.voltage.c_str(),
+        //                                    config.seed_thd.c_str(),
+        //                                    neighbor_thd_for_all.c_str());
+
+        // TFile* inputFile = TFile::Open(input_file_path.c_str());
+        // if(!inputFile || inputFile->IsZombie()) {
+        //     LOG_WARNING.source("plot_BeamTest::draw_overlay_histograms") << "Cannot open file " << input_file_path;
+        //     if(inputFile) delete inputFile;
+        //     continue;
+        // }
+
+        // TH1D* h_clcharge = (TH1D*)inputFile->Get(Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str()));
+        // if(!h_clcharge) {
+        //     LOG_WARNING.source("plot_BeamTest::draw_overlay_histograms") << "Histogram not found in " << input_file_path;
+        //     inputFile->Close();
+        //     delete inputFile;
+        //     continue;
+        // }
+
+        std::string input_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se",
                                            DATA_DIR_PATH_.c_str(),
                                            NAME_.c_str(),
                                            NAME_.c_str(),
@@ -98,25 +186,17 @@ void plot_BeamTest::draw_overlay_histograms(
                                            config.voltage.c_str(),
                                            config.seed_thd.c_str(),
                                            neighbor_thd_for_all.c_str());
-        
-        TFile* inputFile = TFile::Open(input_file_path.c_str());
-        if(!inputFile || inputFile->IsZombie()) {
-            LOG_WARNING.source("plot_BeamTest::draw_overlay_histograms") << "Cannot open file " << input_file_path;
-            if(inputFile) delete inputFile;
-            continue;
-        }
 
-        TH1D* h_clcharge = (TH1D*)inputFile->Get(Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str()));
+        std::string hist_name = Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str());
+        TH1D* h_clcharge = get_merged_object<TH1D>(input_file_path, hist_name);
         if(!h_clcharge) {
-            LOG_WARNING.source("plot_BeamTest::draw_overlay_histograms") << "Histogram not found in " << input_file_path;
-            inputFile->Close();
-            delete inputFile;
+            LOG_WARNING.source("plot_BeamTest::draw_overlay_histograms") << "Merged histogram could not be created for base " << input_file_path;
             continue;
         }
 
         h_clcharge->SetDirectory(0);
-        inputFile->Close();
-        delete inputFile;
+        // inputFile->Close();
+        // delete inputFile;
 
         h_clcharge->Rebin(10);
         if(h_clcharge->GetEntries() > 0) {
@@ -171,30 +251,50 @@ TGraphErrors* plot_BeamTest::create_graph_data(
             seed_thd_for_file = thd;
         }
 
-        std::string input_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
+        // std::string input_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
+        //                                    DATA_DIR_PATH_.c_str(),
+        //                                    NAME_.c_str(),
+        //                                    NAME_.c_str(),
+        //                                    config.pixel_pitch.c_str(),
+        //                                    config.chip_type.c_str(),
+        //                                    config.voltage.c_str(),
+        //                                    seed_thd_for_file.c_str(), //config.seed_thd.c_str(),
+        //                                    thd.c_str());
+
+        // TFile* inputFile = TFile::Open(input_file_path.c_str());
+        // if(!inputFile || inputFile->IsZombie()) {
+        //     LOG_WARNING.source("plot_BeamTest::created_graph_data") << "Cannot open file " << input_file_path;
+        //     if(inputFile) delete inputFile;
+        //         continue;
+        // }
+
+        // TH1D* h_residual = (TH1D*)inputFile->Get(Form("AnalysisCE65/%s/local_residuals/residualsX", DUT_NAME_.c_str()));
+        // TH1D* h_clsize = (TH1D*)inputFile->Get(Form("AnalysisCE65/%s/cluster/clusterSize", DUT_NAME_.c_str()));
+
+        // if(!h_residual || !h_clsize) {
+        //     LOG_WARNING.source("plot_BeamTest::create_graph_data") << "Histogram not found in " << input_file_path;
+        //     inputFile->Close();
+        //     delete inputFile;
+        //     continue;
+        // }
+
+        std::string base_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se",
                                            DATA_DIR_PATH_.c_str(),
                                            NAME_.c_str(),
                                            NAME_.c_str(),
                                            config.pixel_pitch.c_str(),
                                            config.chip_type.c_str(),
                                            config.voltage.c_str(),
-                                           seed_thd_for_file.c_str(), //config.seed_thd.c_str(),
+                                           seed_thd_for_file.c_str(),
                                            thd.c_str());
 
-        TFile* inputFile = TFile::Open(input_file_path.c_str());
-        if(!inputFile || inputFile->IsZombie()) {
-            LOG_WARNING.source("plot_BeamTest::created_graph_data") << "Cannot open file " << input_file_path;
-            if(inputFile) delete inputFile;
-                continue;
-        }
-
-        TH1D* h_residual = (TH1D*)inputFile->Get(Form("AnalysisCE65/%s/local_residuals/residualsX", DUT_NAME_.c_str()));
-        TH1D* h_clsize = (TH1D*)inputFile->Get(Form("AnalysisCE65/%s/cluster/clusterSize", DUT_NAME_.c_str()));
+        TH1D* h_residual = get_merged_object<TH1D>(base_file_path, Form("AnalysisCE65/%s/local_residuals/residualsX", DUT_NAME_.c_str()));
+        TH1D* h_clsize = get_merged_object<TH1D>(base_file_path, Form("AnalysisCE65/%s/cluster/clusterSize", DUT_NAME_.c_str()));
 
         if(!h_residual || !h_clsize) {
-            LOG_WARNING.source("plot_BeamTest::create_graph_data") << "Histogram not found in " << input_file_path;
-            inputFile->Close();
-            delete inputFile;
+            LOG_WARNING.source("plot_BeamTest::create_graph_data") << "One or more merged histograms not found for base " << base_file_path;
+            if(h_residual) delete h_residual;
+            if(h_clsize) delete h_clsize;
             continue;
         }
 
@@ -216,8 +316,8 @@ TGraphErrors* plot_BeamTest::create_graph_data(
         x_errs.push_back(0);
         y_errs.push_back(y_err);
 
-        inputFile->Close();
-        delete inputFile;
+        // inputFile->Close();
+        // delete inputFile;
     }
 
     return new TGraphErrors(x_vals.size(), x_vals.data(), y_vals.data(), x_errs.data(), y_errs.data());
@@ -402,34 +502,52 @@ void plot_BeamTest::check_residual_fits(
                 seed_thd_for_file = thd;
             }
 
-            //const std::string& thd = thresholds[current_index];
-            std::string input_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
-                                               DATA_DIR_PATH_.c_str(),
-                                               NAME_.c_str(),
-                                               NAME_.c_str(),
-                                               config.pixel_pitch.c_str(),
-                                               config.chip_type.c_str(),
-                                               config.voltage.c_str(),
-                                               seed_thd_for_file.c_str(),  //config.seed_thd.c_str(),
-                                               thd.c_str());
+            // //const std::string& thd = thresholds[current_index];
+            // std::string input_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
+            //                                    DATA_DIR_PATH_.c_str(),
+            //                                    NAME_.c_str(),
+            //                                    NAME_.c_str(),
+            //                                    config.pixel_pitch.c_str(),
+            //                                    config.chip_type.c_str(),
+            //                                    config.voltage.c_str(),
+            //                                    seed_thd_for_file.c_str(),  //config.seed_thd.c_str(),
+            //                                    thd.c_str());
             
-            TFile* inputFile = TFile::Open(input_file_path.c_str());
-            if(!inputFile || inputFile->IsZombie()) {
-                LOG_WARNING.source("plot_BeamTest::check_residual_fits") << "Cannot open file " << input_file_path;
-                if(inputFile) delete inputFile;
-                continue;
-            }
+            // TFile* inputFile = TFile::Open(input_file_path.c_str());
+            // if(!inputFile || inputFile->IsZombie()) {
+            //     LOG_WARNING.source("plot_BeamTest::check_residual_fits") << "Cannot open file " << input_file_path;
+            //     if(inputFile) delete inputFile;
+            //     continue;
+            // }
 
-            TH1D* h_res = (TH1D*)inputFile->Get(Form("AnalysisCE65/%s/local_residuals/residualsX", DUT_NAME_.c_str()));
+            // TH1D* h_res = (TH1D*)inputFile->Get(Form("AnalysisCE65/%s/local_residuals/residualsX", DUT_NAME_.c_str()));
+            // if(!h_res) {
+            //     LOG_WARNING.source("plot_BeamTest::check_residual_fits") << "Histogram not found in " << input_file_path;
+            //     delete inputFile;
+            //     continue;
+            // }
+
+            // h_res->SetDirectory(0);
+            // inputFile->Close();
+            // delete inputFile;
+
+            std::string base_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se",
+                                                 DATA_DIR_PATH_.c_str(),
+                                                 NAME_.c_str(),
+                                                 NAME_.c_str(),
+                                                 config.pixel_pitch.c_str(),
+                                                 config.chip_type.c_str(),
+                                                 config.voltage.c_str(),
+                                                 seed_thd_for_file.c_str(),
+                                                 thd.c_str());
+            
+            std::string hist_name = Form("AnalysisCE65/%s/local_residuals/residualsX", DUT_NAME_.c_str());
+            TH1D* h_res = get_merged_object<TH1D>(base_file_path, hist_name);
+            
             if(!h_res) {
-                LOG_WARNING.source("plot_BeamTest::check_residual_fits") << "Histogram not found in " << input_file_path;
-                delete inputFile;
+                LOG_WARNING.source("plot_BeamTest::check_residual_fits") << "Merged histogram not found for " << base_file_path;
                 continue;
             }
-
-            h_res->SetDirectory(0);
-            inputFile->Close();
-            delete inputFile;
 
             h_res->SetTitle(";x_{track}-x_{hit} [um];normalized counts");
             //h_res->GetXaxis()->SetRangeUser(-50, 50);
@@ -680,21 +798,30 @@ void plot_BeamTest::run_inPixelAnalysis(
 
             ChipParameters current_params = {config.pixel_pitch, config.chip_type, config.voltage, seed_thd_for_file, neighbor_thd};
 
-            std::string file_path = Form("%s%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
-                                         data_dir_path.c_str(),
-                                         NAME_.c_str(),
-                                         config.pixel_pitch.c_str(),
-                                         config.chip_type.c_str(),
-                                         config.voltage.c_str(),
-                                         seed_thd_for_file.c_str(),
-                                         neighbor_thd.c_str());
+            // std::string file_path = Form("%s%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
+            //                              data_dir_path.c_str(),
+            //                              NAME_.c_str(),
+            //                              config.pixel_pitch.c_str(),
+            //                              config.chip_type.c_str(),
+            //                              config.voltage.c_str(),
+            //                              seed_thd_for_file.c_str(),
+            //                              neighbor_thd.c_str());
 
-            TFile* inputROOTFile = TFile::Open(file_path.c_str());
-            if(!inputROOTFile || inputROOTFile->IsZombie()) {
-                LOG_ERROR.source("plot_BeamTest::run_inPixelAnalysis") << "Failed to open file: " << file_path;
-                if(inputROOTFile) delete inputROOTFile;
-                continue;
-            }
+            // TFile* inputROOTFile = TFile::Open(file_path.c_str());
+            // if(!inputROOTFile || inputROOTFile->IsZombie()) {
+            //     LOG_ERROR.source("plot_BeamTest::run_inPixelAnalysis") << "Failed to open file: " << file_path;
+            //     if(inputROOTFile) delete inputROOTFile;
+            //     continue;
+            // }
+
+            std::string base_file_path = Form("%s%s_%s_%s_%sV_SeedThd%se_NeighborThd%se",
+                                                 data_dir_path.c_str(),
+                                                 NAME_.c_str(),
+                                                 config.pixel_pitch.c_str(),
+                                                 config.chip_type.c_str(),
+                                                 config.voltage.c_str(),
+                                                 seed_thd_for_file.c_str(),
+                                                 neighbor_thd.c_str());
 
             std::string chip_variation_name = Form("%s_%s_%sV_SeedThd%se_NeighborThd%se",
                                                    config.pixel_pitch.c_str(),
@@ -706,15 +833,26 @@ void plot_BeamTest::run_inPixelAnalysis(
             for(auto plot_config : plot_types) {
                 plot_config.hist_path = Form(plot_config.hist_path.c_str(), DUT_NAME_.c_str());
 
-                TProfile2D* prof = (TProfile2D*)inputROOTFile->Get(plot_config.hist_path.c_str());
+                // TProfile2D* prof = (TProfile2D*)inputROOTFile->Get(plot_config.hist_path.c_str());
+                // if(!prof) {
+                //     LOG_WARNING.source("plot_BeamTest::run_inPixelAnalysis") << "Histogram not found: " << plot_config.hist_path << "in file " << file_path;
+                //     continue;
+                // }
+
+                // //TH2D* hist = prof->Projection2D();
+                // TH2D* hist = plot_ExperimentData::convert_toTH2D(prof);
+                // hist->SetDirectory(0);
+
+                TProfile2D* prof = get_merged_object<TProfile2D>(base_file_path, plot_config.hist_path);
                 if(!prof) {
-                    LOG_WARNING.source("plot_BeamTest::run_inPixelAnalysis") << "Histogram not found: " << plot_config.hist_path << "in file " << file_path;
+                    LOG_WARNING.source("plot_BeamTest::run_inPixelAnalysis") << "Merged TProfile2D not found: " << plot_config.hist_path << " for base " << base_file_path;
                     continue;
                 }
 
-                //TH2D* hist = prof->Projection2D();
                 TH2D* hist = plot_ExperimentData::convert_toTH2D(prof);
                 hist->SetDirectory(0);
+                delete prof;
+
 
                 createAndSaveInPixelPlot(hist,
                                          plot_config,
@@ -726,8 +864,8 @@ void plot_BeamTest::run_inPixelAnalysis(
 
                 delete hist;
             }
-            inputROOTFile->Close();
-            delete inputROOTFile;
+            // inputROOTFile->Close();
+            // delete inputROOTFile;
         }
     }
 }
@@ -757,38 +895,60 @@ void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& confi
             double neighbor_val = std::stod(neighbor_thd);
             std::string seed_thd_for_file = (neighbor_val > seed_val) ? neighbor_thd : config.seed_thd;
 
-            std::string file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
-                                        DATA_DIR_PATH_.c_str(),
-                                        NAME_.c_str(),
-                                        NAME_.c_str(),
-                                        config.pixel_pitch.c_str(),
-                                        config.chip_type.c_str(),
-                                        config.voltage.c_str(),
-                                        seed_thd_for_file.c_str(),
-                                        neighbor_thd.c_str());
+            // std::string file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
+            //                             DATA_DIR_PATH_.c_str(),
+            //                             NAME_.c_str(),
+            //                             NAME_.c_str(),
+            //                             config.pixel_pitch.c_str(),
+            //                             config.chip_type.c_str(),
+            //                             config.voltage.c_str(),
+            //                             seed_thd_for_file.c_str(),
+            //                             neighbor_thd.c_str());
                                 
-            TFile* inputROOTFile = TFile::Open(file_path.c_str());
-            if(!inputROOTFile || inputROOTFile->IsZombie()) {
-                LOG_ERROR.source("plot_BeamTest::run_inPixelPathAnalysis") << "Failed to open file: " << file_path;
-                if(inputROOTFile) delete inputROOTFile;
-                return;
-            }
+            // TFile* inputROOTFile = TFile::Open(file_path.c_str());
+            // if(!inputROOTFile || inputROOTFile->IsZombie()) {
+            //     LOG_ERROR.source("plot_BeamTest::run_inPixelPathAnalysis") << "Failed to open file: " << file_path;
+            //     if(inputROOTFile) delete inputROOTFile;
+            //     return;
+            // }
+
+            std::string base_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se",
+                                           DATA_DIR_PATH_.c_str(),
+                                           NAME_.c_str(),
+                                           NAME_.c_str(),
+                                           config.pixel_pitch.c_str(),
+                                           config.chip_type.c_str(),
+                                           config.voltage.c_str(),
+                                           seed_thd_for_file.c_str(),
+                                           neighbor_thd.c_str());
 
             for(const auto plot_type : plot_types) {
                 std::string hist_path = Form(plot_type.hist_path.c_str(), DUT_NAME_.c_str());
-                TProfile2D* prof = (TProfile2D*)inputROOTFile->Get(hist_path.c_str());
-                if(!prof) {
-                    LOG_ERROR.source("plot_BeamTest::run_inPixelPathAnalysis") << "Histogram not found: " << hist_path << " in " << file_path;
-                    inputROOTFile->Close();
-                    delete inputROOTFile;
-                    return;
-                }
+                
+                // TProfile2D* prof = (TProfile2D*)inputROOTFile->Get(hist_path.c_str());
+                // if(!prof) {
+                //     LOG_ERROR.source("plot_BeamTest::run_inPixelPathAnalysis") << "Histogram not found: " << hist_path << " in " << file_path;
+                //     inputROOTFile->Close();
+                //     delete inputROOTFile;
+                //     return;
+                // }
 
-                canvas_inpixel_->Clear();
+                TProfile2D* prof = get_merged_object<TProfile2D>(base_file_path, hist_path);
+                if(!prof) {
+                    LOG_WARNING.source("plot_BeamTest::run_inPixelAnalysis") << "Merged TProfile2D not found: " << hist_path << " for base " << base_file_path;
+                    continue;
+                }
 
                 TH2D* h_inpixel = plot_ExperimentData::convert_toTH2D(prof);
                 h_inpixel->Scale(plot_type.scale_factor);
                 h_inpixel->SetDirectory(0);
+                delete prof;
+
+                canvas_inpixel_->Clear();
+
+                // TH2D* h_inpixel = plot_ExperimentData::convert_toTH2D(prof);
+                // h_inpixel->Scale(plot_type.scale_factor);
+                // h_inpixel->SetDirectory(0);
                 // inputROOTFile->Close();
                 // delete inputROOTFile;
 
@@ -1036,8 +1196,8 @@ void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& confi
                 canvas_inpixel_->SaveAs(output_filename.c_str());
             }
 
-            inputROOTFile->Close();
-            delete inputROOTFile;
+            // inputROOTFile->Close();
+            // delete inputROOTFile;
         }
     }
 }

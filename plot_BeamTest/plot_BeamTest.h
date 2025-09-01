@@ -23,6 +23,11 @@
 #include <TColor.h>
 #include <TArrow.h>
 #include <TMarker.h>
+#include <TList.h>
+#include <TObjString.h>
+#include <TProfile2D.h>
+#include <TSystem.h>
+#include <TCollection.h>
 
 // My function headers
 #include "Messenger/Messenger.h"
@@ -136,6 +141,9 @@ private:
         const std::string& base_path,
         const std::string& chip_variation_name
     );
+
+    template<typename THist>
+    THist* get_merged_object(const std::string& base_file_path, const std::string& object_name);
 
     static Color_t string_to_ROOTColor(const std::string& color_str);
 
