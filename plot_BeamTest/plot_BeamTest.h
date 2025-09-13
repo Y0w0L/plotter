@@ -41,7 +41,8 @@
 // Data source
 enum class DataSource {
     KEK202412,
-    SPS202404
+    SPS202404,
+    SingleChipSim,
 };
 
 struct PlotConfig {
@@ -78,6 +79,25 @@ struct InPixelPlotConfig {
     double scale_factor = 1.0;
 };
 
+struct PathPoint {
+    std::string label;
+    std::string x_expr; // x coordinates formula (ex, "half_pitch - inset_x")
+    std::string y_expr;
+};
+
+struct PathSegment {
+    std::string from; // Start point
+    std::string to;   // Goal point
+    std::string label;
+    std::string color_str;
+};
+
+struct PathConfig {
+    std::string name;
+    std::vector<PathPoint> points;
+    std::vector<PathSegment> segments;
+};
+
 class plot_BeamTest {
 public:
     // Assign data source in constructer
@@ -96,14 +116,17 @@ public:
         const std::string& quantity_to_extract
     );
 
-    std::vector<PlotConfig> load_jsonConfigs(const nlohmann::json& j);
-    std::vector<InPixelPlotConfig> load_jsonInPixelPlotConfigs(const nlohmann::json& j);
-
     void BeamTest_main(int argc, char* argv[]);
 
     void run_inPixelAnalysis(const std::vector<PlotConfig>& configs, const std::vector<InPixelPlotConfig>& plot_types);
 
     void run_inPixelPathAnalysis(const std::vector<PlotConfig>& configs, const std::vector<InPixelPlotConfig>& plot_types);
+
+    // void run_inPixelPathAnalysis(
+    //     const std::vector<PlotConfig>& plotConfigs,
+    //     const std::vector<InPixelPlotConfig>& inPixelPlotConfigs,
+    //     const std::vector<PathConfig>& pathConfigs
+    // );
 
 private:
     // helper functions
@@ -141,6 +164,12 @@ private:
         const std::string& base_path,
         const std::string& chip_variation_name
     );
+
+    double evaluate_expr(const std::string&  expr, double half_pitch, double inset_x, double inset_y);
+
+    std::vector<PlotConfig> load_jsonConfigs(const nlohmann::json& j);
+    std::vector<InPixelPlotConfig> load_jsonInPixelPlotConfigs(const nlohmann::json& j);
+    std::vector<PathConfig> load_jsonPathConfigs(const nlohmann::json& j);
 
     template<typename THist>
     THist* get_merged_object(const std::string& base_file_path, const std::string& object_name);

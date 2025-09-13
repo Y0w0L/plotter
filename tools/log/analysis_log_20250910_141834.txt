@@ -1,0 +1,399 @@
+
+========================================================================
+>>> Starting Job: 
+    Input: ce65_p15_std_Thd0e_e3GeV_masetti.root
+    Output: ce65sim202505_15_std_10_SeedThd0e_NeighborThd0e_0.root
+    Params: pitch=15, seed=0, neighbor=0
+========================================================================
+Using existing file: /home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd0e_e3GeV_masetti.root
+File '/home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd0e_e3GeV_masetti.root' opened with 100000 events.
+Creating histograms...
+Analysis finished.
+----------------- Report -----------------
+Total Events                            :100000
+Skipped: No pixel hits                  :49219
+Skipped: Multiple primary particles     :197
+Clusters Checked                        :50923
+Skipped: Hit at EDGE events             :12007
+Skipped: Cluster has no primary particle:45
+Skipped: Residual > 40 um               :3
+Clusters Accepted                       :38868
+------------------------------------------
+Histograms written to /home/towa/alice3/hist/ce65sim202505/ce65sim202505_15_std_10_SeedThd0e_NeighborThd0e_0.root
+------------------------------------------
+Start time : 2025/09/10 14:18:34
+End time   : 2025/09/10 14:22:12
+Total time : 217.59 seconds
+Which is:     3 minute(s) and 37.59 second(s)
+------------------------------------------
+
+========================================================================
+>>> Starting Job: 
+    Input: ce65_p15_std_Thd0e_e3GeV_masetti.root
+    Output: ce65sim202505_15_std_10_SeedThd0e_NeighborThd50e_0.root
+    Params: pitch=15, seed=0, neighbor=50
+========================================================================
+Using existing file: /home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd0e_e3GeV_masetti.root
+File '/home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd0e_e3GeV_masetti.root' opened with 100000 events.
+Creating histograms...
+Analysis finished.
+----------------- Report -----------------
+Total Events                            :100000
+Skipped: No pixel hits                  :49219
+Skipped: Multiple primary particles     :197
+Clusters Checked                        :96312
+Skipped: Hit at EDGE events             :21097
+Skipped: Cluster has no primary particle:1462
+Skipped: Residual > 40 um               :4
+Clusters Accepted                       :73749
+------------------------------------------
+Histograms written to /home/towa/alice3/hist/ce65sim202505/ce65sim202505_15_std_10_SeedThd0e_NeighborThd50e_0.root
+------------------------------------------
+Start time : 2025/09/10 14:22:14
+End time   : 2025/09/10 14:25:55
+Total time : 221.19 seconds
+Which is:     3 minute(s) and 41.19 second(s)
+------------------------------------------
+
+========================================================================
+>>> Starting Job: 
+    Input: ce65_p15_std_Thd0e_e3GeV_masetti.root
+    Output: ce65sim202505_15_std_10_SeedThd0e_NeighborThd100e_0.root
+    Params: pitch=15, seed=0, neighbor=100
+========================================================================
+Using existing file: /home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd0e_e3GeV_masetti.root
+File '/home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd0e_e3GeV_masetti.root' opened with 100000 events.
+Creating histograms...
+Analysis finished.
+----------------- Report -----------------
+Total Events                            :100000
+Skipped: No pixel hits                  :49219
+Skipped: Multiple primary particles     :197
+Clusters Checked                        :111842
+Skipped: Hit at EDGE events             :24211
+Skipped: Cluster has no primary particle:1688
+Skipped: Residual > 40 um               :3
+Clusters Accepted                       :85940
+------------------------------------------
+Histograms written to /home/towa/alice3/hist/ce65sim202505/ce65sim202505_15_std_10_SeedThd0e_NeighborThd100e_0.root
+------------------------------------------
+Start time : 2025/09/10 14:25:57
+End time   : 2025/09/10 14:29:42
+Total time : 224.78 seconds
+Which is:     3 minute(s) and 44.78 second(s)
+------------------------------------------
+
+========================================================================
+>>> Starting Job: 
+    Input: ce65_p15_std_Thd0e_e3GeV_masetti.root
+    Output: ce65sim202505_15_std_10_SeedThd0e_NeighborThd200e_0.root
+    Params: pitch=15, seed=0, neighbor=200
+========================================================================
+Using existing file: /home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd0e_e3GeV_masetti.root
+File '/home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd0e_e3GeV_masetti.root' opened with 100000 events.
+Creating histograms...
+Analysis finished.
+----------------- Report -----------------
+Total Events                            :100000
+Skipped: No pixel hits                  :49219
+Skipped: Multiple primary particles     :197
+Clusters Checked                        :128285
+Skipped: Hit at EDGE events             :27514
+Skipped: Cluster has no primary particle:1877
+Skipped: Residual > 40 um               :3
+Clusters Accepted                       :98891
+------------------------------------------
+Histograms written to /home/towa/alice3/hist/ce65sim202505/ce65sim202505_15_std_10_SeedThd0e_NeighborThd200e_0.root
+------------------------------------------
+Start time : 2025/09/10 14:29:43
+End time   : 2025/09/10 14:33:15
+Total time : 212.20 seconds
+Which is:     3 minute(s) and 32.20 second(s)
+------------------------------------------
+
+========================================================================
+>>> Starting Job: 
+    Input: ce65_p15_std_Thd0e_e3GeV_masetti.root
+    Output: ce65sim202505_15_std_10_SeedThd0e_NeighborThd300e_0.root
+    Params: pitch=15, seed=0, neighbor=300
+========================================================================
+Using existing file: /home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd0e_e3GeV_masetti.root
+File '/home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd0e_e3GeV_masetti.root' opened with 100000 events.
+Creating histograms...
+Analysis finished.
+----------------- Report -----------------
+Total Events                            :100000
+Skipped: No pixel hits                  :49219
+Skipped: Multiple primary particles     :197
+Clusters Checked                        :136880
+Skipped: Hit at EDGE events             :29232
+Skipped: Cluster has no primary particle:1958
+Skipped: Residual > 40 um               :2
+Clusters Accepted                       :105688
+------------------------------------------
+Histograms written to /home/towa/alice3/hist/ce65sim202505/ce65sim202505_15_std_10_SeedThd0e_NeighborThd300e_0.root
+------------------------------------------
+Start time : 2025/09/10 14:33:17
+End time   : 2025/09/10 14:36:43
+Total time : 206.29 seconds
+Which is:     3 minute(s) and 26.29 second(s)
+------------------------------------------
+
+========================================================================
+>>> Starting Job: 
+    Input: ce65_p15_std_Thd0e_e3GeV_masetti.root
+    Output: ce65sim202505_15_std_10_SeedThd0e_NeighborThd400e_0.root
+    Params: pitch=15, seed=0, neighbor=400
+========================================================================
+Using existing file: /home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd0e_e3GeV_masetti.root
+File '/home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd0e_e3GeV_masetti.root' opened with 100000 events.
+Creating histograms...
+Analysis finished.
+----------------- Report -----------------
+Total Events                            :100000
+Skipped: No pixel hits                  :49219
+Skipped: Multiple primary particles     :197
+Clusters Checked                        :141615
+Skipped: Hit at EDGE events             :30245
+Skipped: Cluster has no primary particle:2028
+Skipped: Residual > 40 um               :2
+Clusters Accepted                       :109340
+------------------------------------------
+Histograms written to /home/towa/alice3/hist/ce65sim202505/ce65sim202505_15_std_10_SeedThd0e_NeighborThd400e_0.root
+------------------------------------------
+Start time : 2025/09/10 14:36:45
+End time   : 2025/09/10 14:40:24
+Total time : 219.42 seconds
+Which is:     3 minute(s) and 39.42 second(s)
+------------------------------------------
+
+========================================================================
+>>> Starting Job: 
+    Input: ce65_p15_std_Thd0e_e3GeV_masetti.root
+    Output: ce65sim202505_15_std_10_SeedThd0e_NeighborThd500e_0.root
+    Params: pitch=15, seed=0, neighbor=500
+========================================================================
+Using existing file: /home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd0e_e3GeV_masetti.root
+File '/home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd0e_e3GeV_masetti.root' opened with 100000 events.
+Creating histograms...
+Analysis finished.
+----------------- Report -----------------
+Total Events                            :100000
+Skipped: No pixel hits                  :49219
+Skipped: Multiple primary particles     :197
+Clusters Checked                        :144159
+Skipped: Hit at EDGE events             :30773
+Skipped: Cluster has no primary particle:2072
+Skipped: Residual > 40 um               :2
+Clusters Accepted                       :111312
+------------------------------------------
+Histograms written to /home/towa/alice3/hist/ce65sim202505/ce65sim202505_15_std_10_SeedThd0e_NeighborThd500e_0.root
+------------------------------------------
+Start time : 2025/09/10 14:40:26
+End time   : 2025/09/10 14:44:03
+Total time : 217.29 seconds
+Which is:     3 minute(s) and 37.29 second(s)
+------------------------------------------
+
+========================================================================
+>>> Starting Job: 
+    Input: ce65_p15_std_Thd0e_e3GeV_masetti.root
+    Output: ce65sim202505_15_std_10_SeedThd0e_NeighborThd1000e_0.root
+    Params: pitch=15, seed=0, neighbor=1000
+========================================================================
+Using existing file: /home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd0e_e3GeV_masetti.root
+File '/home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd0e_e3GeV_masetti.root' opened with 100000 events.
+Creating histograms...
+Analysis finished.
+----------------- Report -----------------
+Total Events                            :100000
+Skipped: No pixel hits                  :49219
+Skipped: Multiple primary particles     :197
+Clusters Checked                        :147633
+Skipped: Hit at EDGE events             :31488
+Skipped: Cluster has no primary particle:2225
+Skipped: Residual > 40 um               :2
+Clusters Accepted                       :113918
+------------------------------------------
+Histograms written to /home/towa/alice3/hist/ce65sim202505/ce65sim202505_15_std_10_SeedThd0e_NeighborThd1000e_0.root
+------------------------------------------
+Start time : 2025/09/10 14:44:05
+End time   : 2025/09/10 14:47:34
+Total time : 209.07 seconds
+Which is:     3 minute(s) and 29.07 second(s)
+------------------------------------------
+
+========================================================================
+>>> Starting Job: 
+    Input: ce65_p15_std_Thd0e_e3GeV_masetti.root
+    Output: ce65sim202505_15_std_10_SeedThd0e_NeighborThd1500e_0.root
+    Params: pitch=15, seed=0, neighbor=1500
+========================================================================
+Using existing file: /home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd0e_e3GeV_masetti.root
+File '/home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd0e_e3GeV_masetti.root' opened with 100000 events.
+Creating histograms...
+Analysis finished.
+----------------- Report -----------------
+Total Events                            :100000
+Skipped: No pixel hits                  :49219
+Skipped: Multiple primary particles     :197
+Clusters Checked                        :148180
+Skipped: Hit at EDGE events             :31595
+Skipped: Cluster has no primary particle:2306
+Skipped: Residual > 40 um               :2
+Clusters Accepted                       :114277
+------------------------------------------
+Histograms written to /home/towa/alice3/hist/ce65sim202505/ce65sim202505_15_std_10_SeedThd0e_NeighborThd1500e_0.root
+------------------------------------------
+Start time : 2025/09/10 14:47:36
+End time   : 2025/09/10 14:51:21
+Total time : 225.24 seconds
+Which is:     3 minute(s) and 45.24 second(s)
+------------------------------------------
+
+========================================================================
+>>> Starting Job: 
+    Input: ce65_p15_std_Thd10e_e3GeV_masetti.root
+    Output: ce65sim202505_15_std_10_SeedThd0e_NeighborThd0e_1.root
+    Params: pitch=15, seed=0, neighbor=0
+========================================================================
+Using existing file: /home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd10e_e3GeV_masetti.root
+File '/home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd10e_e3GeV_masetti.root' opened with 100000 events.
+Creating histograms...
+Analysis finished.
+----------------- Report -----------------
+Total Events                            :100000
+Skipped: No pixel hits                  :48982
+Skipped: Multiple primary particles     :212
+Clusters Checked                        :51153
+Skipped: Hit at EDGE events             :12043
+Skipped: Cluster has no primary particle:40
+Skipped: Residual > 40 um               :6
+Clusters Accepted                       :39064
+------------------------------------------
+Histograms written to /home/towa/alice3/hist/ce65sim202505/ce65sim202505_15_std_10_SeedThd0e_NeighborThd0e_1.root
+------------------------------------------
+Start time : 2025/09/10 14:51:23
+End time   : 2025/09/10 14:55:06
+Total time : 223.49 seconds
+Which is:     3 minute(s) and 43.49 second(s)
+------------------------------------------
+
+========================================================================
+>>> Starting Job: 
+    Input: ce65_p15_std_Thd10e_e3GeV_masetti.root
+    Output: ce65sim202505_15_std_10_SeedThd0e_NeighborThd50e_1.root
+    Params: pitch=15, seed=0, neighbor=50
+========================================================================
+Using existing file: /home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd10e_e3GeV_masetti.root
+File '/home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd10e_e3GeV_masetti.root' opened with 100000 events.
+Creating histograms...
+Analysis finished.
+----------------- Report -----------------
+Total Events                            :100000
+Skipped: No pixel hits                  :48982
+Skipped: Multiple primary particles     :212
+Clusters Checked                        :92236
+Skipped: Hit at EDGE events             :20194
+Skipped: Cluster has no primary particle:1343
+Skipped: Residual > 40 um               :6
+Clusters Accepted                       :70693
+------------------------------------------
+Histograms written to /home/towa/alice3/hist/ce65sim202505/ce65sim202505_15_std_10_SeedThd0e_NeighborThd50e_1.root
+------------------------------------------
+Start time : 2025/09/10 14:55:08
+End time   : 2025/09/10 14:58:44
+Total time : 216.12 seconds
+Which is:     3 minute(s) and 36.12 second(s)
+------------------------------------------
+
+========================================================================
+>>> Starting Job: 
+    Input: ce65_p15_std_Thd10e_e3GeV_masetti.root
+    Output: ce65sim202505_15_std_10_SeedThd0e_NeighborThd100e_1.root
+    Params: pitch=15, seed=0, neighbor=100
+========================================================================
+Using existing file: /home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd10e_e3GeV_masetti.root
+File '/home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd10e_e3GeV_masetti.root' opened with 100000 events.
+Creating histograms...
+Analysis finished.
+----------------- Report -----------------
+Total Events                            :100000
+Skipped: No pixel hits                  :48982
+Skipped: Multiple primary particles     :212
+Clusters Checked                        :108060
+Skipped: Hit at EDGE events             :23394
+Skipped: Cluster has no primary particle:1554
+Skipped: Residual > 40 um               :6
+Clusters Accepted                       :83106
+------------------------------------------
+Histograms written to /home/towa/alice3/hist/ce65sim202505/ce65sim202505_15_std_10_SeedThd0e_NeighborThd100e_1.root
+------------------------------------------
+Start time : 2025/09/10 14:58:46
+End time   : 2025/09/10 15:02:24
+Total time : 218.06 seconds
+Which is:     3 minute(s) and 38.06 second(s)
+------------------------------------------
+
+========================================================================
+>>> Starting Job: 
+    Input: ce65_p15_std_Thd10e_e3GeV_masetti.root
+    Output: ce65sim202505_15_std_10_SeedThd0e_NeighborThd200e_1.root
+    Params: pitch=15, seed=0, neighbor=200
+========================================================================
+Using existing file: /home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd10e_e3GeV_masetti.root
+File '/home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd10e_e3GeV_masetti.root' opened with 100000 events.
+Creating histograms...
+Analysis finished.
+----------------- Report -----------------
+Total Events                            :100000
+Skipped: No pixel hits                  :48982
+Skipped: Multiple primary particles     :212
+Clusters Checked                        :124606
+Skipped: Hit at EDGE events             :26725
+Skipped: Cluster has no primary particle:1748
+Skipped: Residual > 40 um               :5
+Clusters Accepted                       :96128
+------------------------------------------
+Histograms written to /home/towa/alice3/hist/ce65sim202505/ce65sim202505_15_std_10_SeedThd0e_NeighborThd200e_1.root
+------------------------------------------
+Start time : 2025/09/10 15:02:26
+End time   : 2025/09/10 15:05:56
+Total time : 210.62 seconds
+Which is:     3 minute(s) and 30.62 second(s)
+------------------------------------------
+
+========================================================================
+>>> Starting Job: 
+    Input: ce65_p15_std_Thd10e_e3GeV_masetti.root
+    Output: ce65sim202505_15_std_10_SeedThd0e_NeighborThd300e_1.root
+    Params: pitch=15, seed=0, neighbor=300
+========================================================================
+Using existing file: /home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd10e_e3GeV_masetti.root
+File '/home/towa/alice3/data/ce65_sim_202505/n10v/ce65_p15_std_Thd10e_e3GeV_masetti.root' opened with 100000 events.
+Creating histograms...
+Analysis finished.
+----------------- Report -----------------
+Total Events                            :100000
+Skipped: No pixel hits                  :48982
+Skipped: Multiple primary particles     :212
+Clusters Checked                        :133420
+Skipped: Hit at EDGE events             :28516
+Skipped: Cluster has no primary particle:1841
+Skipped: Residual > 40 um               :3
+Clusters Accepted                       :103060
+------------------------------------------
+Histograms written to /home/towa/alice3/hist/ce65sim202505/ce65sim202505_15_std_10_SeedThd0e_NeighborThd300e_1.root
+------------------------------------------
+Start time : 2025/09/10 15:05:58
+End time   : 2025/09/10 15:09:39
+Total time : 221.45 seconds
+Which is:     3 minute(s) and 41.45 second(s)
+------------------------------------------
+
+========================================================================
+>>> Starting Job: 
+    Input: ce65_p15_std_Thd10e_e3GeV_masetti.root
+    Output: ce65sim202505_15_std_10_SeedThd0e_NeighborThd400e_1.root
+    Params: pitch=15, seed=0, neighbor=400
+========================================================================

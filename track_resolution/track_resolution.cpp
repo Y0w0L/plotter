@@ -11,7 +11,8 @@ const Particle PION_M = {"pi-", 139.6, -1};
 const Particle PROTON = {"proton", 938.3, 1};
 
 track_resolution::track_resolution() {
-    std::cout << "track_resolution object is created" << std::endl;
+    //std::cout << "track_resolution object is created" << std::endl;
+    LOG_INFO.source("track_resolution::track_resolution") << "track resolution object is created.";
 }
 
 double track_resolution::calculate_mean(const std::vector<double>& data) {
@@ -157,7 +158,7 @@ void track_resolution::calculate_tResoltuion(const std::vector<double>& ref_reso
     }
     D = sum_0*sum_2 - sum_1*sum_1;
     track_resolution = std::sqrt(1/D * (sum_2 + dut_position*dut_position*sum_0 - 2*dut_position*sum_1));
-    std::cout << "Track resolution-> " << track_resolution << std::endl;
+    //std::cout << "Track resolution-> " << track_resolution << std::endl;
 }
 
 // Open file
@@ -363,7 +364,7 @@ void track_resolution::run() {
     double beta_electron  = calculate_beta(mass_electron);
     double beta_pion      = calculate_beta(mass_pion);
     double beta_proton    = calculate_beta(mass_proton);
-    std::cout << beta_pion << std::endl;
+    //std::cout << beta_pion << std::endl;
 
     std::vector<MaterialLayer> geometry = {
         {"ALPIDE_0",   0.05, RAD_LENGTH_SILICON}, // Silicon: 50um

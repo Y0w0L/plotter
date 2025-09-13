@@ -14,6 +14,12 @@ IF(NOT ${ROOT_VERSION} VERSION_GREATER "6.0")
     MESSAGE(FATAL_ERROR "ROOT version below 6.0 are not supported")
 ENDIF()
 
+# FIND_PACKAGE(AllpixSquared REQUIRED COMPONENTS Objects)
+# IF(NOT AllpixSquared_FOUND)
+#    MESSAGE(FATAL_ERROR "Could not find AllpixSquared. Did you forget to source setup.sh?")
+# ENDIF()
+
+
 SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
@@ -68,6 +74,8 @@ ADD_SUBDIRECTORY(plot_inPixel)
 ADD_SUBDIRECTORY(plot_LabTest)
 ADD_SUBDIRECTORY(plot_ExperimentData)
 ADD_SUBDIRECTORY(plot_BeamTest)
+ADD_SUBDIRECTORY(plot_SingleChip)
+ADD_SUBDIRECTORY(plot_AllpixData)
 ADD_SUBDIRECTORY(Messenger)
 
 ADD_EXECUTABLE(ce65_analysis
@@ -94,6 +102,8 @@ TARGET_LINK_LIBRARIES(ce65_analysis
                         plot_LabTest_lib
                         plot_ExperimentData_lib
                         plot_BeamTest_lib
+                        plot_SingleChip_lib
+                        plot_AllpixData_lib
                         ${ROOT_LIBRARIES})
 
 MESSAGE(STATUS "Compiler Flags for ce65_model: $<TARGET_PROPERTY:ce65_model,COMPILE_OPTIONS>")
