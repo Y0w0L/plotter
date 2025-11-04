@@ -16,7 +16,7 @@
       "z_axis_title": "cluster charge [ADCu]",
       "z_min": 0,
       "z_max": 8000,
-      "scale_factor": 1.0
+      "scale_factor": 1000
     },
     {
       "name": "seed_charge",
@@ -25,7 +25,7 @@
       "z_axis_title": "seed charge [ADCu]",
       "z_min": 0,
       "z_max": 8000,
-      "scale_factor": 1.0
+      "scale_factor": 1000
     },
     {
       "name": "residual",
@@ -44,12 +44,13 @@
     "chip_type": "std",
     "voltage": "4",
     "seed_thd": "0",
-    "scan_values": ["0", "50", "100", "200", "300", "400", "500", "1000", "1500"],
+    "scan_values": ["0", "25", "50", "75", "100", "150", "200", "300", "400", "500", "1000", "1500"],
     "legend_label": "22.5um,std,4V",
     "color": "kBlue+2",
     "marker_style": 26,
     "marker_size": 1.4,
-    "line_style": 1
+    "line_style": 1,
+    "adc_to_electron_factor": 1.0
   },
   {
     "source": "SingleChipSim",
@@ -57,12 +58,13 @@
     "chip_type": "std",
     "voltage": "7",
     "seed_thd": "0",
-    "scan_values": ["0", "50", "100", "200", "300", "400", "500", "1000", "1500"],
+    "scan_values": ["0", "25", "50", "75", "100", "150", "200", "300", "400", "500", "1000", "1500"],
     "legend_label": "22.5um,std,7V",
     "color": "kBlue+2",
-    "marker_style": 26,
+    "marker_style": 29,
     "marker_size": 1.4,
-    "line_style": 1
+    "line_style": 1,
+    "adc_to_electron_factor": 1.0
   },
   {
     "source": "SingleChipSim",
@@ -70,12 +72,13 @@
     "chip_type": "std",
     "voltage": "10",
     "seed_thd": "0",
-    "scan_values": ["0", "50", "100", "200", "300", "400", "500", "1000", "1500"],
+    "scan_values": ["0", "25", "50", "75", "100", "150", "200", "300", "400", "500", "1000", "1500"],
     "legend_label": "22.5um,std,10V",
     "color": "kBlue+2",
     "marker_style": 22,
     "marker_size": 1.4,
-    "line_style": 1
+    "line_style": 1,
+    "adc_to_electron_factor": 1.0
   },
   {
     "source": "SingleChipSim",
@@ -83,12 +86,13 @@
     "chip_type": "gap",
     "voltage": "4",
     "seed_thd": "0",
-    "scan_values": ["0", "50", "100", "200", "300", "400", "500", "1000", "1500"],
+    "scan_values": ["0", "25", "50", "75", "100", "150", "200", "300", "400", "500", "1000", "1500"],
     "legend_label": "22.5um,gap,4V",
     "color": "kRed+1",
     "marker_style": 32,
     "marker_size": 1.4,
-    "line_style": 1
+    "line_style": 1,
+    "adc_to_electron_factor": 1.0
   },
   {
     "source": "SingleChipSim",
@@ -96,12 +100,13 @@
     "chip_type": "gap",
     "voltage": "7",
     "seed_thd": "0",
-    "scan_values": ["0", "50", "100", "200", "300", "400", "500", "1000", "1500"],
-    "legend_label": "22.5um,std,4V",
+    "scan_values": ["0", "25", "50", "75", "100", "150", "200", "300", "400", "500", "1000", "1500"],
+    "legend_label": "22.5um,std,7V",
     "color": "kBlue+2",
-    "marker_style": 26,
+    "marker_style": 29,
     "marker_size": 1.4,
-    "line_style": 1
+    "line_style": 1,
+    "adc_to_electron_factor": 1.0
   },
   {
     "source": "SingleChipSim",
@@ -109,12 +114,13 @@
     "chip_type": "gap",
     "voltage": "10",
     "seed_thd": "0",
-    "scan_values": ["0", "50", "100", "200", "300", "400", "500", "1000", "1500"],
+    "scan_values": ["0", "25", "50", "75", "100", "150", "200", "300", "400", "500", "1000", "1500"],
     "legend_label": "22.5um,gap,10V",
     "color": "kRed+1",
     "marker_style": 23,
     "marker_size": 1.4,
-    "line_style": 1
+    "line_style": 1,
+    "adc_to_electron_factor": 1.0
   },
   {
     "source": "SingleChipSim",
@@ -122,12 +128,13 @@
     "chip_type": "std",
     "voltage": "4",
     "seed_thd": "0",
-    "scan_values": ["0", "50", "100", "200", "300", "400", "500", "1000", "1500"],
+    "scan_values": ["0", "25", "50", "75", "100", "150", "200", "300", "400", "500", "1000", "1500"],
     "legend_label": "15um,std,4V",
-    "color": "kBlue+2",
-    "marker_style": 26,
-    "marker_size": 1.4,
-    "line_style": 1
+    "color": "kAzure+2",
+    "marker_style": 24,
+    "marker_size": 1.2,
+    "line_style": 1,
+    "adc_to_electron_factor": 1.0
   },
   {
     "source": "SingleChipSim",
@@ -135,12 +142,13 @@
     "chip_type": "std",
     "voltage": "7",
     "seed_thd": "0",
-    "scan_values": ["0", "50", "100", "200", "300", "400", "500", "1000", "1500"],
+    "scan_values": ["0", "25", "50", "75", "100", "150", "200", "300", "400", "500", "1000", "1500"],
     "legend_label": "15um,std,7V",
-    "color": "kBlue+2",
-    "marker_style": 26,
-    "marker_size": 1.4,
-    "line_style": 1
+    "color": "kAzure+2",
+    "marker_style": 29,
+    "marker_size": 1.2,
+    "line_style": 1,
+    "adc_to_electron_factor": 1.0
   },
   {
     "source": "SingleChipSim",
@@ -148,12 +156,13 @@
     "chip_type": "std",
     "voltage": "10",
     "seed_thd": "0",
-    "scan_values": ["0", "50", "100", "200", "300", "400", "500", "1000", "1500"],
+    "scan_values": ["0", "25", "50", "75", "100", "150", "200", "300", "400", "500", "1000", "1500"],
     "legend_label": "15um,std,10V",
-    "color": "kBlue+2",
-    "marker_style": 22,
-    "marker_size": 1.4,
-    "line_style": 1
+    "color": "kAzure+2",
+    "marker_style": 20,
+    "marker_size": 1.2,
+    "line_style": 1,
+    "adc_to_electron_factor": 1.0
   },
   {
     "source": "SingleChipSim",
@@ -161,12 +170,13 @@
     "chip_type": "gap",
     "voltage": "4",
     "seed_thd": "0",
-    "scan_values": ["0", "50", "100", "200", "300", "400", "500", "1000", "1500"],
+    "scan_values": ["0", "25", "50", "75", "100", "150", "200", "300", "400", "500", "1000", "1500"],
     "legend_label": "15um,gap,4V",
-    "color": "kRed+1",
-    "marker_style": 32,
-    "marker_size": 1.4,
-    "line_style": 1
+    "color": "kPink+7",
+    "marker_style": 25,
+    "marker_size": 1.2,
+    "line_style": 1,
+    "adc_to_electron_factor": 1.0
   },
   {
     "source": "SingleChipSim",
@@ -174,12 +184,13 @@
     "chip_type": "gap",
     "voltage": "7",
     "seed_thd": "0",
-    "scan_values": ["0", "50", "100", "200", "300", "400", "500", "1000", "1500"],
-    "legend_label": "15um,std,4V",
-    "color": "kBlue+2",
-    "marker_style": 26,
-    "marker_size": 1.4,
-    "line_style": 1
+    "scan_values": ["0", "25", "50", "75", "100", "150", "200", "300", "400", "500", "1000", "1500"],
+    "legend_label": "15um,std,7V",
+    "color": "kPink+7",
+    "marker_style": 29,
+    "marker_size": 1.2,
+    "line_style": 1,
+    "adc_to_electron_factor": 1.0
   },
   {
     "source": "SingleChipSim",
@@ -187,12 +198,13 @@
     "chip_type": "gap",
     "voltage": "10",
     "seed_thd": "0",
-    "scan_values": ["0", "50", "100", "200", "300", "400", "500", "1000", "1500"],
+    "scan_values": ["0", "25", "50", "75", "100", "150", "200", "300", "400", "500", "1000", "1500"],
     "legend_label": "15um,gap,10V",
-    "color": "kRed+1",
-    "marker_style": 23,
-    "marker_size": 1.4,
-    "line_style": 1
+    "color": "kPink+7",
+    "marker_style": 21,
+    "marker_size": 1.2,
+    "line_style": 1,
+    "adc_to_electron_factor": 1.0
   }
   ]
 }

@@ -12,27 +12,28 @@ from datetime import datetime
 gSystem.Load("/home/towa/package/allpix/install/lib/libAllpixObjects.so")
 
 # --- データクラス定義 ---
-@dataclass
+@dataclass(slots=True)
 class PixelHit:
     signal: float
     pixel_index_x: int
     pixel_index_y: int
     mc_particles: List[Any]
 
-@dataclass
+@dataclass(slots=True)
 class MCParticle:
     particle_id: int
     parent: Any
     local_reference_point: np.ndarray
 
 # ★ 新規追加: PropagatedCharge用のデータクラス
-@dataclass
+@dataclass(slots=True)
 class PropagatedCharge:
     charge_type: str  # 'electron' or 'hole'
     global_time: float
     mc_particle: MCParticle
+    local_creation_pos: np.ndarray
 
-@dataclass
+@dataclass(slots=True)
 class Cluster:
     seed_pixel_hit: PixelHit
     pixel_hits: List[PixelHit] = field(default_factory=list)
@@ -87,6 +88,8 @@ class AnalysisPixelModule:
         self.neighbor_threshold = config.get("neighbor_threshold", 500)
         self.histograms = {}
 
+        self.fill_3d = config.get("fill_3d", False)
+
         self.input_file = ROOT.TFile.Open(config["file_name"])
         self.pixel_tree = self.input_file.Get("PixelHit")
         self.mcp_tree = self.input_file.Get("MCParticle")
@@ -122,6 +125,38 @@ class AnalysisPixelModule:
         self.histograms["inPixel_electron_driftTime_90p_1"] = ROOT.TProfile2D("inPixel_electron_driftTime_90p_1", ";x/pitch [um];y/pitch [um];90% electron drift time [ns]", inpixel_bins_x, -pitch_x / 2, pitch_x / 2, inpixel_bins_y, -pitch_y / 2, pitch_y / 2)
         self.histograms["electron_driftTime_90p_1"] = ROOT.TH1D("electron_driftTime_90p_1", ";90% electron drift time [ns];counts", 20000, 0, 2)
         
+        self.histograms["drift_time_vs_distance"] = ROOT.TH2D(
+            "drift_time_vs_distance",
+            ";distance to pixel center [um];drift time [ns];counts",
+            200, 0, 100,
+            1000, 0, 0.5
+        )
+        self.histograms["cluster_charge_vs_drift_time"] = ROOT.TH2D(
+            "cluster_charge_vs_drift_time",
+            ";Cluster Charge [ke];90% electron drift time [ns];Counts",
+            100, 0, max_cluster_charge_ke,  # Cluster Charge (0-60 ke)
+            1000, 0, 0.5                      # Drift Time (0-2 ns)
+        )
+        
+        self.histograms["cluster_size_vs_drift_time"] = ROOT.TH2D(
+            "cluster_size_vs_drift_time",
+            ";Cluster Size [pixels];90% electron drift time [ns];Counts",
+            20, 0, 20,   # Cluster Size (0-20 pixels)
+            1000, 0, 0.5   # Drift Time (0-2 ns)
+        )
+
+        if self.fill_3d:
+            half_pitch_x = self.detector_model.pixel_size[0] / 2.0
+            half_pitch_y = self.detector_model.pixel_size[1] / 2.0
+            sensor_half_thickness = 25.0
+
+            self.histograms["drift_time_map_xyz"] = ROOT.TProfile3D(
+                "drift_time_map_xyz",
+                ";In-Pixel X [um];In-Pixel Y [um];Depth Z [um];Average Drift Time [ns]",
+                20, -half_pitch_x, half_pitch_x,  # Xビニング (ピクセル内)
+                20, -half_pitch_y, half_pitch_y,  # Yビニング (ピクセル内)
+                50, -sensor_half_thickness, sensor_half_thickness # Zビニング (深さ)
+            )
 
         n_counters = len(self.counter_names)
         self.histograms["counters"] = ROOT.TH1D("counters", "Event Summary;category;counts", n_counters, 0, n_counters)
@@ -168,6 +203,12 @@ class AnalysisPixelModule:
             elif isinstance(histo, ROOT.TH1D):
                 for val in buffer[key]:
                     histo.Fill(val)
+            elif isinstance(histo, ROOT.TH2D):
+                for x, y in buffer[key]:
+                    histo.Fill(x, y)
+            elif isinstance(histo, ROOT.TProfile3D):
+                for x, y, z, val in buffer[key]:
+                    histo.Fill(x, y, z, val)
         
         for key in buffer:
             buffer[key].clear()
@@ -187,6 +228,9 @@ class AnalysisPixelModule:
 
         BATCH_SIZE = 1000
         buffer = {hist_name: [] for hist_name in self.histograms}
+
+        h_drift_time_vs_dist = self.histograms.get("drift_time_vs_distance")
+        h_drift_time_map_xyz = self.histograms.get("drift_time_map_xyz") if self.fill_3d else None
 
         #for i in range(self.n_entries), desc="Processing Events"):
         for i in range(self.n_entries):
@@ -221,7 +265,6 @@ class AnalysisPixelModule:
                 ) for hit_obj in pixel_objects
             ]
 
-            # ★ 新規追加: PropagatedChargeのデコードとcharge_mapの作成
             propagated_objects = getattr(self.propagated_tree, branch_name, [])
             charge_map: Dict[int, List[PropagatedCharge]] = {}
             for prop_obj in propagated_objects:
@@ -243,7 +286,15 @@ class AnalysisPixelModule:
                     print("There are unkown object number")
                     continue
 
-                prop_charge = PropagatedCharge(charge_type=charge_type, global_time=prop_obj.getGlobalTime(), mc_particle=parent_mcp)
+                pos = prop_obj.getLocalPosition()
+                creation_pos_um = np.array([pos.X() * 1000, pos.Y() * 1000, pos.Z() * 1000])
+
+                prop_charge = PropagatedCharge(
+                    charge_type=charge_type,
+                    global_time=prop_obj.getGlobalTime(),
+                    mc_particle=parent_mcp,
+                    local_creation_pos=creation_pos_um
+                )
                 charge_map.setdefault(parent_mcp.particle_id, []).append(prop_charge)
 
             # --- 2. 解析ロジック ---
@@ -282,6 +333,40 @@ class AnalysisPixelModule:
                 pixel_center = self.detector_model.get_pixel_center(ix, iy)
                 in_pixel_pos = particle_pos - pixel_center
 
+                for hit in clus.pixel_hits:
+                    pixel_center_pos = self.detector_model.get_pixel_center(
+                        hit.pixel_index_x,
+                        hit.pixel_index_y
+                    )
+
+                    for mcp in hit.mc_particles:
+                        propagated_charges = charge_map.get(mcp.particle_id, [])
+
+                        for pc in propagated_charges:
+                            if pc.charge_type == 'electron':
+                                drift_time_ns = pc.global_time * 1e-3
+                                creation_pos = pc.local_creation_pos
+                                distance_um = np.linalg.norm(creation_pos - pixel_center_pos)
+                                
+                                if h_drift_time_vs_dist:
+                                    h_drift_time_vs_dist.Fill(distance_um, drift_time_ns)
+
+                                #buffer["drift_time_vs_distance"].append((distance_um, drift_time_ns))
+
+                                if self.fill_3d:
+                                    relative_pos = creation_pos - pixel_center_pos 
+                                    # buffer["drift_time_map_xyz"].append((
+                                    #     relative_pos[0], # ピクセル内X座標
+                                    #     relative_pos[1], # ピクセル内Y座標
+                                    #     relative_pos[2], # センサ内Z座標 (深さ)
+                                    #     drift_time_ns    # ドリフト時間
+                                    # ))
+                                    h_drift_time_map_xyz.Fill(
+                                        relative_pos[0],
+                                        relative_pos[1],
+                                        relative_pos[2],
+                                        drift_time_ns
+                                    )
                 # propagated_charges_for_particle = charge_map.get(particle.particle_id, [])
                 # if propagated_charges_for_particle:
                 #     electron_drift_times_ps = [pc.global_time for pc in propagated_charges_for_particle if pc.charge_type == 'electron']
@@ -308,6 +393,8 @@ class AnalysisPixelModule:
                     time_90_percent_ns = np.percentile(electron_drift_time_ps, 90) * 1e-3
                     buffer["electron_driftTime_90p"].append(time_90_percent_ns)
                     buffer["inPixel_electron_driftTime_90p"].append((in_pixel_pos[0], in_pixel_pos[1], time_90_percent_ns))
+                    buffer["cluster_charge_vs_drift_time"].append((clus.charge / 1000.0, time_90_percent_ns)) # e -> ke に変換
+                    buffer["cluster_size_vs_drift_time"].append((clus.size, time_90_percent_ns))
 
             if (i + 1) % BATCH_SIZE == 0:
                 self._fill_histograms_from_buffer(buffer)
@@ -349,7 +436,12 @@ if __name__ == '__main__':
     parser.add_argument("-b", "--beam_type", type=str, default="e3GeV", help="Beam information e.g., e3GeV")
     parser.add_argument("-m", "--model", type=str, default="masetti", help="Model name for Electron calculation")
     parser.add_argument("-n", "--name", type=str, default="CE65", help="DUT name")
-    
+    parser.add_argument(
+        "--fill3D", 
+        action="store_true", 
+        help="Enable filling of the 3D drift time map (can be slow)."
+    )
+
     args = parser.parse_args()    
     config = {
         "file_name": args.input_file,
@@ -364,7 +456,8 @@ if __name__ == '__main__':
         "model_name": args.model,
         "granularity_x": 50,
         "granularity_y": 50, 
-        "max_cluster_charge_ke": 60.0
+        "max_cluster_charge_ke": 60.0,
+        "fill_3d": args.fill3D
     }
 
     try:

@@ -9,6 +9,7 @@
 #include "plot_ExperimentData.h"
 #include "plot_BeamTest.h"
 #include "plot_AllpixData.h"
+#include "plot_Check.h"
 #include <time.h>
 
 // plot_histogram::plot_histogram() {
@@ -33,6 +34,7 @@ int main(int argc, char* argv[]) {
     plot_ExperimentData plot_ExperimentData;
     plot_LabTest plot_LabTest;
     plot_BeamTest plot_BeamTest;
+    plot_Check plot_Check;
     //allpix::plot_AllpixData plot_AllpixData;
     // plot_Mobility.run();
     // plot_voltage.voltage_run();
@@ -56,7 +58,8 @@ int main(int argc, char* argv[]) {
         LOG_ERROR.source("ce65.cpp/main") << "ERROR happens dourning processing. " << e.what() ;
         return 1;
     }
-    //plot_AllpixData.run_analysis();
+
+    //plot_Check.run_plotCheck();
 
     LOG_STATUS.source("ce65.cpp/main") << "Main process finished";
 

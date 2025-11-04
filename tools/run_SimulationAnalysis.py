@@ -18,14 +18,16 @@ WRITE_LOG = args.log
 # 1. パラメータ空間の定義
 # ======================================================================
 model_ = ["masetti"]
-threshold_ = [0, 10, 25, 50, 100, 200, 300, 400]
+#threshold_ = [0, 10, 25, 50, 100, 200, 300, 400]
+threshold_ = [0, 10, 25, 50]
 voltage_ = [10, 7, 4]
 pixel_pitch_ = [15, 22.5]
 chip_type_ = ["std", "gap"]
 beam_info_ = ["e3GeV"]
 
 seed_threshold_ = [0]
-neighbor_threshold_ = [0, 50, 100, 200, 300, 400, 500, 1000, 1500]
+#neighbor_threshold_ = [0, 50, 100, 200, 300, 400, 500, 1000, 1500]
+neighbor_threshold_ = [500, 1000, 1500]
 
 # ======================================================================
 # 2. 実行する全ジョブのリストを生成
@@ -114,12 +116,22 @@ try:
 
             # --- サブプロセスとして解析スクリプトを実行 ---
             # stdoutとstderrを両方ともログファイルにリダイレクトする
-            subprocess.run(
+            process_result = subprocess.run(
                 command,
-                check=True,       # エラーが発生した場合に例外を発生させる
                 stdout=log_file,
                 stderr=log_file
             )
+
+            if process_result.returncode != 0:
+                error_message = f"\n❌ **ERROR**: Job failed with exit code {process_result.returncode}. Continuing to the next job.\n"
+                tqdm.write(error_message.strip())
+                log_file.write(error_message)
+                log_file.flush()
+            else:
+                success_message = "\n✅ **SUCCESS**: Job completed successfully.\n"
+                tqdm.write(success_message.strip())
+                log_file.write(success_message)
+                log_file.flush()
 
 except Exception as e:
     print(f"\nAn error occurred: {e}")

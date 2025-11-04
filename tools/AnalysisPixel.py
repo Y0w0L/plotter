@@ -47,21 +47,37 @@ class Cluster:
     def size(self) -> int:
         return len(self.pixel_hits)
     
-    def get_position(self, model) -> np.ndarray:
-        total_charge = self.charge
-        if total_charge == 0:
-            return model.get_pixel_center(
-                self.seed_pixel_hit.pixel_index_x,
-                self.seed_pixel_hit.pixel_index_y
-            )
-        
+    def get_position(self, model, one_bit: bool) -> np.ndarray:
         pos_x, pos_y, pos_z = 0.0, 0.0, 0.0
-        for hit in self.pixel_hits:
-            center = model.get_pixel_center(hit.pixel_index_x, hit.pixel_index_y)
-            pos_x += center[0] * hit.signal
-            pos_y += center[1] * hit.signal
-            pos_z += center[2] * hit.signal
-        return np.array([pos_x / total_charge, pos_y / total_charge, pos_z / total_charge])
+        
+        if one_bit:
+            if self.size == 0:
+                return model.get_pixel_center(
+                    self.seed_pixel_hit.pixel_index_x,
+                    self.seed_pixel_hit.pixel_index_y,
+                )
+            
+            for hit in self.pixel_hits:
+                center = model.get_pixel_center(hit.pixel_index_x, hit.pixel_index_y)
+                pos_x += center[0]
+                pos_y += center[1]
+                pos_z += center[2]
+            return np.array([pos_x / self.size, pos_y / self.size, pos_z / self.size])
+        
+        else:
+            total_charge = self.charge
+            if total_charge == 0:
+                return model.get_pixel_center(
+                    self.seed_pixel_hit.pixel_index_x,
+                    self.seed_pixel_hit.pixel_index_y
+                )
+
+            for hit in self.pixel_hits:
+                center = model.get_pixel_center(hit.pixel_index_x, hit.pixel_index_y)
+                pos_x += center[0] * hit.signal
+                pos_y += center[1] * hit.signal
+                pos_z += center[2] * hit.signal
+            return np.array([pos_x / total_charge, pos_y / total_charge, pos_z / total_charge])
 
     def get_mc_particles(self) -> List[MCParticle]:
         all_particles = []
@@ -112,6 +128,13 @@ class AnalysisPixelModule:
         self.neighbor_threshold = config.get("neighbor_threshold", 500)
         self.histograms = {}
 
+        self.one_bit_processing = config.get("one_bit", False)
+
+        self.max_cluster_size_hist = 10
+
+        if self.one_bit_processing:
+            self.neighbor_threshold = self.seed_threshold
+
         # PyROOTでファイルとTTreeを開く
         self.input_file = ROOT.TFile.Open(config["file_name"])
         self.pixel_tree = self.input_file.Get("PixelHit")
@@ -160,11 +183,22 @@ class AnalysisPixelModule:
         self.histograms["residual_x"] = ROOT.TH1D("residual_x", ";residual x [um];counts", 10000, -40, 40)
         self.histograms["residual_y"] = ROOT.TH1D("residual_y", ";residual y [um];counts", 10000, -40, 40)
         self.histograms["residual_r"] = ROOT.TH1D("residual_r", ";residual r [um];counts", 10000, 0, 40)
+        self.histograms["cluster_neighbor_charge_sum"] = ROOT.TH1D("cluster_neighbor_charge_sum", ";charge [ke];counts", 1000, 0, max_cluster_charge_ke)
+        self.histograms["cluster_neighbor_charge"] = ROOT.TH1D("cluster_neighbor_charge", ";charge [ke];counts", 1000, 0, max_cluster_charge_ke)
 
         n_counters = len(self.counter_names)
         self.histograms["counters"] = ROOT.TH1D("counters", "Event Summary;category;counts", n_counters, 0, n_counters)
         for i, name in enumerate(self.counter_names):
             self.histograms["counters"].GetXaxis().SetBinLabel(i+1, name)
+
+        for i in range(1, self.max_cluster_size_hist + 1):
+            hist_name = f"seed_charge_size_{i}"
+            hist_title = f"Cluster Seed Charge {i};charge [ke];counts"
+            self.histograms[hist_name] = ROOT.TH1D(hist_name, hist_title, 1000, 0, max_cluster_charge_ke)
+
+        hist_name_large = f"seed_charge_size_{self.max_cluster_size_hist + 1}_plus"
+        hist_title_large = f"Seed Charge for Cluster Size > {self.max_cluster_size_hist};charge [ke];counts"
+        self.histograms[hist_name_large] = ROOT.TH1D(hist_name_large, hist_title_large, 1000, 0, max_cluster_charge_ke)
 
     def do_clustering(self, pixel_hits: List[PixelHit]) -> List[Cluster]:
         # (この関数は変更ありません)
@@ -240,6 +274,20 @@ class AnalysisPixelModule:
             self.histograms["inPixel_seed_charge"].Fill(x, y, val)
         for x, y, val in buffer["inPixel_cluster_charge"]:
             self.histograms["inPixel_cluster_charge"].Fill(x, y, val)
+
+        for val in buffer["cluster_neighbor_charge_sum"]:
+            self.histograms["cluster_neighbor_charge_sum"].Fill(val)
+        for val in buffer["cluster_neighbor_charge"]:
+            self.histograms["cluster_neighbor_charge"].Fill(val)
+
+        for i in range(1, self.max_cluster_size_hist + 1):
+            hist_name = f"seed_charge_size_{i}"
+            for val in buffer[hist_name]:
+                self.histograms[hist_name].Fill(val)
+        
+        hist_name_large = f"seed_charge_size_{self.max_cluster_size_hist + 1}_plus"
+        for val in buffer[hist_name_large]:
+            self.histograms[hist_name_large].Fill(val)
             
         for key in buffer:
             buffer[key].clear()
@@ -335,8 +383,16 @@ class AnalysisPixelModule:
             if len(primary_particles) > 1:
                 self.counters["Skipped: Multiple primary particles"] += 1
                 continue
+                # best_cluster = max(clusters, key=lambda c: c.seed_pixel_hit.signal)
+                # clusters = [best_cluster]
 
             clusters = self.do_clustering(pixel_hits)
+
+            if not clusters:
+                continue
+
+            best_cluster = max(clusters, key=lambda c: c.seed_pixel_hit.signal)
+            clusters = [best_cluster]
 
             for clus in clusters:
                 self.counters["Clusters Checked"] += 1
@@ -363,7 +419,7 @@ class AnalysisPixelModule:
 
                 particle = intersection[0]
                 particle_pos = particle.local_reference_point + np.array([offset_x, offset_y, 0])
-                cluster_pos = clus.get_position(self.detector_model)
+                cluster_pos = clus.get_position(self.detector_model, one_bit=self.one_bit_processing)
 
                 # ix, iy = self.detector_model.get_pixel_index(particle_pos)
                 # pixel_center = self.detector_model.get_pixel_center(ix, iy)
@@ -381,7 +437,11 @@ class AnalysisPixelModule:
                 # print()
                 # print("==================================================")
 
-                if residual_r > 40:
+                cut_um = 40
+                if self.one_bit_processing:
+                    cut_um = 40
+
+                if residual_r > cut_um:
                     self.counters["Skipped: Residual > 40 um"] += 1
                     continue
 
@@ -394,6 +454,10 @@ class AnalysisPixelModule:
                 ix, iy = self.detector_model.get_pixel_index(particle_pos)
                 pixel_center = self.detector_model.get_pixel_center(ix, iy)
                 in_pixel_pos = particle_pos - pixel_center
+
+                non_seed_hits = [hit for hit in clus.pixel_hits if hit is not clus.seed_pixel_hit]
+                sum_non_seed_charge_ke = sum(hit.signal for hit in non_seed_hits) / 1000
+
                 #print(in_pixel_pos)
 
                 # ix_reco, iy_reco = self.detector_model.get_pixel_index(cluster_pos)
@@ -454,6 +518,23 @@ class AnalysisPixelModule:
                 buffer["inPixel_residual_xy2"].append((in_pixel_pos[0], in_pixel_pos[1], (abs(residual_vec[0]) + abs(residual_vec[1])) / 2))
                 buffer["inPixel_seed_charge"].append((in_pixel_pos[0], in_pixel_pos[1], clus.seed_pixel_hit.signal / 1000.0))
                 buffer["inPixel_cluster_charge"].append((in_pixel_pos[0], in_pixel_pos[1], clus.charge / 1000.0))
+                buffer["cluster_neighbor_charge_sum"].append(sum_non_seed_charge_ke)
+                for hit in non_seed_hits:
+                    buffer["cluster_neighbor_charge"].append(hit.signal / 1000.0)
+
+                size = clus.size
+                seed_charge_ke = clus.seed_pixel_hit.signal / 1000.0
+
+                if size <= self.max_cluster_size_hist:
+                    # 1からmax_cluster_size_histまでの場合
+                    hist_name = f"seed_charge_size_{size}"
+                    if hist_name in buffer: # 念のため存在確認
+                        buffer[hist_name].append(seed_charge_ke)
+                else:
+                    # max_cluster_size_hist より大きい場合
+                    hist_name = f"seed_charge_size_{self.max_cluster_size_hist + 1}_plus"
+                    buffer[hist_name].append(seed_charge_ke)
+                
                 # --------------------------------------------------------
 
             if (i + 1) % BATCH_SIZE == 0:
@@ -499,6 +580,7 @@ if __name__ == '__main__':
     parser.add_argument("-b", "--beam_type", type=str, default="e3GeV", help="Beam information e.g., e3GeV")
     parser.add_argument("-m", "--model", type=str, default="masetti", help="Model name for Electron calculation")
     parser.add_argument("-n", "--name", type=str, default="CE65", help="DUT name")
+    parser.add_argument("--one_bit", action="store_true", help="Enable 1-bit processing")
 
     args = parser.parse_args()    
 
@@ -515,7 +597,8 @@ if __name__ == '__main__':
         "model_name": args.model,
         "granularity_x": 50,
         "granularity_y": 50, 
-        "max_cluster_charge_ke": 60.0
+        "max_cluster_charge_ke": 60.0,
+        "one_bit": args.one_bit,
     }
 
     try:

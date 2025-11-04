@@ -8,6 +8,7 @@
 #include <cmath>
 #include <algorithm>
 #include <map>
+#include <optional>
 
 // ROOT headers
 #include <TGraphErrors.h>
@@ -43,6 +44,7 @@ enum class DataSource {
     KEK202412,
     SPS202404,
     SingleChipSim,
+    SingleChipDrift,
 };
 
 struct PlotConfig {
@@ -59,6 +61,7 @@ struct PlotConfig {
     int marker_style = 20;
     double marker_size = 1.2;
     int line_style = 1;
+    double adc_to_electron_factor = 0.0;
 };
 
 struct ChipParameters {
@@ -128,6 +131,9 @@ public:
     //     const std::vector<PathConfig>& pathConfigs
     // );
 
+    template<typename THist>
+    static THist* get_merged_object(const std::string& base_file_path, const std::string& object_name);
+
 private:
     // helper functions
     TGraphErrors* create_graph_data(
@@ -142,7 +148,8 @@ private:
         const std::vector<PlotConfig>& configs,
         const std::vector<TGraphErrors*>& graphs,
         const std::pair<double, double>& y_range,
-        const std::pair<double, double>& x_range
+        //const std::pair<double, double>& x_range,
+        const std::optional<std::pair<double, double>>& x_range
     );
 
     void draw_overlay_histograms(
@@ -171,8 +178,8 @@ private:
     std::vector<InPixelPlotConfig> load_jsonInPixelPlotConfigs(const nlohmann::json& j);
     std::vector<PathConfig> load_jsonPathConfigs(const nlohmann::json& j);
 
-    template<typename THist>
-    THist* get_merged_object(const std::string& base_file_path, const std::string& object_name);
+    // template<typename THist>
+    // THist* get_merged_object(const std::string& base_file_path, const std::string& object_name);
 
     static Color_t string_to_ROOTColor(const std::string& color_str);
 
@@ -191,6 +198,8 @@ private:
     TCanvas* canvas_;
     TLatex title_latex_;
     TLatex condition_latex_;
+    bool use_electron_scale_;
+    bool extract_tracking_resolution_;
 };
 
 #endif // PLOT_BEAMTEST_H

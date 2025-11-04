@@ -12,6 +12,9 @@ plot_BeamTest::plot_BeamTest() {
     title_latex_.SetTextFont(62);
     condition_latex_.SetTextSize(0.03);
     condition_latex_.SetTextFont(62);
+
+    use_electron_scale_ = false;
+    extract_tracking_resolution_ = false;
 }
 
 plot_BeamTest::~plot_BeamTest() {
@@ -51,6 +54,7 @@ THist* plot_BeamTest::get_merged_object(
     
     THist* merged_obj = nullptr;
     for(const auto& file_path : matching_files) {
+        //std::cout << "----------------" << std::endl;
         TFile* file = TFile::Open(file_path.c_str());
         if(!file || file->IsZombie()) {
             LOG_WARNING.source("plot_BeamTest::get_merged_object") << "Cannot open file " << file_path;
@@ -70,6 +74,7 @@ THist* plot_BeamTest::get_merged_object(
             merged_obj = (THist*)h->Clone();
             merged_obj->SetDirectory(0);
         } else {
+            //std::cout << "====================" << std::endl;
             merged_obj->Add(h);
         }
 
@@ -86,19 +91,27 @@ void plot_BeamTest::run_plots(const std::vector<PlotConfig>& configs) {
         return;
     }
 
+    std::string x_axis_label = use_electron_scale_ ? ";threshold [e^{-}]" : ";threshold [ADC]";
+
     // resolution plot
     std::vector<TGraphErrors*> reso_graphs;
     for(const auto& conf : configs) {
         reso_graphs.push_back(create_graph_data(conf, "resolution"));
     }
+
+    std::optional<std::pair<double, double>> reso_x_range = std::nullopt;
+    if(!use_electron_scale_) {
+        reso_x_range = {0, 2510};
+    }
+
     draw_multigraph("Resolution Comparison",
-                    ";threshold [ADC];resolution in x [um]",
+                    (x_axis_label + ";RMS [um]").c_str(),
                     "plot/Combined_resolution.pdf",
                     configs,
                     reso_graphs,
                     //{2, 10.5},
-                    {2, 13},
-                    {40, 2510});
+                    {1, 11},
+                    reso_x_range);
     //for(auto g : reso_graphs) delete g;
 
     // cluster size plot
@@ -106,13 +119,19 @@ void plot_BeamTest::run_plots(const std::vector<PlotConfig>& configs) {
     for(const auto& conf : configs) {
         clsize_graphs.push_back(create_graph_data(conf, "clustersize"));
     }
+
+    std::optional<std::pair<double, double>> clsize_x_range = std::nullopt;
+    if(!use_electron_scale_) {
+        clsize_x_range = {0, 2510};
+    }
+
     draw_multigraph("Cluster Size Comparison",
-                    ";threshold [ADC];mean cluster size",
+                    (x_axis_label + ";mean cluster size").c_str(),
                     "plot/Combined_ClusterSize.pdf",
                     configs,
                     clsize_graphs,
-                    {1, 5.1},
-                    {40, 2510});
+                    {1, 6.1},
+                    clsize_x_range);
     //for(auto g : clsize_graphs) delete g;
 
     // residual check
@@ -152,30 +171,33 @@ void plot_BeamTest::draw_overlay_histograms(
     std::vector<TH1D*> hists_to_draw;
 
     for(const auto& config : configs) {
-        // std::string input_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
-        //                                    DATA_DIR_PATH_.c_str(),
-        //                                    NAME_.c_str(),
-        //                                    NAME_.c_str(),
-        //                                    config.pixel_pitch.c_str(),
-        //                                    config.chip_type.c_str(),
-        //                                    config.voltage.c_str(),
-        //                                    config.seed_thd.c_str(),
-        //                                    neighbor_thd_for_all.c_str());
+        if(config.source == DataSource::KEK202412) {
+            NAME_ = "kek202412";
+            DUT_NAME_ = "CE65_3";
+            BEAM_INFO_ = "@KEK PF-AR Dec. 2024, 3 GeV/c electrons";
+        }else if(config.source == DataSource::SPS202404) {
+            NAME_ = "sps202404";
+            DUT_NAME_ = "CE65_6";
+            BEAM_INFO_ = "@CERN SPS Apr. 2024, 120 GeV/c hadrons";
+        }else if(config.source == DataSource::SingleChipSim) {
+            NAME_ = "ce65sim202505";
+            DUT_NAME_ = "CE65";
+            BEAM_INFO_ = "3 GeV/c electrons";
+        } else if(config.source == DataSource::SingleChipDrift) {
+            NAME_ = "ce65driftTime";
+            DUT_NAME_ = "CE65";
+            BEAM_INFO_ = "3 GeV/c electrons";
+        } else {
+            LOG_ERROR.source("plot_BeamTest::run_inPixelPathAnalysis") << "No Datasource!";
+            return;
+        }
 
-        // TFile* inputFile = TFile::Open(input_file_path.c_str());
-        // if(!inputFile || inputFile->IsZombie()) {
-        //     LOG_WARNING.source("plot_BeamTest::draw_overlay_histograms") << "Cannot open file " << input_file_path;
-        //     if(inputFile) delete inputFile;
-        //     continue;
-        // }
-
-        // TH1D* h_clcharge = (TH1D*)inputFile->Get(Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str()));
-        // if(!h_clcharge) {
-        //     LOG_WARNING.source("plot_BeamTest::draw_overlay_histograms") << "Histogram not found in " << input_file_path;
-        //     inputFile->Close();
-        //     delete inputFile;
-        //     continue;
-        // }
+        double seed_val = std::stod(config.seed_thd);
+        double neighbor_val = std::stod(neighbor_thd_for_all);
+        std::string seed_thd_for_file = (neighbor_val > seed_val) ? std::to_string(neighbor_val) : config.seed_thd;
+        if(config.source == DataSource::SingleChipSim || config.source == DataSource::SingleChipDrift) {
+            seed_thd_for_file = "0";
+        }
 
         std::string input_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se",
                                            DATA_DIR_PATH_.c_str(),
@@ -184,10 +206,14 @@ void plot_BeamTest::draw_overlay_histograms(
                                            config.pixel_pitch.c_str(),
                                            config.chip_type.c_str(),
                                            config.voltage.c_str(),
-                                           config.seed_thd.c_str(),
+                                           seed_thd_for_file.c_str(),
                                            neighbor_thd_for_all.c_str());
 
         std::string hist_name = Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str());
+        if(config.source == DataSource::SingleChipSim) {
+            hist_name = "cluster_charge";
+        }
+
         TH1D* h_clcharge = get_merged_object<TH1D>(input_file_path, hist_name);
         if(!h_clcharge) {
             LOG_WARNING.source("plot_BeamTest::draw_overlay_histograms") << "Merged histogram could not be created for base " << input_file_path;
@@ -231,12 +257,21 @@ TGraphErrors* plot_BeamTest::create_graph_data(
     const PlotConfig& config,
     const std::string& quantity_to_extract) {
     std::string name, dut_name;
+    double tracking_resolution;
     if(config.source == DataSource::KEK202412) {
         NAME_ = "kek202412";
         DUT_NAME_ = "CE65_3";
+        tracking_resolution = 0;
     } else if(config.source == DataSource::SPS202404) {
         NAME_ = "sps202404";
         DUT_NAME_ = "CE65_6";
+        tracking_resolution = 2.85;
+    } else if(config.source == DataSource::SingleChipSim) {
+        NAME_ = "ce65sim202505";
+        DUT_NAME_ = "CE65";
+        tracking_resolution = 0;
+    } else {
+        LOG_ERROR.source("plot_BeamTest::create_graph_data");
     }
     
     std::vector<double> x_vals, y_vals, x_errs, y_errs;
@@ -249,6 +284,10 @@ TGraphErrors* plot_BeamTest::create_graph_data(
         const std::string& neighbor_thd_for_file = thd;
         if(neighbor_val > seed_val) {
             seed_thd_for_file = thd;
+        }
+
+        if(config.source == DataSource::SingleChipSim) {
+            seed_thd_for_file = "0";
         }
 
         // std::string input_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
@@ -288,8 +327,16 @@ TGraphErrors* plot_BeamTest::create_graph_data(
                                            seed_thd_for_file.c_str(),
                                            thd.c_str());
 
-        TH1D* h_residual = get_merged_object<TH1D>(base_file_path, Form("AnalysisCE65/%s/local_residuals/residualsX", DUT_NAME_.c_str()));
-        TH1D* h_clsize = get_merged_object<TH1D>(base_file_path, Form("AnalysisCE65/%s/cluster/clusterSize", DUT_NAME_.c_str()));
+        std::string hist_name_residual = Form("AnalysisCE65/%s/local_residuals/residualsX", DUT_NAME_.c_str());
+        std::string hist_name_clsize = Form("AnalysisCE65/%s/cluster/clusterSize", DUT_NAME_.c_str());
+
+        if(config.source == DataSource::SingleChipSim) {
+            hist_name_residual = "residual_x";
+            hist_name_clsize = "cluster_size";
+        }
+
+        TH1D* h_residual = get_merged_object<TH1D>(base_file_path, hist_name_residual);
+        TH1D* h_clsize = get_merged_object<TH1D>(base_file_path, hist_name_clsize);
 
         if(!h_residual || !h_clsize) {
             LOG_WARNING.source("plot_BeamTest::create_graph_data") << "One or more merged histograms not found for base " << base_file_path;
@@ -300,18 +347,52 @@ TGraphErrors* plot_BeamTest::create_graph_data(
 
         double y_val = 0.0;
         double y_err = 0.0;
+        double y_rms = 0.0;
+
+        double x_val = std::stod(thd);
+        bool is_exp_data = (config.source == DataSource::KEK202412 || config.source == DataSource::SPS202404);
+
+        if(use_electron_scale_ && is_exp_data && config.adc_to_electron_factor > 0.0) {
+            x_val *= config.adc_to_electron_factor;
+        }
 
         if(quantity_to_extract == "resolution") {
-            h_residual->Rebin(2);
+            h_residual->Rebin(4);
             TF1* fResidual = plot_histogram::optimise_hist_gaus(h_residual, kBlack);
-            y_val = fResidual->GetParameter(2);
-            y_err = fResidual->GetParError(2);
+
+             // For simulation data, always use RMS
+            // if (config.source == DataSource::SingleChipSim) {
+            //     y_val = h_residual->GetRMS();
+            //     y_err = h_residual->GetRMSError();
+            // } else {
+                if(fResidual) {
+                    double chi2 = fResidual->GetChisquare();
+                    int ndf = fResidual->GetNDF();
+                    double chi2_per_ndf = (ndf > 0) ? (chi2 / ndf) : 9999.0;
+                    y_rms = h_residual->GetRMS();
+
+                    // if (chi2_per_ndf > 10) {
+                    //     y_val = h_residual->GetRMS();
+                    //     y_err = h_residual->GetRMSError();
+                    // } else {
+                    //     y_val = fResidual->GetParameter(2);
+                    //     y_err = fResidual->GetParError(2);
+                    // }
+
+                    if(extract_tracking_resolution_) {
+                        y_val = std::sqrt((y_rms*y_rms) - (tracking_resolution*tracking_resolution));
+                    } else {
+                        y_val = y_rms;
+                    }
+                    y_err = h_residual->GetRMSError();
+                }
+            //}
         } else if (quantity_to_extract == "clustersize") {
             y_val = h_clsize->GetMean();
             y_err = h_clsize->GetMeanError();
         }
 
-        x_vals.push_back(std::stod(thd));
+        x_vals.push_back(x_val);
         y_vals.push_back(y_val);
         x_errs.push_back(0);
         y_errs.push_back(y_err);
@@ -330,7 +411,8 @@ void plot_BeamTest::draw_multigraph(
     const std::vector<PlotConfig>& configs,
     const std::vector<TGraphErrors*>& graphs,
     const std::pair<double, double>& y_range,
-    const std::pair<double, double>& x_range) {
+    //const std::pair<double, double>& x_range,
+    const std::optional<std::pair<double, double>>& x_range) {
     canvas_->Clear();
     canvas_->SetTopMargin(0.062);
     canvas_->SetBottomMargin(0.14);
@@ -384,6 +466,57 @@ void plot_BeamTest::draw_multigraph(
         legend_point->AddEntry(graph_point, configs[i].legend_label.c_str(), "pe");
     }
 
+    if(configs[0].source == DataSource::SingleChipSim) {
+        legend_line->Clear();
+        legend_point->Clear();
+
+        y_size = graphs.size() / 3 * 0.01;
+        legend_y_min = 0.6;
+
+        // TLegend* legend_point = new TLegend(0.15, legend_y_min, 0.90, 0.91);
+        // legend_point->SetFillStyle(0);
+        // legend_point->SetBorderSize(0);
+        // legend_point->SetTextSize(0.03);
+        legend_point->SetNColumns(3);
+
+        // TLegend* legend_line = new TLegend(0.40, legend_y_min, 0.90, 0.91);
+        // legend_line->SetFillStyle(0);
+        // legend_line->SetBorderSize(0);
+        // legend_line->SetTextSize(0.03);
+        // legend_line->SetTextColor(kWhite);
+        legend_line->SetNColumns(3);
+
+        legend_point->SetX1NDC(0.15);
+        legend_line->SetX1NDC(0.15);
+        legend_point->SetY1NDC(legend_y_min);
+        legend_line->SetY1NDC(legend_y_min);
+
+        for(size_t i=0; i<configs.size(); ++i) {
+            if(!graphs[i] || graphs[i]->GetN() == 0 || graphs[i] == nullptr) {
+                LOG_WARNING.source("plot_BeamTest::draw_multigraph") << "Graph not found.";
+                continue; 
+            }
+
+            //graphs[i]->SetLineColorAlpha(configs[i].color, 0.5);
+            graphs[i]->SetMarkerColor(configs[i].color);
+            graphs[i]->SetMarkerStyle(configs[i].marker_style);
+            graphs[i]->SetLineStyle(configs[i].line_style);
+            graphs[i]->SetLineWidth(2);
+            graphs[i]->SetMarkerSize(configs[i].marker_size);
+
+            TGraphErrors* graph_point = (TGraphErrors*)graphs[i]->Clone("graph_point");
+            graph_point->SetLineStyle(1);
+
+            graphs[i]->SetLineColorAlpha(configs[i].color, 0.5);
+            graph_point->SetLineColor(configs[i].color);
+
+            mg->Add(graphs[i], "L");
+            mg->Add(graph_point, "PE");
+            legend_line->AddEntry(graphs[i], configs[i].legend_label.c_str(), "l");
+            legend_point->AddEntry(graph_point, configs[i].legend_label.c_str(), "pe");
+        }
+    }
+
     if(mg->GetListOfGraphs() == nullptr) {
         LOG_ERROR.source("plot_BeamTest::draw_multigraph") << "No valid graphs to draw for " << canvas_title;
         delete mg;
@@ -394,7 +527,10 @@ void plot_BeamTest::draw_multigraph(
 
     mg->Draw("A");
     mg->GetYaxis()->SetRangeUser(y_range.first, y_range.second);
-    mg->GetXaxis()->SetRangeUser(x_range.first, x_range.second);
+    if(x_range) {
+        mg->GetXaxis()->SetRangeUser(x_range->first, x_range->second);
+    }
+    //mg->GetXaxis()->SetRangeUser(x_range.first, x_range.second);
     mg->GetXaxis()->SetTitleSize(0.05);
     mg->GetXaxis()->SetLabelSize(0.04);
     mg->GetXaxis()->SetTitleOffset(0.8);
@@ -420,11 +556,18 @@ void plot_BeamTest::check_residual_fits(
     if (config.source == DataSource::KEK202412) {
         NAME_ = "kek202412";
         DUT_NAME_ = "CE65_3";
-        BEAM_INFO_ = "e^{-} 3GeV/c @KEK-PFAR (Dec. 2024)";
-    } else { // DataSource::SPS202404
+        BEAM_INFO_ = "@KEK PF-AR Dec. 2024, 3 GeV/c electrons";
+    } else if (config.source == DataSource::SPS202404) { // DataSource::SPS202404
         NAME_ = "sps202404";
         DUT_NAME_ = "CE65_6";
-        BEAM_INFO_ = "hadron 120GeV/c @CERN-SPS (Apr. 2024)";
+        BEAM_INFO_ = "@CERN SPS Apr. 2024, 120 GeV/c hadrons";
+    } else if (config.source == DataSource::SingleChipSim) {
+        NAME_ = "ce65sim202505";
+        DUT_NAME_ = "CE65";
+        BEAM_INFO_ = "3 GeV/c electrons";
+    } else {
+        LOG_ERROR.source("plot_BeamTest::check_residual_fits") << "No DataSource!";
+        return;
     }
     const std::string DATA_DIR_PATH_ = "/home/towa/alice3/hist/";
 
@@ -502,6 +645,10 @@ void plot_BeamTest::check_residual_fits(
                 seed_thd_for_file = thd;
             }
 
+            if(config.source == DataSource::SingleChipSim || config.source == DataSource::SingleChipDrift) {
+                seed_thd_for_file = "0";
+            }
+
             // //const std::string& thd = thresholds[current_index];
             // std::string input_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
             //                                    DATA_DIR_PATH_.c_str(),
@@ -542,6 +689,10 @@ void plot_BeamTest::check_residual_fits(
                                                  thd.c_str());
             
             std::string hist_name = Form("AnalysisCE65/%s/local_residuals/residualsX", DUT_NAME_.c_str());
+            if(config.source == DataSource::SingleChipSim) {
+                hist_name = "residual_x";
+            }
+
             TH1D* h_res = get_merged_object<TH1D>(base_file_path, hist_name);
             
             if(!h_res) {
@@ -624,6 +775,7 @@ std::vector<PlotConfig> plot_BeamTest::load_jsonConfigs(const nlohmann::json& j)
             if(source_str == "KEK202412") conf.source = DataSource::KEK202412;
             else if(source_str == "SPS202404") conf.source = DataSource::SPS202404;
             else if(source_str == "SingleChipSim") conf.source = DataSource::SingleChipSim;
+            else if(source_str == "SingleChipDrift") conf.source = DataSource::SingleChipDrift;
             else {
                 LOG_WARNING.source("plot_BeamTest::load_jsonConfigs") << "Unknown data source in JSON: " << source_str;
                 continue;
@@ -640,6 +792,7 @@ std::vector<PlotConfig> plot_BeamTest::load_jsonConfigs(const nlohmann::json& j)
             conf.line_style = item.at("line_style").get<int>();
             std::string color_string = item.at("color").get<std::string>();
             conf.color = string_to_ROOTColor(color_string);
+            conf.adc_to_electron_factor = item.value("adc_to_electron_factor", 0.0);
             configs.push_back(conf);
         }
     } catch(nlohmann::json::exception& e) {
@@ -1151,6 +1304,10 @@ void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& confi
             NAME_ = "ce65sim202505";
             DUT_NAME_ = "CE65";
             BEAM_INFO_ = "3 GeV/c electrons";
+        } else if(config.source == DataSource::SingleChipDrift) {
+            NAME_ = "ce65driftTime";
+            DUT_NAME_ = "CE65";
+            BEAM_INFO_ = "3 GeV/c electrons";
         } else {
             LOG_ERROR.source("plot_BeamTest::run_inPixelPathAnalysis") << "No Datasource!";
             return;
@@ -1185,7 +1342,7 @@ void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& confi
             //     return;
             // }
 
-            if(config.source == DataSource::SingleChipSim) {
+            if(config.source == DataSource::SingleChipSim || config.source == DataSource::SingleChipDrift) {
                 seed_thd_for_file = "0";
             }
 
@@ -1518,6 +1675,8 @@ void plot_BeamTest::BeamTest_main(int argc, char* argv[]) {
     options.add_options()
         ("f,file", "Json file name", cxxopts::value<std::string>())
         ("i,inpixel", "Run in-Pixel analysis instead of comparison plots.")
+        ("e,electrons", "Scale threshold axis to electrons (e-)")
+        ("t,tracking_resolution", "residual tracking resolution for truly position resolution")
         ("h,help", "show help message");
     
     auto result = options.parse(argc, argv);
@@ -1525,6 +1684,15 @@ void plot_BeamTest::BeamTest_main(int argc, char* argv[]) {
     if(result.count("help")) {
         std::cout << options.help() << std::endl;
         return;
+    }
+
+    if (result.count("electrons")) {
+        use_electron_scale_ = true;
+        LOG_STATUS.source("plot_BeamTest::BeamTest_main") << "Threshold scaling to [e-] enabled.";
+    }
+    if(result.count("tracking_resolution")) {
+        extract_tracking_resolution_ = true;
+        LOG_STATUS.source("plot_BeamTest::BeamTest_main") << "Extract tracking resolution from position resolution.";
     }
 
     std::string config_filename;

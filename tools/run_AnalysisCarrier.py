@@ -4,7 +4,7 @@ from tqdm import tqdm
 import os
 import argparse
 
-parser = argparse.ArgudmentParser(description="Run analysis jobs.")
+parser = argparse.ArgumentParser(description="Run analysis jobs.")
 parser.add_argument(
     "-l",
     "--log",

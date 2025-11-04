@@ -76,6 +76,7 @@ ADD_SUBDIRECTORY(plot_ExperimentData)
 ADD_SUBDIRECTORY(plot_BeamTest)
 ADD_SUBDIRECTORY(plot_SingleChip)
 ADD_SUBDIRECTORY(plot_AllpixData)
+ADD_SUBDIRECTORY(plot_Check)
 ADD_SUBDIRECTORY(Messenger)
 
 ADD_EXECUTABLE(ce65_analysis
@@ -104,6 +105,7 @@ TARGET_LINK_LIBRARIES(ce65_analysis
                         plot_BeamTest_lib
                         plot_SingleChip_lib
                         plot_AllpixData_lib
+                        plot_Check_lib
                         ${ROOT_LIBRARIES})
 
 MESSAGE(STATUS "Compiler Flags for ce65_model: $<TARGET_PROPERTY:ce65_model,COMPILE_OPTIONS>")
