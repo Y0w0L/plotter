@@ -14,36 +14,42 @@ log = logging.getLogger("plot_Check")
 # --- ROOTグローバル設定 ---
 ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetOptStat(0)
-ROOT.gStyle.SetOptFit(0)
 
 # --- ROOTカラーのインポート ---
-from ROOT import kBlue, kAzure, kRed, kPink, kGreen, kOrange, kBlack, kCyan, kGray
+from ROOT import kBlue, kAzure, kRed, kPink, kGreen, kOrange, kBlack, kCyan
 
 # --- DataConfig ---
 @dataclass
 class DataConfig:
     """単一のデータソース（実験またはシミュレーション）を定義する"""
-    name: str
-    fileKey: str
-    scale: float
-    color: int
-    colorAlt: int
-    isMerged: bool
+    name: str         # 凡例名
+    fileKey: str      # ファイルパス or Base
+    scale: float      # スケール
+    color: int        # 基本色 (ClusterCharge, Comparison用)
+    colorAlt: int     # 代替色 (SeedCharge用)
+    isMerged: bool    # 実験データか(mergeするか)
+    
+    # ★ 追加: Rebinを行うかどうか (Sim=False, Exp=Trueを想定)
     doRebin: bool = True 
+
     histNames: Dict[str, str] = field(default_factory=dict)
 
 
-# --- ヘルパー関数 ---
+# --- ヘルパー関数: get_merged_object ---
 def get_merged_object(base_file_path, hist_name):
+    # log.info(f"get_merged_object | Merging '{hist_name}'...")
     file_list = glob.glob(f"{base_file_path}_*.root")
+    
     if not file_list:
         log.error(f"get_merged_object | No files found for base path: {base_file_path}")
         return None
 
     merged_hist = None
+    
     for file_path in file_list:
         f = ROOT.TFile.Open(file_path)
-        if not f or f.IsZombie(): continue
+        if not f or f.IsZombie():
+            continue
         
         h_obj = f.Get(hist_name)
         if not h_obj or not isinstance(h_obj, ROOT.TH1):
@@ -55,7 +61,9 @@ def get_merged_object(base_file_path, hist_name):
             merged_hist.SetDirectory(0)
         else:
             merged_hist.Add(h_obj)
+        
         f.Close()
+    
     return merged_hist
 
 
@@ -70,7 +78,8 @@ class plot_Check:
 
     def cleanupResources(self):
         for file_name, file in self.m_fileCache.items():
-            if file: file.Close()
+            if file:
+                file.Close()
         self.m_fileCache.clear()
 
     def openFile(self, fileName):
@@ -90,7 +99,7 @@ class plot_Check:
         hist.SetMarkerStyle(marker)
         hist.SetMarkerSize(0.8)
         hist.SetFillColorAlpha(color, alpha)
-        hist.SetLineWidth(2)
+        hist.SetLineWidth(1) # 線を少し太く
 
     def scalingHistogram(self, hist, scale_factor, title):
         if not hist: return None
@@ -112,6 +121,7 @@ class plot_Check:
         for i in range(0, nbins + 2):
             if hist.GetBinContent(i) < 0:
                 hist.SetBinContent(i, 0)
+                
         return hist
 
     def getScaledHist(self, fileKey, histName, scaleFactor, title, isMerged=False):
@@ -126,56 +136,11 @@ class plot_Check:
                     hist = h_obj.Clone(f"{h_obj.GetName()}_clone")
                     hist.SetDirectory(0)
 
-        if not hist: return None
+        if not hist:
+            # log.warning(f"getScaledHist | Not found: {histName}")
+            return None
+
         return self.scalingHistogram(hist, scaleFactor, title)
-
-    # ★★★ 修正版 fitLandau ★★★
-    def fitLandau(self, hist, xMin, xMax, color):
-        """
-        ヒストグラムに対してLandauフィットを行い、関数オブジェクトを返す。
-        フィット範囲の下限をデータの立ち上がりに合わせて自動調整する。
-        """
-        func_name = f"fit_{hist.GetName()}_{ROOT.gRandom.Integer(10000)}"
-        
-        maxValue = hist.GetMaximum()
-        maxBin = hist.GetMaximumBin()
-        peakX = hist.GetXaxis().GetBinCenter(maxBin)
-        
-        # シグマの初期値を少し大きめに推測 (標準偏差の半分くらい)
-        sigma_guess = hist.GetStdDev() * 0.5 
-
-        # ★★★ 自動範囲調整ロジック ★★★
-        # ピークの 20% の高さになる最初のビンを探し、そこをフィット開始点とする
-        # これにより 0付近の空白データにフィットが引っ張られるのを防ぐ
-        threshold_ratio = 0.2
-        low_edge_bin = hist.FindFirstBinAbove(maxValue * threshold_ratio)
-        fitMin = hist.GetBinCenter(low_edge_bin)
-        
-        # 計算した開始点がピークより右にあっては困るのでチェック
-        if fitMin >= peakX: 
-            fitMin = peakX - sigma_guess * 2
-
-        # 指定されたxMinより下にはしない (xMin=0なら0以上になる)
-        if fitMin < xMin: fitMin = xMin
-
-        # ログ出力で確認用
-        log.info(f"fitLandau | Auto-detected fit range for {hist.GetName()}: {fitMin:.1f} - {xMax:.1f}")
-
-        # Landau関数の定義
-        func = ROOT.TF1(func_name, "landau", fitMin, xMax)
-        
-        # パラメータ初期値: [Constant, MPV, Sigma]
-        func.SetParameters(maxValue * 10, peakX, sigma_guess)
-        
-        # スタイル設定
-        func.SetLineColor(color)
-        func.SetLineStyle(2) # 破線
-        func.SetLineWidth(2)
-        
-        # フィット実行 (R:指定範囲, Q:静か, 0:描画しない, N:ヒストグラムに保存しない)
-        hist.Fit(func, "R Q 0 N")
-        
-        return func
 
     def run_plotCheck(self):
         """メイン実行関数"""
@@ -183,13 +148,14 @@ class plot_Check:
 
         # --- データセット定義 ---
         data_entries = {
+            # === 実験データ (doRebin=True) ===
             "exp_gap": DataConfig(
                 name="Exp GAP",
                 fileKey="/home/towa/alice3/hist/sps_check/sps202404_15_gap_10V_SeedThd1000e_NeighborThd200e",
                 scale=0.238,
-                color=kBlack, colorAlt=kGray+1,
+                color=kBlack, colorAlt=13,
                 isMerged=True,
-                doRebin=True, 
+                doRebin=True, # ★ 実験データはRebinする
                 histNames={
                     "clusterCharge": "AnalysisCE65/CE65_6/cluster/clusterCharge",
                     "seedCharge": "AnalysisCE65/CE65_6/cluster/clusterSeedCharge",
@@ -202,9 +168,9 @@ class plot_Check:
                 name="Exp STD",
                 fileKey="/home/towa/alice3/hist/sps_check/sps202404_15_std_10V_SeedThd1000e_NeighborThd200e",
                 scale=0.240,
-                color=kBlack, colorAlt=kGray+1, 
+                color=kBlack, colorAlt=13, # 13 is Grey
                 isMerged=True,
-                doRebin=True, 
+                doRebin=True, # ★ 実験データはRebinする
                 histNames={
                     "clusterCharge": "AnalysisCE65/CE65_6/cluster/clusterCharge",
                     "seedCharge": "AnalysisCE65/CE65_6/cluster/clusterSeedCharge",
@@ -213,13 +179,14 @@ class plot_Check:
                     "seedChargeBySize": "AnalysisCE65/CE65_6/cluster/clusterSeedCharge_size",
                 }
             ),
+            # === シミュレーションデータ (doRebin=False) ===
             "sim_gap_293k": DataConfig(
                 name="Sim GAP (et=1)",
                 fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_293k_st240e_nt48e_pip_120GeV_masetti_et1.root",
                 scale=1000.0,
                 color=kRed+1, colorAlt=kPink-2,
                 isMerged=False,
-                doRebin=False, 
+                doRebin=False, # ★ SimデータはRebinしない
                 histNames={
                     "clusterCharge": "cluster_charge",
                     "seedCharge": "seed_charge",
@@ -234,7 +201,7 @@ class plot_Check:
                 scale=1000.0,
                 color=kRed+1, colorAlt=kPink-2,
                 isMerged=False,
-                doRebin=False, 
+                doRebin=False, # ★ SimデータはRebinしない
                 histNames={
                     "clusterCharge": "cluster_charge",
                     "seedCharge": "seed_charge",
@@ -249,7 +216,7 @@ class plot_Check:
                 scale=1000.0,
                 color=kAzure+7, colorAlt=kAzure,
                 isMerged=False,
-                doRebin=False, 
+                doRebin=False, # ★ SimデータはRebinしない
                 histNames={
                     "clusterCharge": "cluster_charge",
                     "seedCharge": "seed_charge",
@@ -264,7 +231,7 @@ class plot_Check:
                 scale=1000.0,
                 color=kAzure+7, colorAlt=kAzure,
                 isMerged=False,
-                doRebin=False, 
+                doRebin=False, # ★ SimデータはRebinしない
                 histNames={
                     "clusterCharge": "cluster_charge",
                     "seedCharge": "seed_charge",
@@ -279,7 +246,7 @@ class plot_Check:
                 scale=1000.0,
                 color=kGreen+2, colorAlt=kGreen-4,
                 isMerged=False,
-                doRebin=False, 
+                doRebin=False, # ★ SimデータはRebinしない
                 histNames={
                     "clusterCharge": "cluster_charge",
                     "seedCharge": "seed_charge",
@@ -294,37 +261,7 @@ class plot_Check:
                 scale=1000.0,
                 color=kGreen+2, colorAlt=kGreen-4,
                 isMerged=False,
-                doRebin=False, 
-                histNames={
-                    "clusterCharge": "cluster_charge",
-                    "seedCharge": "seed_charge",
-                    "neighborChargeSum": "cluster_neighbor_charge_sum",
-                    "clusterSize": "cluster_size",
-                    "seedChargeBySize": "seed_charge_size_",
-                }
-            ),
-            "sim_gap_full": DataConfig(
-                name="Sim GAP (et=full)",
-                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_etFull.root",
-                scale=1000.0,
-                color=kOrange+7, colorAlt=kOrange-4,
-                isMerged=False,
-                doRebin=False, 
-                histNames={
-                    "clusterCharge": "cluster_charge",
-                    "seedCharge": "seed_charge",
-                    "neighborChargeSum": "cluster_neighbor_charge_sum",
-                    "clusterSize": "cluster_size",
-                    "seedChargeBySize": "seed_charge_size_",
-                }
-            ),
-            "sim_std_full": DataConfig(
-                name="Sim STD (et=full)",
-                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_std_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_etFull.root",
-                scale=1000.0,
-                color=kOrange+7, colorAlt=kOrange-4,
-                isMerged=False,
-                doRebin=False, 
+                doRebin=False, # ★ SimデータはRebinしない
                 histNames={
                     "clusterCharge": "cluster_charge",
                     "seedCharge": "seed_charge",
@@ -335,21 +272,25 @@ class plot_Check:
             ),
         }
 
+        # ★ 変更: 比較リスト定義
         comparisons = [
             # 1. GAPの Exp vs Sim比較
-            (["exp_gap", "sim_gap_et0p5", "sim_gap_293k", "sim_gap_et2", "sim_gap_full"], "_gap_default"),
+            (["exp_gap", "sim_gap_et0p5", "sim_gap_293k", "sim_gap_et2"], "_gap_default"),
             
             # 2. STDの Exp vs Sim比較
-            (["exp_std", "sim_std_et0p5", "sim_std_293k", "sim_std_et2", "sim_std_full"], "_std_default"),
+            (["exp_std", "sim_std_et0p5", "sim_std_293k", "sim_std_et2"], "_std_default"),
         ]
 
         canvas = ROOT.TCanvas("canvas", "canvas", 800, 600)
-        legend = ROOT.TLegend(0.5, 0.55, 0.9, 0.8)
-        legend.SetFillStyle(0); legend.SetBorderSize(0); legend.SetTextSize(0.025)
+        legend = ROOT.TLegend(0.5, 0.65, 0.9, 0.8)
+        legend.SetFillStyle(0); legend.SetBorderSize(0); legend.SetTextSize(0.03)
 
         for keys, suffix in comparisons:
             datasets = [data_entries[k] for k in keys if k in data_entries]
-            if not datasets: continue
+            
+            if not datasets:
+                log.warning(f"No valid datasets found for suffix {suffix}")
+                continue
 
             log.info(f"Processing comparison set: {keys}")
             
@@ -360,22 +301,22 @@ class plot_Check:
             self.plotClusterSize(canvas, legend, datasets, suffix, plot_title)
 
             self.plotComparison(canvas, legend, datasets, suffix,
-                histKey="seedCharge", histLegendSuffix="seed",
+                histKey="seedCharge",
+                histLegendSuffix="seed",
                 outName="clusterSeedCharge_comp", plotTitle=plot_title,
-                rebin=10, xMin=0, xMax=4000,
-                doLandauFit=False) 
+                rebin=10, xMin=0, xMax=4000)
             
             self.plotComparison(canvas, legend, datasets, suffix,
-                histKey="clusterCharge", histLegendSuffix="cluster",
+                histKey="clusterCharge",
+                histLegendSuffix="cluster",
                 outName="clusterCharge_comp", plotTitle=plot_title,
-                rebin=10, xMin=0, xMax=4000,
-                doLandauFit=True) # ClusterChargeはFitする
+                rebin=10, xMin=0, xMax=4000)
 
             self.plotComparison(canvas, legend, datasets, suffix,
-                histKey="neighborChargeSum", histLegendSuffix="neighbor sum",
+                histKey="neighborChargeSum",
+                histLegendSuffix="neighbor sum",
                 outName="clusterNeighborChargeSum_comp", plotTitle=plot_title,
-                rebin=10, xMin=0, xMax=2000,
-                doLandauFit=False)
+                rebin=10, xMin=0, xMax=2000)
 
             self.plotSeedChargeByCS(canvas, legend, datasets, suffix, plot_title)
         
@@ -383,48 +324,57 @@ class plot_Check:
         log.info("run_plotCheck | Finished")
 
 
-    # --- プロット関数群 (変更なし部分は省略せず記載) ---
+    # =================================================================
+    # ★ プロット関数群
+    # =================================================================
 
     def plotAllCharge(self, c, l, datasets: List[DataConfig], suffix: str, plotTitle: str):
+        """AllCharge (Seed & Cluster) プロット"""
         c.Clear(); l.Clear()
+
         hists_cl = []
         hists_sd = []
-        funcs = []
+        
         max_y = 0.0
 
+        # 全データセットからヒストグラムを取得してリスト化
         for ds in datasets:
             h_cl = self.getScaledHist(ds.fileKey, ds.histNames.get("clusterCharge"), ds.scale, "", ds.isMerged)
             h_sd = self.getScaledHist(ds.fileKey, ds.histNames.get("seedCharge"), ds.scale, "", ds.isMerged)
             
             if h_cl and h_sd:
-                self.setHistStyle(h_cl, ds.color, 20)
-                self.setHistStyle(h_sd, ds.colorAlt, 24)
+                # スタイル設定
+                self.setHistStyle(h_cl, ds.color, 20)    # Cluster: 塗りつぶし丸
+                self.setHistStyle(h_sd, ds.colorAlt, 24) # Seed: 白抜き丸
+                
+                # ★ Rebin判定: データセットが許可している場合のみ行う
                 if ds.doRebin:
                     h_cl.Rebin(10)
                     h_sd.Rebin(10)
                 
+                # 正規化 (Normalize to Max 1)
                 if h_cl.GetMaximum() > 0: h_cl.Scale(1.0 / h_cl.GetMaximum())
                 if h_sd.GetMaximum() > 0: h_sd.Scale(1.0 / h_sd.GetMaximum())
+
+                # 最大Y値の更新
                 max_y = max(max_y, h_cl.GetMaximum(), h_sd.GetMaximum())
                 
-                # AllChargeでもフィット線を出したい場合はここでも呼ぶ
-                f = self.fitLandau(h_cl, 0, 4000, ds.color)
-                funcs.append(f)
-
                 hists_cl.append((h_cl, ds.name))
                 hists_sd.append((h_sd, ds.name))
 
         if not hists_cl: return
 
+        # 描画ループ
         for i, ((h_cl, name), (h_sd, _)) in enumerate(zip(hists_cl, hists_sd)):
             opt = "PE" if i == 0 else "same PE"
+            
             if i == 0:
                 h_cl.SetTitle(";charge [e];counts")
                 h_cl.GetXaxis().SetRangeUser(0, 4000)
-                h_cl.GetYaxis().SetRangeUser(0, max_y * 1.2)
+                h_cl.GetYaxis().SetRangeUser(0, max_y * 1.2) # マージン確保
+            
             h_cl.Draw(opt)
             h_sd.Draw("same PE")
-            if i < len(funcs): funcs[i].Draw("same")
             
             l.AddEntry(h_sd, f"{name}, seed", "pe")
             l.AddEntry(h_cl, f"{name}, cluster", "pe")
@@ -434,28 +384,40 @@ class plot_Check:
         c.SaveAs(f"./plot/AllclusterCharge_{suffix}.pdf")
 
     def plotClusterSize(self, c, l, datasets: List[DataConfig], suffix: str, plotTitle: str):
+        """Cluster Size プロット"""
         c.Clear(); l.Clear()
+
         hists = []
         max_y = 0.0
+
         for ds in datasets:
+            # ClusterSizeは通常Rebinしないので、doRebinフラグはチェックせずそのまま
             h = self.getScaledHist(ds.fileKey, ds.histNames.get("clusterSize"), 1.0, "", ds.isMerged) 
             if h:
-                self.setHistStyle(h, ds.color, 20, 0.2)
-                if h.GetEntries() > 0: h.Scale(1.0 / h.GetEntries())
+                self.setHistStyle(h, ds.color, 20, 0.2) # alpha 0.2
+                
+                if h.GetEntries() > 0:
+                    h.Scale(1.0 / h.GetEntries()) # エントリー数で正規化
+                
                 max_y = max(max_y, h.GetMaximum())
                 hists.append((h, ds.name))
 
         if not hists: return
+
         for i, (h, name) in enumerate(hists):
             opt_hist = "HIST" if i == 0 else "same HIST"
             opt_pe = "same PE"
+            
             if i == 0:
                 h.SetTitle(";cluster size;counts")
                 h.GetXaxis().SetRangeUser(1, 10)
                 h.GetYaxis().SetRangeUser(0, max(max_y * 1.2, 0.1)) 
+            
             h.Draw(opt_hist)
-            h.Draw(opt_pe) 
+            h.Draw(opt_pe) # 点とヒストグラム両方描画
+            
             l.AddEntry(h, f"{name} (mean={h.GetMean():.2f})", "pef")
+
         l.Draw()
         self.drawTitle(plotTitle)
         c.SaveAs(f"./plot/clusterSize_{suffix}.pdf")
@@ -463,11 +425,11 @@ class plot_Check:
     def plotComparison(self, c, l, datasets: List[DataConfig], suffix: str,
                        histKey: str, histLegendSuffix: str,
                        outName: str, plotTitle: str,
-                       rebin: int, xMin: float, xMax: float,
-                       doLandauFit: bool = False):
+                       rebin: int, xMin: float, xMax: float):
+        """汎用比較プロット"""
         c.Clear(); l.Clear()
+
         hists = []
-        funcs = [] 
         max_y = 0.0
 
         for ds in datasets:
@@ -477,44 +439,37 @@ class plot_Check:
             h = self.getScaledHist(ds.fileKey, histName, ds.scale, "", ds.isMerged)
             if h:
                 self.setHistStyle(h, ds.color, 20)
-                if rebin > 1 and ds.doRebin: h.Rebin(rebin)
-                if h.GetMaximum() > 0: h.Scale(1.0 / h.GetMaximum())
-                max_y = max(max_y, h.GetMaximum())
 
-                f = None
-                if doLandauFit:
-                    # ここでフィットを実行
-                    f = self.fitLandau(h, xMin, xMax, ds.color)
-                    funcs.append(f)
-                else:
-                    funcs.append(None)
+                # ★ Rebin判定: 引数のrebin > 1 かつ データセットが許可している場合
+                if rebin > 1 and ds.doRebin:
+                    h.Rebin(rebin)
+                
+                if h.GetMaximum() > 0:
+                    h.Scale(1.0 / h.GetMaximum()) # Normalize to Max 1
+                
+                max_y = max(max_y, h.GetMaximum())
                 hists.append((h, ds.name))
 
         if not hists: return
 
         for i, (h, name) in enumerate(hists):
             opt = "PE" if i == 0 else "same PE"
+            
             if i == 0:
                 h.SetTitle(";charge [e];counts")
                 h.GetXaxis().SetRangeUser(xMin, xMax)
                 h.GetYaxis().SetRangeUser(0, max_y * 1.2)
+            
             h.Draw(opt)
-            
-            legendText = f"{name}, {histLegendSuffix}"
-            func = funcs[i]
-            if func:
-                func.Draw("same")
-                mpv = func.GetParameter(1)
-                sigma = func.GetParameter(2)
-                legendText += f" (MPV={mpv:.0f}, #sigma={sigma:.0f})"
-            
-            l.AddEntry(h, legendText, "pe")
+            l.AddEntry(h, f"{name}, {histLegendSuffix}", "pe")
 
         l.Draw()
         self.drawTitle(plotTitle)
         c.SaveAs(f"./plot/{outName}_{suffix}.pdf")
 
     def plotSeedChargeByCS(self, c, l, datasets: List[DataConfig], suffix: str, plotTitleBase: str):
+        """CSごとのSeed Charge"""
+        
         valid_datasets = [ds for ds in datasets if ds.histNames.get("seedChargeBySize")]
         if not valid_datasets: return
 
@@ -522,26 +477,36 @@ class plot_Check:
             c.Clear(); l.Clear()
             hists = []
             max_y = 0.0
+            
             for ds in valid_datasets:
                 baseName = ds.histNames.get("seedChargeBySize")
                 targetName = f"{baseName}{cs}"
+
                 h = self.getScaledHist(ds.fileKey, targetName, ds.scale, "", ds.isMerged)
                 if h:
-                    self.setHistStyle(h, ds.color, 24)
-                    if ds.doRebin: h.Rebin(10)
+                    self.setHistStyle(h, ds.color, 24) # Seed style
+                    
+                    # ★ Rebin判定: データセットが許可している場合のみ
+                    if ds.doRebin:
+                        h.Rebin(10)
+
                     if h.GetMaximum() > 0: h.Scale(1.0 / h.GetMaximum())
+                    
                     max_y = max(max_y, h.GetMaximum())
                     hists.append((h, ds.name))
 
             if not hists: continue
+
             for i, (h, name) in enumerate(hists):
                 opt = "PE" if i == 0 else "same PE"
                 if i == 0:
                     h.SetTitle(";charge [e];counts")
                     h.GetXaxis().SetRangeUser(0, 4000)
                     h.GetYaxis().SetRangeUser(0, max_y * 1.2)
+
                 h.Draw(opt)
                 l.AddEntry(h, f"{name}, seed", "pe")
+
             l.Draw()
             self.drawTitle(f"{plotTitleBase} cs{cs}")
             c.SaveAs(f"./plot/seed_charge_cs/clusterSeedCharge_cs{cs}_{suffix}.pdf")

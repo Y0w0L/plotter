@@ -9,25 +9,37 @@ from tqdm import tqdm
 import argparse
 import time
 from datetime import datetime
+import multiprocessing
+import os
+import glob
+import traceback
 
 gSystem.Load("/home/towa/package/allpix/install/lib/libAllpixObjects.so")
+ROOT.ROOT.DisableImplicitMT()
 
 # C++のPixelHit, MCParticleなどのデータ構造を模倣するためのデータクラス
 # (この部分は変更ありません)
-@dataclass
+@dataclass(slots=True)
 class PixelHit:
     signal: float
     pixel_index_x: int
     pixel_index_y: int
     mc_particles: List[Any]
 
-@dataclass
+@dataclass(slots=True)
 class MCParticle:
     particle_id: int
     parent: Any
     local_reference_point: np.ndarray
 
-@dataclass
+@dataclass(slots=True)
+class PropagatedCharge:
+    charge_type: str  # 'electron' or 'hole'
+    global_time: float
+    mc_particle: MCParticle
+    local_creation_pos: np.ndarray
+
+@dataclass(slots=True)
 class Cluster:
     """クラスタ情報を保持するデータクラス"""
     seed_pixel_hit: PixelHit
@@ -130,6 +142,10 @@ class AnalysisPixelModule:
 
         self.one_bit_processing = config.get("one_bit", False)
 
+        self.fill_3d = config.get("fill_3d", False)
+
+        self.worker_id = config.get("worker_id", 0)
+
         self.max_cluster_size_hist = 10
 
         if self.one_bit_processing:
@@ -140,10 +156,22 @@ class AnalysisPixelModule:
         self.pixel_tree = self.input_file.Get("PixelHit")
         self.mcp_tree = self.input_file.Get("MCParticle")
         self.n_entries = self.pixel_tree.GetEntries()
-        #self.n_entries = 100
-        
+        #self.n_entries = 100  
+        self.propagated_tree = self.input_file.Get("PropagatedCharge")
+
+        if not self.pixel_tree or not self.mcp_tree or not self.propagated_tree:
+            raise RuntimeError(f"File '{config['file_name']}' is missing required TTrees (PixelHit, MCParticle, or PropagatedCharge).")
+
+        self.n_entries_total = self.pixel_tree.GetEntries()
+        self.start_entry = config.get("start_entry", 0)
+        # configでend_entryが指定されなければ、全イベントを処理
+        self.end_entry = config.get("end_entry", self.n_entries_total)
+        # このワーカーが処理するイベント数
+        self.n_entries = self.end_entry - self.start_entry
+
         # 2つのTTreeが同じイベントを指すように同期させる
         self.pixel_tree.AddFriend(self.mcp_tree)
+        self.pixel_tree.AddFriend(self.propagated_tree)
 
         self.counter_names = {
             "Total Events": self.n_entries,
@@ -157,7 +185,7 @@ class AnalysisPixelModule:
         }
 
         #self.four_neighbors = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-        
+        print(f"Worker processing {self.n_entries} events (range {self.start_entry} to {self.end_entry}) for file '{config['file_name']}'.")
         print(f"File '{config['file_name']}' opened with {self.n_entries} events.")
 
     def setup_histograms(self):
@@ -167,7 +195,7 @@ class AnalysisPixelModule:
         pitch_y = self.detector_model.pixel_size[1]
         inpixel_bins_x = 50
         inpixel_bins_y = 50
-        max_cluster_charge_ke = self.config.get("max_cluster_charge_ke", 50.0)
+        max_cluster_charge_ke = self.config.get("max_cluster_charge_ke", 20.0)
         self.histograms["inPixel_cluster_size"] = ROOT.TProfile2D("inPixel_cluster_size", ";x/pitch [um];y/pitch [um];cluster size", inpixel_bins_x, -pitch_x / 2, pitch_x / 2, inpixel_bins_y, -pitch_y / 2, pitch_y / 2)
         self.histograms["inPixel_cluster_charge"] = ROOT.TProfile2D("inPixel_cluster_charge", ";x/pitch [um];y/pitch [um];cluster charge [ke]", inpixel_bins_x, -pitch_x / 2, pitch_x / 2, inpixel_bins_y, -pitch_y / 2, pitch_y / 2)
         self.histograms["inPixel_seed_charge"] = ROOT.TProfile2D("inPixel_seed_charge", ";x/pitch [um];y/pitch [um];seed charge [ke]", inpixel_bins_x, -pitch_x / 2, pitch_x / 2, inpixel_bins_y, -pitch_y / 2, pitch_y / 2)
@@ -175,7 +203,7 @@ class AnalysisPixelModule:
         self.histograms["inPixel_residual_x"] = ROOT.TProfile2D("inPixel_residual_x", ";x/pitch [um];y/pitch [um];residual x [um]", inpixel_bins_x, -pitch_x / 2, pitch_x / 2, inpixel_bins_y, -pitch_y / 2, pitch_y / 2)
         self.histograms["inPixel_residual_y"] = ROOT.TProfile2D("inPixel_residual_y", ";x/pitch [um];y/pitch [um];residual y [um]", inpixel_bins_x, -pitch_x / 2, pitch_x / 2, inpixel_bins_y, -pitch_y / 2, pitch_y / 2)
         self.histograms["inPixel_residual_xy2"] = ROOT.TProfile2D("inPixel_residual_xy2", ";x/pitch [um];y/pitch [um];x + y / 2 [um]", inpixel_bins_x, -pitch_x / 2, pitch_x / 2, inpixel_bins_y, -pitch_y / 2, pitch_y / 2)
-        # self.histograms["inPixel_residual"] = ROOT.TProfile2D("inPixel_residual", ";x/pitch [um];y/pitch [um];residual [um]", inpixel_bins_x, -1000, 1000, inpixel_bins_y, -1000, 1000)
+        self.histograms["inPixel_residual"] = ROOT.TProfile2D("inPixel_residual", ";x/pitch [um];y/pitch [um];residual [um]", inpixel_bins_x, -1000, 1000, inpixel_bins_y, -1000, 1000)
         #self.histograms["test"] = ROOT.TH2D("test", "test", 1000, -50, 50, 1000, -50, 50)
         self.histograms["cluster_charge"] = ROOT.TH1D("cluster_charge", ";charge [ke];counts", 1000, 0, max_cluster_charge_ke)
         self.histograms["cluster_size"] = ROOT.TH1D("cluster_size", ";cluster size;counts", 20, 0.5, 20.5)
@@ -183,8 +211,12 @@ class AnalysisPixelModule:
         self.histograms["residual_x"] = ROOT.TH1D("residual_x", ";residual x [um];counts", 10000, -40, 40)
         self.histograms["residual_y"] = ROOT.TH1D("residual_y", ";residual y [um];counts", 10000, -40, 40)
         self.histograms["residual_r"] = ROOT.TH1D("residual_r", ";residual r [um];counts", 10000, 0, 40)
-        self.histograms["cluster_neighbor_charge_sum"] = ROOT.TH1D("cluster_neighbor_charge_sum", ";charge [ke];counts", 1000, 0, max_cluster_charge_ke)
-        self.histograms["cluster_neighbor_charge"] = ROOT.TH1D("cluster_neighbor_charge", ";charge [ke];counts", 1000, 0, max_cluster_charge_ke)
+        self.histograms["cluster_neighbor_charge_sum"] = ROOT.TH1D("cluster_neighbor_charge_sum", ";charge [ke];counts", 200, 0, 0.2)
+        self.histograms["cluster_neighbor_charge"] = ROOT.TH1D("cluster_neighbor_charge", ";charge [ke];counts", 200, 0, 0.2)
+        self.histograms["seedCharge_vs_clusterSize"] = ROOT.TH2D("seedCharge_vs_clusterSize", ";charge [ke];cluster size", 1000, 0, max_cluster_charge_ke, 20, 0.5, 20.5)
+        self.histograms["neighborChargeSum_vs_clusterSize"] = ROOT.TH2D("neighborChargeSum_vs_clusterSize", ";charge [ke];cluster size", 200, 0, 0.2, 20, 0.5, 20.5)
+        self.histograms["clusterCharge_vs_clusterSize"] = ROOT.TH2D("clusterCharge_vs_clusterSize", ";charge [ke];cluster size", 1000, 0, max_cluster_charge_ke, 20, 0.5, 20.5)
+        self.histograms["seedCharge_vs_neighborChargeSum"] = ROOT.TH2D("seedCharge_vs_neighborChargeSum", ";seed charge [ke];neighbor charge [ke]", 1000, 0, max_cluster_charge_ke, 1000, 0, 20)
 
         n_counters = len(self.counter_names)
         self.histograms["counters"] = ROOT.TH1D("counters", "Event Summary;category;counts", n_counters, 0, n_counters)
@@ -192,13 +224,68 @@ class AnalysisPixelModule:
             self.histograms["counters"].GetXaxis().SetBinLabel(i+1, name)
 
         for i in range(1, self.max_cluster_size_hist + 1):
-            hist_name = f"seed_charge_size_{i}"
-            hist_title = f"Cluster Seed Charge {i};charge [ke];counts"
-            self.histograms[hist_name] = ROOT.TH1D(hist_name, hist_title, 1000, 0, max_cluster_charge_ke)
+            hist_name_seed = f"seed_charge_size_{i}"
+            hist_title_seed = f"Cluster Seed Charge {i};charge [ke];counts"
+            self.histograms[hist_name_seed] = ROOT.TH1D(hist_name_seed, hist_title_seed, 1000, 0, max_cluster_charge_ke)
+            
+            self.histograms[f"residual_x_size_{i}"] = ROOT.TH1D(f"residual_x_size_{i}", f"Residual X (Size {i});residual x [um];counts", 10000, -40, 40)
+            self.histograms[f"residual_y_size_{i}"] = ROOT.TH1D(f"residual_y_size_{i}", f"Residual Y (Size {i});residual y [um];counts", 10000, -40, 40)
+            self.histograms[f"residual_r_size_{i}"] = ROOT.TH1D(f"residual_r_size_{i}", f"Residual R (Size {i});residual r [um];counts", 10000, 0, 40)
 
-        hist_name_large = f"seed_charge_size_{self.max_cluster_size_hist + 1}_plus"
-        hist_title_large = f"Seed Charge for Cluster Size > {self.max_cluster_size_hist};charge [ke];counts"
-        self.histograms[hist_name_large] = ROOT.TH1D(hist_name_large, hist_title_large, 1000, 0, max_cluster_charge_ke)
+        suffix_plus = f"{self.max_cluster_size_hist + 1}_plus"
+        hist_name_seed_large = f"seed_charge_size_{suffix_plus}"
+        self.histograms[hist_name_seed_large] = ROOT.TH1D(hist_name_seed_large, f"Seed Charge for Cluster Size > {self.max_cluster_size_hist};charge [ke];counts", 1000, 0, max_cluster_charge_ke)
+
+        # NEW: Residuals overflow
+        self.histograms[f"residual_x_size_{suffix_plus}"] = ROOT.TH1D(f"residual_x_size_{suffix_plus}", f"Residual X (Size > {self.max_cluster_size_hist});residual x [um];counts", 10000, -40, 40)
+        self.histograms[f"residual_y_size_{suffix_plus}"] = ROOT.TH1D(f"residual_y_size_{suffix_plus}", f"Residual Y (Size > {self.max_cluster_size_hist});residual y [um];counts", 10000, -40, 40)
+        self.histograms[f"residual_r_size_{suffix_plus}"] = ROOT.TH1D(f"residual_r_size_{suffix_plus}", f"Residual R (Size > {self.max_cluster_size_hist});residual r [um];counts", 10000, 0, 40)
+
+        self.histograms["inPixel_electron_driftTime_90p"] = ROOT.TProfile2D("inPixel_electron_driftTime_90p", ";x/pitch [um];y/pitch [um];90% electron drift time [ns]", inpixel_bins_x, -pitch_x / 2, pitch_x / 2, inpixel_bins_y, -pitch_y / 2, pitch_y / 2)
+        self.histograms["electron_driftTime_90p"] = ROOT.TH1D("electron_driftTime_90p", ";90% electron drift time [ns];counts", 20000, 0, 2)
+
+        self.histograms["drift_time_vs_distance"] = ROOT.TH2D(
+            "drift_time_vs_distance",
+            ";distance to pixel center [um];drift time [ns];counts",
+            200, 0, 100,
+            1000, 0, 0.2
+        )
+        self.histograms["cluster_charge_vs_drift_time"] = ROOT.TH2D(
+            "cluster_charge_vs_drift_time",
+            ";Cluster Charge [ke];90% electron drift time [ns];Counts",
+            100, 0, max_cluster_charge_ke,
+            1000, 0, 0.2
+        )
+        self.histograms["cluster_size_vs_drift_time"] = ROOT.TH2D(
+            "cluster_size_vs_drift_time",
+            ";Cluster Size [pixels];90% electron drift time [ns];Counts",
+            20, 0.5, 20.5,
+            1000, 0, 0.2
+        )
+
+        if self.fill_3d:
+            half_pitch_x = self.detector_model.pixel_size[0] / 2.0
+            half_pitch_y = self.detector_model.pixel_size[1] / 2.0
+            sensor_half_thickness = 25.0 # センサ厚 50umを想定
+
+            self.histograms["drift_time_map_xyz"] = ROOT.TProfile3D(
+                "drift_time_map_xyz",
+                ";In-Pixel X [um];In-Pixel Y [um];Depth Z [um];Average Drift Time [ns]",
+                10, -half_pitch_x, half_pitch_x,
+                10, -half_pitch_y, half_pitch_y,
+                25, -sensor_half_thickness, sensor_half_thickness
+            )
+        
+        self.histograms["drift_time_seed"] = ROOT.TH1D(
+            "drift_time_seed",
+            ";drift time (seed pixel) [ns];counts (per carrier)",
+            1000, 0, 0.2
+        )
+        self.histograms["drift_time_neighbor"] = ROOT.TH1D(
+            "drift_time_neighbor",
+            ";drift time (neighbor pixel) [ns];counts (per carrier)",
+            1000, 0, 0.2
+        )
 
     def do_clustering(self, pixel_hits: List[PixelHit]) -> List[Cluster]:
         # (この関数は変更ありません)
@@ -247,48 +334,102 @@ class AnalysisPixelModule:
 
     def _fill_histograms_from_buffer(self, buffer: Dict[str, list]):
         """バッファに溜まったデータからヒストグラムを更新する"""
-        for val in buffer["cluster_charge"]:
-            self.histograms["cluster_charge"].Fill(val)
-        for val in buffer["cluster_size"]:
-            self.histograms["cluster_size"].Fill(val)
-        for val in buffer["seed_charge"]:
-            self.histograms["seed_charge"].Fill(val)
-        for val in buffer["residual_x"]:
-            self.histograms["residual_x"].Fill(val)
-        for val in buffer["residual_y"]:
-            self.histograms["residual_y"].Fill(val)
-        for val in buffer["residual_r"]:
-            self.histograms["residual_r"].Fill(val)
+        # for val in buffer["cluster_charge"]:
+        #     self.histograms["cluster_charge"].Fill(val)
+        # for val in buffer["cluster_size"]:
+        #     self.histograms["cluster_size"].Fill(val)
+        # for val in buffer["seed_charge"]:
+        #     self.histograms["seed_charge"].Fill(val)
+        # for val in buffer["residual_x"]:
+        #     self.histograms["residual_x"].Fill(val)
+        # for val in buffer["residual_y"]:
+        #     self.histograms["residual_y"].Fill(val)
+        # for val in buffer["residual_r"]:
+        #     self.histograms["residual_r"].Fill(val)
 
-        for x, y, val in buffer["inPixel_cluster_size"]:
-            self.histograms["inPixel_cluster_size"].Fill(x, y, val)
-        for x, y, val in buffer["inPixel_residual_r"]:
-            self.histograms["inPixel_residual_r"].Fill(x, y, val)
-        for x, y, val in buffer["inPixel_residual_x"]:
-            self.histograms["inPixel_residual_x"].Fill(x, y, val)
-        for x, y, val in buffer["inPixel_residual_y"]:
-            self.histograms["inPixel_residual_y"].Fill(x, y, val)
-        for x, y, val in buffer["inPixel_residual_xy2"]:
-            self.histograms["inPixel_residual_xy2"].Fill(x, y, val)
-        for x, y, val in buffer["inPixel_seed_charge"]:
-            self.histograms["inPixel_seed_charge"].Fill(x, y, val)
-        for x, y, val in buffer["inPixel_cluster_charge"]:
-            self.histograms["inPixel_cluster_charge"].Fill(x, y, val)
+        # for x, y, val in buffer["inPixel_cluster_size"]:
+        #     self.histograms["inPixel_cluster_size"].Fill(x, y, val)
+        # for x, y, val in buffer["inPixel_residual_r"]:
+        #     self.histograms["inPixel_residual_r"].Fill(x, y, val)
+        # for x, y, val in buffer["inPixel_residual_x"]:
+        #     self.histograms["inPixel_residual_x"].Fill(x, y, val)
+        # for x, y, val in buffer["inPixel_residual_y"]:
+        #     self.histograms["inPixel_residual_y"].Fill(x, y, val)
+        # for x, y, val in buffer["inPixel_residual_xy2"]:
+        #     self.histograms["inPixel_residual_xy2"].Fill(x, y, val)
+        # for x, y, val in buffer["inPixel_seed_charge"]:
+        #     self.histograms["inPixel_seed_charge"].Fill(x, y, val)
+        # for x, y, val in buffer["inPixel_cluster_charge"]:
+        #     self.histograms["inPixel_cluster_charge"].Fill(x, y, val)
 
-        for val in buffer["cluster_neighbor_charge_sum"]:
-            self.histograms["cluster_neighbor_charge_sum"].Fill(val)
-        for val in buffer["cluster_neighbor_charge"]:
-            self.histograms["cluster_neighbor_charge"].Fill(val)
+        # for val in buffer["cluster_neighbor_charge_sum"]:
+        #     self.histograms["cluster_neighbor_charge_sum"].Fill(val)
+        # for val in buffer["cluster_neighbor_charge"]:
+        #     self.histograms["cluster_neighbor_charge"].Fill(val)
 
-        for i in range(1, self.max_cluster_size_hist + 1):
-            hist_name = f"seed_charge_size_{i}"
-            for val in buffer[hist_name]:
-                self.histograms[hist_name].Fill(val)
-        
-        hist_name_large = f"seed_charge_size_{self.max_cluster_size_hist + 1}_plus"
-        for val in buffer[hist_name_large]:
-            self.histograms[hist_name_large].Fill(val)
+        # for x_val, y_val in buffer["seedCharge_vs_clusterSize"]:
+        #     self.histograms["seedCharge_vs_clusterSize"].Fill(x_val, y_val)
+        # for x_val, y_val in buffer["neighborChargeSum_vs_clusterSize"]:
+        #     self.histograms["neighborChargeSum_vs_clusterSize"].Fill(x_val, y_val)
+        # for x_val, y_val in buffer["clusterCharge_vs_clusterSize"]:
+        #     self.histograms["clusterCharge_vs_clusterSize"].Fill(x_val, y_val)
+
+        # for x_val, y_val in buffer["seedCharge_vs_neighborChargeSum"]:
+        #     self.histograms["seedCharge_vs_neighborChargeSum"].Fill(x_val, y_val)
+
+        # for i in range(1, self.max_cluster_size_hist + 1):
+        #     # Seed charge
+        #     hist_name_seed = f"seed_charge_size_{i}"
+        #     if hist_name_seed in buffer:
+        #         for val in buffer[hist_name_seed]:
+        #             self.histograms[hist_name_seed].Fill(val)
             
+        #     # NEW: Residuals
+        #     for axis in ["x", "y", "r"]:
+        #         hist_name_res = f"residual_{axis}_size_{i}"
+        #         if hist_name_res in buffer:
+        #             for val in buffer[hist_name_res]:
+        #                 self.histograms[hist_name_res].Fill(val)
+
+        # # Overflow bins filling
+        # suffix_plus = f"{self.max_cluster_size_hist + 1}_plus"
+        
+        # hist_name_seed_large = f"seed_charge_size_{suffix_plus}"
+        # if hist_name_seed_large in buffer:
+        #     for val in buffer[hist_name_seed_large]:
+        #         self.histograms[hist_name_seed_large].Fill(val)
+
+        # # NEW: Residuals overflow filling
+        # for axis in ["x", "y", "r"]:
+        #     hist_name_res_large = f"residual_{axis}_size_{suffix_plus}"
+        #     if hist_name_res_large in buffer:
+        #         for val in buffer[hist_name_res_large]:
+        #             self.histograms[hist_name_res_large].Fill(val)
+            
+        # for key in buffer:
+        #     buffer[key].clear()
+        for key, histo in self.histograms.items():
+            if not buffer.get(key): continue
+            
+            # ヒストグラムの型に応じてFillメソッドを呼び分ける
+            try:
+                if isinstance(histo, ROOT.TProfile3D):
+                    for x, y, z, val in buffer[key]:
+                        histo.Fill(x, y, z, val)
+                elif isinstance(histo, ROOT.TProfile2D):
+                    for x, y, val in buffer[key]:
+                        histo.Fill(x, y, val)
+                elif isinstance(histo, ROOT.TH2D):
+                    for x_val, y_val in buffer[key]:
+                        histo.Fill(x_val, y_val)
+                elif isinstance(histo, ROOT.TH1D):
+                    for val in buffer[key]:
+                        histo.Fill(val)
+            except Exception as e:
+                print(f"Error filling histogram {key}: {e}")
+                # エラーが発生しても処理を続ける
+        
+        # バッファをクリア
         for key in buffer:
             buffer[key].clear()
 
@@ -318,13 +459,32 @@ class AnalysisPixelModule:
         pitch_y = self.detector_model.pixel_size[1]
         offset_x = pitch_x / 2
         offset_y = pitch_y / 2
+        offset_vec = np.array([pitch_x / 2, pitch_y / 2, 0])
 
         BATCH_SIZE =1000
         buffer = {hist_name: [] for hist_name in self.histograms}
 
+        h_drift_time_vs_dist = self.histograms.get("drift_time_vs_distance")
+        h_drift_time_map_xyz = self.histograms.get("drift_time_map_xyz") if self.fill_3d else None
+        h_drift_time_seed = self.histograms.get("drift_time_seed")
+        h_drift_time_neighbor = self.histograms.get("drift_time_neighbor")
+
+        tqdm_iterator = tqdm(
+            range(self.start_entry, self.end_entry),
+            # descを少し短くして、ワーカーIDが見やすいように変更
+            desc=f"Worker {self.worker_id} (Events {self.start_entry}-{self.end_entry})", 
+            position=self.worker_id,  # ★ これが重要: 0, 1, 2... の行を割り当てる
+            leave=False               # ★ 完了したらバーを消去 (Trueだとバーが残り続ける)
+        )
+
         #for i in tqdm(range(self.n_entries)):
-        for i in range(self.n_entries):
-            self.pixel_tree.GetEntry(i)
+        #for i in range(self.n_entries):
+        #for i_global in tqdm(range(self.start_entry, self.end_entry), desc=f"Worker (Events {self.start_entry} - {self.end_entry})"):
+        for i_global in tqdm_iterator:
+            #self.pixel_tree.GetEntry(i)
+            self.pixel_tree.GetEntry(i_global)
+
+            i_local = i_global - self.start_entry
             
             # --- 1. データデコード ---
             
@@ -377,6 +537,38 @@ class AnalysisPixelModule:
                     pixel_index_y=hit_obj.getPixel().getIndex().Y(),
                     mc_particles=hit_mc_particles
                 ))
+
+            propagated_objects = getattr(self.propagated_tree, branch_name, [])
+            charge_map: Dict[int, List[PropagatedCharge]] = {} # MCParticle ID -> PropagatedChargeリスト
+            
+            for prop_obj in propagated_objects:
+                mc_particle_ptr = prop_obj.getMCParticle()
+                if not mc_particle_ptr: continue
+                
+                parent_mcp = mc_particles.get(mc_particle_ptr.GetUniqueID())
+                if not parent_mcp: continue
+                
+                # CarrierTypeを文字列に変換
+                carrier_type_enum = prop_obj.getType()
+                if carrier_type_enum == 255: # ROOT.allpix.CarrierType.ELECTRONは-1 (C++のenumがPythonでは 255 (unsigned char) として見えることがある)
+                    charge_type = 'electron'
+                elif carrier_type_enum == 1: # ROOT.allpix.CarrierType.HOLE は 1
+                    charge_type = 'hole'
+                else:
+                    # 想定外の値（デバッグ用）
+                    # print(f"Unknown carrier type: {carrier_type_enum}")
+                    continue
+
+                pos = prop_obj.getLocalPosition()
+                creation_pos_um = np.array([pos.X() * 1000, pos.Y() * 1000, pos.Z() * 1000])
+
+                prop_charge = PropagatedCharge(
+                    charge_type=charge_type,
+                    global_time=prop_obj.getGlobalTime(), # [ps]
+                    mc_particle=parent_mcp,
+                    local_creation_pos=creation_pos_um
+                )
+                charge_map.setdefault(parent_mcp.particle_id, []).append(prop_charge)
 
             # --- 2. 解析ロジック (ここからは以前のコードとほぼ同じ) ---
             primary_particles = self.get_primary_particles(mc_particles)
@@ -519,6 +711,10 @@ class AnalysisPixelModule:
                 buffer["inPixel_seed_charge"].append((in_pixel_pos[0], in_pixel_pos[1], clus.seed_pixel_hit.signal / 1000.0))
                 buffer["inPixel_cluster_charge"].append((in_pixel_pos[0], in_pixel_pos[1], clus.charge / 1000.0))
                 buffer["cluster_neighbor_charge_sum"].append(sum_non_seed_charge_ke)
+                buffer["seedCharge_vs_clusterSize"].append((clus.seed_pixel_hit.signal / 1000.0, clus.size))
+                buffer["neighborChargeSum_vs_clusterSize"].append((sum_non_seed_charge_ke / 1000.0, clus.size))
+                buffer["clusterCharge_vs_clusterSize"].append((clus.charge / 1000.0, clus.size))
+                buffer["seedCharge_vs_neighborChargeSum"].append((clus.seed_pixel_hit.signal / 1000, sum_non_seed_charge_ke))
                 for hit in non_seed_hits:
                     buffer["cluster_neighbor_charge"].append(hit.signal / 1000.0)
 
@@ -526,15 +722,59 @@ class AnalysisPixelModule:
                 seed_charge_ke = clus.seed_pixel_hit.signal / 1000.0
 
                 if size <= self.max_cluster_size_hist:
-                    # 1からmax_cluster_size_histまでの場合
-                    hist_name = f"seed_charge_size_{size}"
-                    if hist_name in buffer: # 念のため存在確認
-                        buffer[hist_name].append(seed_charge_ke)
+                    # Size 1 to 10
+                    buffer[f"seed_charge_size_{size}"].append(seed_charge_ke)
+                    buffer[f"residual_x_size_{size}"].append(residual_vec[0])
+                    buffer[f"residual_y_size_{size}"].append(residual_vec[1])
+                    buffer[f"residual_r_size_{size}"].append(residual_r)
                 else:
-                    # max_cluster_size_hist より大きい場合
-                    hist_name = f"seed_charge_size_{self.max_cluster_size_hist + 1}_plus"
-                    buffer[hist_name].append(seed_charge_ke)
+                    # Size > 10 (Overflow)
+                    suffix_plus = f"{self.max_cluster_size_hist + 1}_plus"
+                    buffer[f"seed_charge_size_{suffix_plus}"].append(seed_charge_ke)
+                    buffer[f"residual_x_size_{suffix_plus}"].append(residual_vec[0])
+                    buffer[f"residual_y_size_{suffix_plus}"].append(residual_vec[1])
+                    buffer[f"residual_r_size_{suffix_plus}"].append(residual_r)
                 
+                electron_drift_times_ps = []
+                
+                for hit in clus.pixel_hits:
+                    # このピクセルの中心位置
+                    pixel_center_pos = self.detector_model.get_pixel_center(
+                        hit.pixel_index_x, hit.pixel_index_y
+                    )
+                    
+                    for mcp in hit.mc_particles:
+                        # このMCParticleに関連するPropagatedChargeを取得
+                        propagated_charges = charge_map.get(mcp.particle_id, [])
+                        
+                        for pc in propagated_charges:
+                            if pc.charge_type == 'electron':
+                                drift_time_ns = pc.global_time * 1e-3 # ps -> ns
+                                electron_drift_times_ps.append(pc.global_time) # 90パーセンタイル計算用
+                                
+                                creation_pos = pc.local_creation_pos
+                                # 電荷生成位置とピクセル中心との距離
+                                distance_um = np.linalg.norm(creation_pos - pixel_center_pos)
+                                
+                                if h_drift_time_vs_dist: # 高速化のためバッファを介さず直接Fill
+                                    h_drift_time_vs_dist.Fill(distance_um, drift_time_ns)
+
+                                # 3Dマップ充填
+                                if h_drift_time_map_xyz: # self.fill_3dがTrueの場合
+                                    relative_pos = creation_pos - pixel_center_pos
+                                    h_drift_time_map_xyz.Fill(
+                                        relative_pos[0], # In-pixel X
+                                        relative_pos[1], # In-pixel Y
+                                        relative_pos[2], # Depth Z
+                                        drift_time_ns
+                                    )
+                                
+                                # Seed vs Neighbor
+                                if hit is clus.seed_pixel_hit:
+                                    if h_drift_time_seed: h_drift_time_seed.Fill(drift_time_ns)
+                                else:
+                                    if h_drift_time_neighbor: h_drift_time_neighbor.Fill(drift_time_ns)
+
                 # --------------------------------------------------------
 
             if (i + 1) % BATCH_SIZE == 0:
@@ -551,42 +791,135 @@ class AnalysisPixelModule:
         
 
     def finalize(self):
+        # for i, name in enumerate(self.counter_names):
+        #     count = self.counters.get(name, 0)
+        #     self.histograms["counters"].SetBinContent(i + 1, count)
+        
+        # output_filename = self.config.get("output_file_name", "analysis_py.root")
+        # output_file = ROOT.TFile(output_filename, "RECREATE")
+        # for name, histo in self.histograms.items():
+        #     histo.Write()
+        # output_file.Close()
+        # print(f"Histograms written to {output_filename}")
+
         for i, name in enumerate(self.counter_names):
             count = self.counters.get(name, 0)
-            self.histograms["counters"].SetBinContent(i + 1, count)
-        
-        output_filename = self.config.get("output_file_name", "analysis_py.root")
+            if self.histograms.get("counters"):
+                self.histograms["counters"].SetBinContent(i + 1, count)
+
+        output_filename = self.config.get("output_file_name")
         output_file = ROOT.TFile(output_filename, "RECREATE")
+
+        dir_inpixel = output_file.mkdir("inPixel")
+        dir_per_size = output_file.mkdir("PerClusterSize")
+        dir_drifttime = output_file.mkdir("DriftTime")
+
+        dir_size_specific = {}
+        for i in range(1, self.max_cluster_size_hist + 1):
+            dir_name = f"clsize_{i}"
+            dir_size_specific[f"_size_{i}"] = dir_per_size.mkdir(dir_name)
+
+        suffix_plus = f"{self.max_cluster_size_hist + 1}_plus"
+        dir_name_plus = f"clsize_{self.max_cluster_size_hist + 1}_plus"
+        dir_size_specific[f"_size_{suffix_plus}"] = dir_per_size.mkdir(dir_name_plus)
+
         for name, histo in self.histograms.items():
+            
+            written_to_subdir = False
+            
+            # --- 分類ルール1: クラスターサイズ別 ---
+            for suffix, directory in dir_size_specific.items():
+                if name.endswith(suffix):
+                    directory.cd()      # サブディレクトリに移動
+                    histo.Write()
+                    written_to_subdir = True
+                    break # このヒストグラムの処理は完了
+            
+            if written_to_subdir:
+                continue # 次のヒストグラムへ
+
+            # --- 分類ルール2: inPixel ---
+            if name.startswith("inPixel_"):
+                dir_inpixel.cd()
+                histo.Write()
+                continue
+
+            # --- 分類ルール3: DriftTime ---
+            if (name.startswith("drift_time_") or 
+                name.startswith("electron_driftTime_") or 
+                name.endswith("_vs_drift_time")):
+                dir_drifttime.cd()
+                histo.Write()
+                continue
+
+            # --- 分類ルール4: 2D相関 ---
+            # if "_vs_" in name:
+            #     dir_2d_correlations.cd()
+            #     histo.Write()
+            #     continue
+
+            # --- 分類ルール5: その他 (ルートディレクトリ) ---
+            output_file.cd() # メインディレクトリに戻る
             histo.Write()
+
+        # --- 4. ファイルを閉じる ---
         output_file.Close()
         print(f"Histograms written to {output_filename}")
 
+def run_worker(args):
+    start_index, end_index, worker_id, config = args
+
+    # ワーカーごとに固有の出力ファイル名とイベント範囲を設定
+    config["output_file_name"] = f"analysis_py_part_{worker_id}.root"
+    config["start_entry"] = start_index
+    config["end_entry"] = end_index
+    config["worker_id"] = worker_id # デバッグ用
+
+    try:
+        analyzer = AnalysisPixelModule(config)
+        analyzer.run_analysis()
+        analyzer.finalize()
+        return config["output_file_name"] # 成功したらファイル名を返す
+    except Exception as e:
+        # エラーが発生した場合、トレースバックを表示
+        print(f"--- Worker {worker_id} FAILED (Events {start_index}-{end_index}) ---")
+        print(f"An error occurred in worker {worker_id}: {e}")
+        traceback.print_exc()
+        print(f"---------------------------------")
+        return None # 失敗したらNoneを返す
 
 if __name__ == '__main__':
     start_time = time.time()
     
     parser = argparse.ArgumentParser(
-        description="Allpix Squared Analysis script.",
+        description="Allpix Squared Analysis script (Multiprocessing Enabled).",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
-    parser.add_argument("-i", "--input_file", type=str, help="Path to the input ROOT file from Allpix Squared Simulation Data.")
-    parser.add_argument("-o", "--output", default="analysis_py.root", type=str, help="Path for the output ROOT file.")
+    # --- 引数のマージ ---
+    parser.add_argument("-i", "--input_file", type=str, required=True, help="Path to the input ROOT file from Allpix Squared Simulation Data.")
+    parser.add_argument("-o", "--output", default="analysis_py.root", type=str, help="Path for the FINAL merged output ROOT file.")
     parser.add_argument("-st", "--seed_threshold", type=int, default=0, help="Seed_threshold for analysis (electron num).")
     parser.add_argument("-nt", "--neighbor_threshold", type=int, default=0, help="Neighbor_threshold for analysis (electron num).")
     parser.add_argument("-p", "--pixel_pitch", type=float, default=22.5, help="pixel pitch about DUT")
     parser.add_argument("-v", "--voltage", type=int, default=10, help="Chip voltage about DUT (e.g., 10, 7, 4)")
     parser.add_argument("-b", "--beam_type", type=str, default="e3GeV", help="Beam information e.g., e3GeV")
     parser.add_argument("-m", "--model", type=str, default="masetti", help="Model name for Electron calculation")
-    parser.add_argument("-n", "--name", type=str, default="CE65", help="DUT name")
-    parser.add_argument("--one_bit", action="store_true", help="Enable 1-bit processing")
+    parser.add_argument("-n", "--name", type=str, default="CE65", help="DUT name (TTree branch name)")
+    
+    # ベースコードの引数
+    parser.add_argument("--one_bit", action="store_true", help="Enable 1-bit processing (binary readout)")
+    
+    # 追加機能コードの引数
+    parser.add_argument("--fill3D", action="store_true", help="Enable filling of the 3D drift time map (can be slow).")
+    parser.add_argument("-j", "--cores", type=int, default=6, help="Number of CPU cores to use for multiprocessing.")
 
     args = parser.parse_args()    
 
+    # --- config辞書のマージ ---
     config = {
         "file_name": args.input_file,
-        "output_file_name": args.output,
+        "output_file_name": args.output, # これは最終ファイル名として使う
         "detector_name": args.name,
         "pixel_pitch_x": args.pixel_pitch,
         "pixel_pitch_y": args.pixel_pitch,
@@ -597,28 +930,100 @@ if __name__ == '__main__':
         "model_name": args.model,
         "granularity_x": 50,
         "granularity_y": 50, 
-        "max_cluster_charge_ke": 60.0,
-        "one_bit": args.one_bit,
+        "max_cluster_charge_ke": 20.0, # 60keに変更
+        "one_bit": args.one_bit,     # ベースコードから追加
+        "fill_3d": args.fill3D,    # 追加機能コードから追加
     }
 
+    num_cores = args.cores
+
+    # --- タスク分割 ---
+    print(f"Opening file {config['file_name']} to get total entries...")
     try:
-        f = ROOT.TFile.Open(config["file_name"])
-        if not f or f.IsZombie():
-            raise FileNotFoundError
-        if not f.Get("PixelHit") or not f.Get("MCParticle"):
+        temp_file = ROOT.TFile.Open(config["file_name"])
+        if not temp_file or temp_file.IsZombie():
+            raise RuntimeError(f"File not found or is zombie: {config['file_name']}")
+        
+        # 必要なTTreeが存在するかチェック
+        if not temp_file.Get("PixelHit") or not temp_file.Get("MCParticle") or not temp_file.Get("PropagatedCharge"):
              print(f"Error: Input file '{config['file_name']}' is missing required TTrees.")
-             print(f"Required: 'PixelHit' and 'MCParticle'")
-             exit()
-        f.Close()
-        print(f"Using existing file: {config['file_name']}")
-    except (FileNotFoundError, OSError):
-        print(f"Error: Input file '{config['file_name']}' not found.")
-        exit()
+             print(f"Required: 'PixelHit', 'MCParticle', AND 'PropagatedCharge'")
+             temp_file.Close()
+             exit(1)
+             
+        temp_tree = temp_file.Get("PixelHit")
+        total_entries = temp_tree.GetEntries()
+        temp_file.Close()
+    except Exception as e:
+        print(f"Error opening file to get entries: {e}")
+        exit(1)
 
-    analyzer = AnalysisPixelModule(config)
-    analyzer.run_analysis()
-    analyzer.finalize()
+    if total_entries == 0:
+        print("Error: Input file has 0 entries. Exiting.")
+        exit(0)
 
+    print(f"Total entries: {total_entries}. Splitting tasks for {num_cores} cores.")
+
+    chunk_size = math.ceil(total_entries / num_cores)
+    tasks = [] # (start_index, end_index, worker_id, config_copy)
+
+    for i in range(num_cores):
+        start_index = i * chunk_size
+        end_index = min((i + 1) * chunk_size, total_entries)
+        if start_index >= total_entries:
+            continue # イベントがもう残っていない
+        
+        # 各ワーカーに渡す引数を準備 (configはコピーして渡す)
+        tasks.append((start_index, end_index, i, config.copy()))
+
+    if not tasks:
+        print("No tasks to run. Exiting.")
+        exit(0)
+
+    # --- プールを開始してタスクを実行 ---
+    print(f"Starting multiprocessing pool with {len(tasks)} workers...")
+    
+    partial_files = [] # 成功したワーカーが出力したファイル名のリスト
+    
+    # .Pool()のコンテキストマネージャを使用
+    with multiprocessing.Pool(processes=num_cores) as pool:
+        # pool.map が全ワーカーの終了を待機し、結果 (ファイル名 or None) のリストを返す
+        results = pool.map(run_worker, tasks)
+        
+        for res in results:
+            if res: # Noneでない（＝成功した）場合のみリストに追加
+                partial_files.append(res)
+
+    if not partial_files:
+        print("All workers failed. No partial files were produced. Exiting.")
+        exit(1)
+        
+    print(f"\nAll workers finished. Found {len(partial_files)} partial files.")
+
+    # --- haddによるマージ ---
+    final_output_file = config["output_file_name"]
+    hadd_command = f"hadd -f {final_output_file} {' '.join(partial_files)}"
+    
+    print("Merging partial files with hadd...")
+    print(f"> {hadd_command}")
+    
+    try:
+        os.system(hadd_command)
+        print(f"Successfully merged into {final_output_file}")
+    except Exception as e:
+        print(f"hadd command FAILED: {e}")
+        print("Partial files are left for inspection.")
+        exit(1)
+
+    # --- クリーンアップ: 部分ファイルを削除 ---
+    print("Cleaning up partial files...")
+    for f in partial_files:
+        try:
+            os.remove(f)
+        except OSError as e:
+            print(f"Warning: could not remove partial file {f}: {e}")
+
+    # --- 実行時間レポート ---
     end_time = time.time()
     elapsed_time = end_time - start_time
     start_str = datetime.fromtimestamp(start_time).strftime("%Y/%m/%d %H:%M:%S")
@@ -626,10 +1031,10 @@ if __name__ == '__main__':
     print("------------------------------------------")
     print(f"Start time : {start_str}")
     print(f"End time   : {end_str}")
-    print(f"Total time : {elapsed_time:.2f} seconds")
+    print(f"Total time : {elapsed_time:.2f} seconds (including merge)")
 
     minutes = int(elapsed_time // 60)
     seconds = elapsed_time % 60
     if minutes > 0:
-        print(f"Which is:     {minutes} minute(s) and {seconds:.2f} second(s)")
+        print(f"Which is:    {minutes} minute(s) and {seconds:.2f} second(s)")
     print("------------------------------------------")

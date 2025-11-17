@@ -8,8 +8,13 @@ from tqdm import tqdm
 import argparse
 import time
 from datetime import datetime
+import multiprocessing
+import os
+import glob
+import traceback
 
 gSystem.Load("/home/towa/package/allpix/install/lib/libAllpixObjects.so")
+ROOT.ROOT.DisableImplicitMT()
 
 # --- データクラス定義 ---
 @dataclass(slots=True)
@@ -98,7 +103,10 @@ class AnalysisPixelModule:
         if not self.pixel_tree or not self.mcp_tree or not self.propagated_tree:
              raise RuntimeError("Required TTrees (PixelHit, MCParticle, PropagatedCharge) not found.")
 
-        self.n_entries = self.pixel_tree.GetEntries()
+        self.n_entries_total = self.pixel_tree.GetEntries()
+        self.start_entry = config.get("start_entry", 0)
+        self.end_entry = config.get("end_entry", self.n_entries_total)
+        self.n_entries = self.end_entry - self.start_entry
         #self.n_entries = 2000
         
         # sycronize all tree
@@ -107,7 +115,8 @@ class AnalysisPixelModule:
 
         self.counter_names = [ "Total Events", "Skipped: No pixel hits", "Skipped: Multiple primary particles", "Clusters Checked", "Skipped: Hit at EDGE events", "Skipped: Cluster has no primary particle", "Skipped: Residual > 40 um", "Clusters Accepted" ]
         
-        print(f"File '{config['file_name']}' opened with {self.n_entries} events.")
+        #print(f"File '{config['file_name']}' opened with {self.n_entries} events.")
+        print(f"Worker processing {self.n_entries} events (range {self.start_entry} to {self.end_entry}) for file '{config['file_name']}'.")
 
     def setup_histograms(self):
         print("Creating histograms...")
@@ -153,10 +162,29 @@ class AnalysisPixelModule:
             self.histograms["drift_time_map_xyz"] = ROOT.TProfile3D(
                 "drift_time_map_xyz",
                 ";In-Pixel X [um];In-Pixel Y [um];Depth Z [um];Average Drift Time [ns]",
-                20, -half_pitch_x, half_pitch_x,  # Xビニング (ピクセル内)
-                20, -half_pitch_y, half_pitch_y,  # Yビニング (ピクセル内)
-                50, -sensor_half_thickness, sensor_half_thickness # Zビニング (深さ)
+                10, -half_pitch_x, half_pitch_x,  # Xビニング (ピクセル内)
+                10, -half_pitch_y, half_pitch_y,  # Yビニング (ピクセル内)
+                25, -sensor_half_thickness, sensor_half_thickness # Zビニング (深さ)
             )
+        
+            # self.histograms["drift_time_map_xz"] = ROOT.TProfile2D(
+            #     "drift_time_map_xz",
+            #     "in-pixel x [um];depth z [um];average drift time [ns]",
+            #     40, -half_pitch_x, half_pitch_x,  # Xビニング (ピクセル内)
+            #     50, -sensor_half_thickness, sensor_half_thickness
+            # )
+        
+        self.histograms["drift_time_seed"] = ROOT.TH1D(
+            "drift_time_seed",
+            ";drift time (seed pixel) [ns];counts (per carrier)",
+            1000, 0, 0.5
+        )
+
+        self.histograms["drift_time_neighbor"] = ROOT.TH1D(
+            "drift_time_neighbor",
+            ";drift time (neighbor pixel) [ns];counts (per carrier)",
+            1000, 0, 0.5
+        )
 
         n_counters = len(self.counter_names)
         self.histograms["counters"] = ROOT.TH1D("counters", "Event Summary;category;counts", n_counters, 0, n_counters)
@@ -231,10 +259,15 @@ class AnalysisPixelModule:
 
         h_drift_time_vs_dist = self.histograms.get("drift_time_vs_distance")
         h_drift_time_map_xyz = self.histograms.get("drift_time_map_xyz") if self.fill_3d else None
+        h_drift_time_seed = self.histograms.get("drift_time_seed")
+        h_drift_time_neighbor = self.histograms.get("drift_time_neighbor")
 
         #for i in range(self.n_entries), desc="Processing Events"):
-        for i in range(self.n_entries):
-            self.pixel_tree.GetEntry(i)
+        #for i in range(self.n_entries):
+        for i_global in range(self.start_entry, self.end_entry):
+            self.pixel_tree.GetEntry(i_global)
+
+            i_local = i_global - self.start_entry
             
             # --- 1. データデコード ---
             mcp_objects = getattr(self.mcp_tree, branch_name)
@@ -367,6 +400,13 @@ class AnalysisPixelModule:
                                         relative_pos[2],
                                         drift_time_ns
                                     )
+
+                                if hit is clus.seed_pixel_hit:
+                                    if h_drift_time_seed:
+                                        h_drift_time_seed.Fill(drift_time_ns)
+                                else:
+                                    if h_drift_time_neighbor:
+                                        h_drift_time_neighbor.Fill(drift_time_ns)
                 # propagated_charges_for_particle = charge_map.get(particle.particle_id, [])
                 # if propagated_charges_for_particle:
                 #     electron_drift_times_ps = [pc.global_time for pc in propagated_charges_for_particle if pc.charge_type == 'electron']
@@ -396,13 +436,16 @@ class AnalysisPixelModule:
                     buffer["cluster_charge_vs_drift_time"].append((clus.charge / 1000.0, time_90_percent_ns)) # e -> ke に変換
                     buffer["cluster_size_vs_drift_time"].append((clus.size, time_90_percent_ns))
 
-            if (i + 1) % BATCH_SIZE == 0:
+            # if (i + 1) % BATCH_SIZE == 0:
+            #     self._fill_histograms_from_buffer(buffer)
+            if(i_local + 1) % BATCH_SIZE == 0:
                 self._fill_histograms_from_buffer(buffer)
         
         if any(buffer.values()):
             self._fill_histograms_from_buffer(buffer)
 
-        print("Analysis finished.")
+        print(f"Worker (range {self.start_entry}-{self.end_entry}) finished analysis.")
+        # print("Analysis finished.")
         # (レポート表示は変更なし)
         print("----------------- Report -----------------")
         for key in self.counter_names:
@@ -420,6 +463,25 @@ class AnalysisPixelModule:
             histo.Write()
         output_file.Close()
         print(f"Histograms written to {output_filename}")
+
+def run_worker(args):
+    start_index, end_index, worker_id, config = args
+
+    config["output_file_name"] = f"analysis_py_part_{worker_id}.root"
+    config["start_entry"] = start_index
+    config["end_entry"] = end_index
+
+    try:
+        analyzer = AnalysisPixelModule(config)
+        analyzer.run_analysis()
+        analyzer.finalize()
+        return config["output_file_name"]
+    except Exception as e:
+        print(f"--- Worker {worker_id} FAILED ---")
+        print(f"An error occurred in worker {worker_id}: {e}")
+        traceback.print_exc()
+        print(f"---------------------------------")
+        return None
 
 
 if __name__ == '__main__':
@@ -441,6 +503,10 @@ if __name__ == '__main__':
         action="store_true", 
         help="Enable filling of the 3D drift time map (can be slow)."
     )
+    parser.add_argument("-j", "--cores",
+                        type=int,
+                        default=4,
+                        help="Number of CPU cores to use for multiprocessing.")
 
     args = parser.parse_args()    
     config = {
@@ -460,15 +526,91 @@ if __name__ == '__main__':
         "fill_3d": args.fill3D
     }
 
+    num_cores = args.cores
+
+    print(f"Opening file {config['file_name']} to get total entries...")
     try:
-        analyzer = AnalysisPixelModule(config)
-        analyzer.run_analysis()
-        analyzer.finalize()
+        temp_file = ROOT.TFile.Open(config["file_name"])
+        if not temp_file or temp_file.IsZombie():
+            raise RuntimeError(f"File not found or is zombie: {config['file_name']}")
+        temp_tree = temp_file.Get("PixelHit")
+        if not temp_tree:
+             raise RuntimeError("PixelHit TTree not found in file.")
+        total_entries = temp_tree.GetEntries()
+        temp_file.Close()
     except Exception as e:
-        print(f"An error occurred: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"Error opening file to get entries: {e}")
+        exit(1)
+
+    print(f"Total entries: {total_entries}. Splitting tasks for {num_cores} cores.")
+
+    chunk_size = math.ceil(total_entries / num_cores)
+    tasks = []
+
+    for i in range(num_cores):
+        start_index = i * chunk_size
+        end_index = min((i + 1) * chunk_size, total_entries)
+        if start_index >= total_entries:
+            continue
+        # 各ワーカーに渡す引数を準備 (configはコピーして渡す)
+        tasks.append((start_index, end_index, i, config.copy()))
+
+    if not tasks:
+        print("No tasks to run (total entries might be 0). Exiting.")
+        exit(0)
+
+    # --- プールを開始してタスクを実行 ---
+    print(f"Starting multiprocessing pool with {len(tasks)} workers...")
+    
+    partial_files = []
+    with multiprocessing.Pool(processes=num_cores) as pool:
+        # pool.map が全ワーカーの終了を待機し、結果 (ファイル名) のリストを返す
+        results = pool.map(run_worker, tasks)
+        
+        for res in results:
+            if res:
+                partial_files.append(res)
+
+    if not partial_files:
+        print("All workers failed. No partial files were produced. Exiting.")
+        exit(1)
+        
+    print(f"All workers finished. Found {len(partial_files)} partial files.")
+
+    final_output_file = config["output_file_name"]
+
+    hadd_command = f"hadd -f {final_output_file} {' '.join(partial_files)}"
+    
+    print("Merging partial files with hadd...")
+    print(f"> {hadd_command}")
+    
+    try:
+        os.system(hadd_command)
+        print(f"Successfully merged into {final_output_file}")
+    except Exception as e:
+        print(f"hadd command FAILED: {e}")
+        print("Partial files are left for inspection.")
+        exit(1)
+
+    # --- クリーンアップ: 部分ファイルを削除 ---
+    print("Cleaning up partial files...")
+    for f in partial_files:
+        try:
+            os.remove(f)
+        except OSError as e:
+            print(f"Warning: could not remove partial file {f}: {e}")
 
     end_time = time.time()
-    # ... (時間表示は変更なし) ...
-    print(f"\nTotal time: {end_time - start_time:.2f} seconds")
+    print(f"\nTotal analysis time (including merge): {end_time - start_time:.2f} seconds")
+    # try:
+    #     analyzer = AnalysisPixelModule(config)
+    #     analyzer.run_analysis()
+    #     analyzer.finalize()
+    # except Exception as e:
+    #     print(f"An error occurred: {e}")
+    #     import traceback
+    #     traceback.print_exc()
+
+    # end_time = time.time()
+    # # ... (時間表示は変更なし) ...
+    # print(f"\nTotal time: {end_time - start_time:.2f} seconds")

@@ -110,7 +110,7 @@ void plot_BeamTest::run_plots(const std::vector<PlotConfig>& configs) {
                     configs,
                     reso_graphs,
                     //{2, 10.5},
-                    {1, 11},
+                    {0, 11},
                     reso_x_range);
     //for(auto g : reso_graphs) delete g;
 
