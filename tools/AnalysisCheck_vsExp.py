@@ -17,7 +17,7 @@ ROOT.gStyle.SetOptStat(0)
 ROOT.gStyle.SetOptFit(0)
 
 # --- ROOTカラーのインポート ---
-from ROOT import kBlue, kAzure, kRed, kPink, kGreen, kOrange, kBlack, kCyan, kGray
+from ROOT import kBlue, kAzure, kRed, kPink, kGreen, kOrange, kBlack, kCyan, kGray, kMagenta
 
 # --- DataConfig ---
 @dataclass
@@ -28,8 +28,11 @@ class DataConfig:
     scale: float
     color: int
     colorAlt: int
-    isMerged: bool
+    markerStyle: int = 20
+    markerStyleAlt: int = 24
+    isMerged: bool = False
     doRebin: bool = True 
+    rebinValues: Dict[str, int] = field(default_factory=lambda: {"default": 1})
     histNames: Dict[str, str] = field(default_factory=dict)
 
 
@@ -182,14 +185,33 @@ class plot_Check:
         log.info("run_plotCheck | Start")
 
         # --- データセット定義 ---
+        charge_rebin_exp_defaults = {
+            "clusterCharge": 20,
+            "seedCharge": 20,
+            "neighborChargeSum": 20,
+            "seedChargeBySize": 20, 
+            "clusterSize": 1,
+            "default": 1
+        }
+        charge_rebin_sim_defaults = {
+            "clusterCharge": 4,
+            "seedCharge": 4,
+            "neighborChargeSum": 4,
+            "seedChargeBySize": 4, 
+            "clusterSize": 1,
+            "default": 1
+        }
+
         data_entries = {
             "exp_gap": DataConfig(
-                name="Exp GAP",
+                name="Exp GAP (nt200)",
                 fileKey="/home/towa/alice3/hist/sps_check/sps202404_15_gap_10V_SeedThd1000e_NeighborThd200e",
                 scale=0.238,
                 color=kBlack, colorAlt=kGray+1,
+                markerStyle=20, markerStyleAlt=24,
                 isMerged=True,
-                doRebin=True, 
+                doRebin=True,
+                rebinValues=charge_rebin_exp_defaults.copy(),
                 histNames={
                     "clusterCharge": "AnalysisCE65/CE65_6/cluster/clusterCharge",
                     "seedCharge": "AnalysisCE65/CE65_6/cluster/clusterSeedCharge",
@@ -199,12 +221,14 @@ class plot_Check:
                 }
             ),
             "exp_std": DataConfig(
-                name="Exp STD",
+                name="Exp STD (nt200)",
                 fileKey="/home/towa/alice3/hist/sps_check/sps202404_15_std_10V_SeedThd1000e_NeighborThd200e",
                 scale=0.240,
-                color=kBlack, colorAlt=kGray+1, 
+                color=kBlack, colorAlt=kGray+1,
+                markerStyle=20, markerStyleAlt=24, 
                 isMerged=True,
                 doRebin=True, 
+                rebinValues=charge_rebin_exp_defaults.copy(),
                 histNames={
                     "clusterCharge": "AnalysisCE65/CE65_6/cluster/clusterCharge",
                     "seedCharge": "AnalysisCE65/CE65_6/cluster/clusterSeedCharge",
@@ -213,43 +237,49 @@ class plot_Check:
                     "seedChargeBySize": "AnalysisCE65/CE65_6/cluster/clusterSeedCharge_size",
                 }
             ),
-            "sim_gap_293k": DataConfig(
-                name="Sim GAP (et=1)",
-                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_293k_st240e_nt48e_pip_120GeV_masetti_et1.root",
-                scale=1000.0,
-                color=kRed+1, colorAlt=kPink-2,
-                isMerged=False,
-                doRebin=False, 
+            "exp_gap_nt600": DataConfig(
+                name="Exp GAP (nt600)",
+                fileKey="/home/towa/alice3/hist/sps202404/sps202404_15_gap_10V_SeedThd1000e_NeighborThd600e",
+                scale=0.238,
+                color=kBlack, colorAlt=kGray+1,
+                markerStyle=22, markerStyleAlt=26,
+                isMerged=True,
+                doRebin=True,
+                rebinValues=charge_rebin_exp_defaults.copy(),
                 histNames={
-                    "clusterCharge": "cluster_charge",
-                    "seedCharge": "seed_charge",
-                    "neighborChargeSum": "cluster_neighbor_charge_sum",
-                    "clusterSize": "cluster_size",
-                    "seedChargeBySize": "seed_charge_size_",
+                    "clusterCharge": "AnalysisCE65/CE65_6/cluster/clusterCharge",
+                    "seedCharge": "AnalysisCE65/CE65_6/cluster/clusterSeedCharge",
+                    "neighborChargeSum": "AnalysisCE65/CE65_6/cluster/clusterNeighborsChargeSum",
+                    "clusterSize": "AnalysisCE65/CE65_6/cluster/clusterSize",
+                    "seedChargeBySize": "AnalysisCE65/CE65_6/cluster/clusterSeedCharge_size", 
                 }
             ),
-            "sim_std_293k": DataConfig(
-                name="Sim STD (et=1)",
-                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_std_10v_n0e_293k_st240e_nt48e_pip_120GeV_masetti_et1.root",
-                scale=1000.0,
-                color=kRed+1, colorAlt=kPink-2,
-                isMerged=False,
-                doRebin=False, 
+            "exp_std_nt600": DataConfig(
+                name="Exp STD nt600",
+                fileKey="/home/towa/alice3/hist/sps202404/sps202404_15_std_10V_SeedThd1000e_NeighborThd600e",
+                scale=0.240,
+                color=kBlack, colorAlt=kGray+1,
+                markerStyle=22, markerStyleAlt=26,
+                isMerged=True,
+                doRebin=True, 
+                rebinValues=charge_rebin_exp_defaults.copy(),
                 histNames={
-                    "clusterCharge": "cluster_charge",
-                    "seedCharge": "seed_charge",
-                    "neighborChargeSum": "cluster_neighbor_charge_sum",
-                    "clusterSize": "cluster_size",
-                    "seedChargeBySize": "seed_charge_size_",
+                    "clusterCharge": "AnalysisCE65/CE65_6/cluster/clusterCharge",
+                    "seedCharge": "AnalysisCE65/CE65_6/cluster/clusterSeedCharge",
+                    "neighborChargeSum": "AnalysisCE65/CE65_6/cluster/clusterNeighborsChargeSum",
+                    "clusterSize": "AnalysisCE65/CE65_6/cluster/clusterSize",
+                    "seedChargeBySize": "AnalysisCE65/CE65_6/cluster/clusterSeedCharge_size",
                 }
             ),
-            "sim_gap_et0p5": DataConfig(
-                name="Sim GAP (et=0.5)",
-                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_293k_st240e_nt48e_pip_120GeV_masetti_et0p5.root",
-                scale=1000.0,
+            "sim_gap_mandic_et2": DataConfig(
+                name="Sim GAP (mandic et2)",
+                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_mandic.root",
+                scale=1,
                 color=kAzure+7, colorAlt=kAzure,
+                markerStyle=20, markerStyleAlt=24,
                 isMerged=False,
-                doRebin=False, 
+                doRebin=True, 
+                rebinValues=charge_rebin_sim_defaults.copy(),
                 histNames={
                     "clusterCharge": "cluster_charge",
                     "seedCharge": "seed_charge",
@@ -258,13 +288,15 @@ class plot_Check:
                     "seedChargeBySize": "seed_charge_size_",
                 }
             ),
-            "sim_std_et0p5": DataConfig(
-                name="Sim STD (et=0.5)",
-                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_std_10v_n0e_293k_st240e_nt48e_pip_120GeV_masetti_et0p5.root",
-                scale=1000.0,
+            "sim_std_mandic_et2": DataConfig(
+                name="Sim STD (mandic et2)",
+                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_std_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_mandic.root",
+                scale=1,
                 color=kAzure+7, colorAlt=kAzure,
+                markerStyle=20, markerStyleAlt=24,
                 isMerged=False,
-                doRebin=False, 
+                doRebin=True, 
+                rebinValues=charge_rebin_sim_defaults.copy(),
                 histNames={
                     "clusterCharge": "cluster_charge",
                     "seedCharge": "seed_charge",
@@ -273,13 +305,15 @@ class plot_Check:
                     "seedChargeBySize": "seed_charge_size_",
                 }
             ),
-            "sim_gap_et2": DataConfig(
-                name="Sim GAP (et=2)",
-                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_293k_st240e_nt48e_pip_120GeV_masetti_.root",
-                scale=1000.0,
+            "sim_gap_ljubljana_et2": DataConfig(
+                name="Sim GAP (ljubljana et2)",
+                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_ljubljana.root",
+                scale=1,
                 color=kGreen+2, colorAlt=kGreen-4,
+                markerStyle=20, markerStyleAlt=24,
                 isMerged=False,
-                doRebin=False, 
+                doRebin=True, 
+                rebinValues=charge_rebin_sim_defaults.copy(), 
                 histNames={
                     "clusterCharge": "cluster_charge",
                     "seedCharge": "seed_charge",
@@ -288,13 +322,15 @@ class plot_Check:
                     "seedChargeBySize": "seed_charge_size_",
                 }
             ),
-            "sim_std_et2": DataConfig(
-                name="Sim STD (et=2)",
-                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_std_10v_n0e_293k_st240e_nt48e_pip_120GeV_masetti_.root",
-                scale=1000.0,
+            "sim_std_ljubljana_et2": DataConfig(
+                name="Sim STD (ljubljana et2)",
+                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_std_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_ljubljana.root",
+                scale=1,
                 color=kGreen+2, colorAlt=kGreen-4,
+                markerStyle=20, markerStyleAlt=24,
                 isMerged=False,
-                doRebin=False, 
+                doRebin=True, 
+                rebinValues=charge_rebin_sim_defaults.copy(), 
                 histNames={
                     "clusterCharge": "cluster_charge",
                     "seedCharge": "seed_charge",
@@ -303,13 +339,15 @@ class plot_Check:
                     "seedChargeBySize": "seed_charge_size_",
                 }
             ),
-            "sim_gap_full": DataConfig(
-                name="Sim GAP (et=full)",
-                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_etFull.root",
-                scale=1000.0,
-                color=kOrange+7, colorAlt=kOrange-4,
+            "sim_gap_dortmund_et2": DataConfig(
+                name="Sim GAP (dortmund et2)",
+                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_dortmund.root",
+                scale=1,
+                color=kMagenta+1, colorAlt=kMagenta-6,
+                markerStyle=20, markerStyleAlt=24,
                 isMerged=False,
-                doRebin=False, 
+                doRebin=True, 
+                rebinValues=charge_rebin_sim_defaults.copy(),
                 histNames={
                     "clusterCharge": "cluster_charge",
                     "seedCharge": "seed_charge",
@@ -318,13 +356,153 @@ class plot_Check:
                     "seedChargeBySize": "seed_charge_size_",
                 }
             ),
-            "sim_std_full": DataConfig(
-                name="Sim STD (et=full)",
-                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_std_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_etFull.root",
-                scale=1000.0,
-                color=kOrange+7, colorAlt=kOrange-4,
+            "sim_std_dortmund_et2": DataConfig(
+                name="Sim STD (dortmund et2)",
+                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_std_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_dortmund.root",
+                scale=1,
+                color=kMagenta+1, colorAlt=kMagenta-6,
+                markerStyle=20, markerStyleAlt=24,
                 isMerged=False,
-                doRebin=False, 
+                doRebin=True, 
+                rebinValues=charge_rebin_sim_defaults.copy(),
+                histNames={
+                    "clusterCharge": "cluster_charge",
+                    "seedCharge": "seed_charge",
+                    "neighborChargeSum": "cluster_neighbor_charge_sum",
+                    "clusterSize": "cluster_size",
+                    "seedChargeBySize": "seed_charge_size_",
+                }
+            ),
+            "sim_gap_cmstracker_et2": DataConfig(
+                name="Sim GAP (cmstracker et2)",
+                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_cmstracker.root",
+                scale=1,
+                color=kRed+1, colorAlt=kRed-4,
+                markerStyle=20, markerStyleAlt=24,
+                isMerged=False,
+                doRebin=True, 
+                rebinValues=charge_rebin_sim_defaults.copy(),
+                histNames={
+                    "clusterCharge": "cluster_charge",
+                    "seedCharge": "seed_charge",
+                    "neighborChargeSum": "cluster_neighbor_charge_sum",
+                    "clusterSize": "cluster_size",
+                    "seedChargeBySize": "seed_charge_size_",
+                }
+            ),
+            "sim_std_cmstracker_et2": DataConfig(
+                name="Sim STD (cmstracker et2)",
+                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_std_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_cmstracker.root",
+                scale=1,
+                color=kRed+1, colorAlt=kRed-4,
+                markerStyle=20, markerStyleAlt=24,
+                isMerged=False,
+                doRebin=True, 
+                rebinValues=charge_rebin_sim_defaults.copy(),
+                histNames={
+                    "clusterCharge": "cluster_charge",
+                    "seedCharge": "seed_charge",
+                    "neighborChargeSum": "cluster_neighbor_charge_sum",
+                    "clusterSize": "cluster_size",
+                    "seedChargeBySize": "seed_charge_size_",
+                }
+            ),
+            "sim_gap_masetti_et2": DataConfig(
+                name="Sim GAP (w/oRC nt48e)",
+                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_withoutRC.root",
+                scale=1,
+                #color=kBlue+2, colorAlt=kBlue-2,
+                color=kRed+1, colorAlt=kRed-4,
+                markerStyle=20, markerStyleAlt=24,
+                isMerged=False,
+                doRebin=True, 
+                rebinValues=charge_rebin_sim_defaults.copy(),
+                histNames={
+                    "clusterCharge": "cluster_charge",
+                    "seedCharge": "seed_charge",
+                    "neighborChargeSum": "cluster_neighbor_charge_sum",
+                    "clusterSize": "cluster_size",
+                    "seedChargeBySize": "seed_charge_size_",
+                }
+            ),
+            "sim_std_masetti_et2": DataConfig(
+                name="Sim STD (w/oRC nt48e)",
+                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_std_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_withoutRC.root",
+                scale=1,
+                #color=kBlue+2, colorAlt=kBlue-2,
+                color=kRed+1, colorAlt=kRed-4,
+                markerStyle=20, markerStyleAlt=24,
+                isMerged=False,
+                doRebin=True, 
+                rebinValues=charge_rebin_sim_defaults.copy(),
+                histNames={
+                    "clusterCharge": "cluster_charge",
+                    "seedCharge": "seed_charge",
+                    "neighborChargeSum": "cluster_neighbor_charge_sum",
+                    "clusterSize": "cluster_size",
+                    "seedChargeBySize": "seed_charge_size_",
+                }
+            ),
+            "sim_gap_masetti_et2_nt120": DataConfig(
+                name="Sim GAP (w/oRC nt120e)",
+                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_303k_st240e_nt120e_pip_120GeV_masetti_et2_withoutRC.root",
+                scale=1,
+                color=kGreen+2, colorAlt=kGreen-4,
+                markerStyle=20, markerStyleAlt=24,
+                isMerged=False,
+                doRebin=True, 
+                rebinValues=charge_rebin_sim_defaults.copy(),
+                histNames={
+                    "clusterCharge": "cluster_charge",
+                    "seedCharge": "seed_charge",
+                    "neighborChargeSum": "cluster_neighbor_charge_sum",
+                    "clusterSize": "cluster_size",
+                    "seedChargeBySize": "seed_charge_size_",
+                }
+            ),
+            "sim_std_masetti_et2_nt120": DataConfig(
+                name="Sim STD (w/oRC nt120e)",
+                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_std_10v_n0e_303k_st240e_nt120e_pip_120GeV_masetti_et2_withoutRC.root",
+                scale=1,
+                color=kGreen+2, colorAlt=kGreen-4,
+                markerStyle=20, markerStyleAlt=24,
+                isMerged=False,
+                doRebin=True, 
+                rebinValues=charge_rebin_sim_defaults.copy(),
+                histNames={
+                    "clusterCharge": "cluster_charge",
+                    "seedCharge": "seed_charge",
+                    "neighborChargeSum": "cluster_neighbor_charge_sum",
+                    "clusterSize": "cluster_size",
+                    "seedChargeBySize": "seed_charge_size_",
+                }
+            ),
+            "sim_gap_masetti_et2_nt144": DataConfig(
+                name="Sim GAP (w/oRC nt144e)",
+                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_303k_st240e_nt144e_pip_120GeV_masetti_et2_withoutRC.root",
+                scale=1,
+                color=kBlue+2, colorAlt=kBlue-2,
+                markerStyle=20, markerStyleAlt=24,
+                isMerged=False,
+                doRebin=True, 
+                rebinValues=charge_rebin_sim_defaults.copy(),
+                histNames={
+                    "clusterCharge": "cluster_charge",
+                    "seedCharge": "seed_charge",
+                    "neighborChargeSum": "cluster_neighbor_charge_sum",
+                    "clusterSize": "cluster_size",
+                    "seedChargeBySize": "seed_charge_size_",
+                }
+            ),
+            "sim_std_masetti_et2_nt144": DataConfig(
+                name="Sim STD (w/oRC nt144e)",
+                fileKey="/home/towa/alice3/hist/sim_modeling/analysis_ce65_p15_std_10v_n0e_303k_st240e_nt144e_pip_120GeV_masetti_et2_withoutRC.root",
+                scale=1,
+                color=kBlue+2, colorAlt=kBlue-2,
+                markerStyle=20, markerStyleAlt=24,
+                isMerged=False,
+                doRebin=True, 
+                rebinValues=charge_rebin_sim_defaults.copy(),
                 histNames={
                     "clusterCharge": "cluster_charge",
                     "seedCharge": "seed_charge",
@@ -337,10 +515,16 @@ class plot_Check:
 
         comparisons = [
             # 1. GAPの Exp vs Sim比較
-            (["exp_gap", "sim_gap_et0p5", "sim_gap_293k", "sim_gap_et2", "sim_gap_full"], "_gap_default"),
+            (["exp_gap", "exp_gap_nt600", "sim_gap_masetti_et2", "sim_gap_masetti_et2_nt144"], "_gap_default"),
+            #(["exp_gap", "sim_gap_masetti_et2"], "_gap_default"),
+            #(["exp_gap_nt600", "sim_gap_masetti_et2_nt120", "sim_gap_masetti_et2_nt144"], "_gap_default"),
+           
             
+
             # 2. STDの Exp vs Sim比較
-            (["exp_std", "sim_std_et0p5", "sim_std_293k", "sim_std_et2", "sim_std_full"], "_std_default"),
+            (["exp_std", "exp_std_nt600", "sim_std_masetti_et2", "sim_std_masetti_et2_nt144"], "_std_default"),
+            #(["exp_std", "sim_std_masetti_et2"], "_std_default"),
+            #(["exp_std_nt600", "sim_std_masetti_et2_nt120", "sim_std_masetti_et2_nt144"], "_std_default"),
         ]
 
         canvas = ROOT.TCanvas("canvas", "canvas", 800, 600)
@@ -362,19 +546,19 @@ class plot_Check:
             self.plotComparison(canvas, legend, datasets, suffix,
                 histKey="seedCharge", histLegendSuffix="seed",
                 outName="clusterSeedCharge_comp", plotTitle=plot_title,
-                rebin=10, xMin=0, xMax=4000,
+                xMin=0, xMax=4000,
                 doLandauFit=False) 
             
             self.plotComparison(canvas, legend, datasets, suffix,
                 histKey="clusterCharge", histLegendSuffix="cluster",
                 outName="clusterCharge_comp", plotTitle=plot_title,
-                rebin=10, xMin=0, xMax=4000,
+                xMin=0, xMax=4000,
                 doLandauFit=True) # ClusterChargeはFitする
 
             self.plotComparison(canvas, legend, datasets, suffix,
                 histKey="neighborChargeSum", histLegendSuffix="neighbor sum",
                 outName="clusterNeighborChargeSum_comp", plotTitle=plot_title,
-                rebin=10, xMin=0, xMax=2000,
+                xMin=0, xMax=2000,
                 doLandauFit=False)
 
             self.plotSeedChargeByCS(canvas, legend, datasets, suffix, plot_title)
@@ -397,11 +581,14 @@ class plot_Check:
             h_sd = self.getScaledHist(ds.fileKey, ds.histNames.get("seedCharge"), ds.scale, "", ds.isMerged)
             
             if h_cl and h_sd:
-                self.setHistStyle(h_cl, ds.color, 20)
-                self.setHistStyle(h_sd, ds.colorAlt, 24)
+                self.setHistStyle(h_cl, ds.color, ds.markerStyle)
+                self.setHistStyle(h_sd, ds.colorAlt, ds.markerStyleAlt)
+                
                 if ds.doRebin:
-                    h_cl.Rebin(10)
-                    h_sd.Rebin(10)
+                    rebin_cl = ds.rebinValues.get("clusterCharge", 1)
+                    rebin_sd = ds.rebinValues.get("seedCharge", 1)
+                    if rebin_cl > 1: h_cl.Rebin(rebin_cl)
+                    if rebin_sd > 1: h_sd.Rebin(rebin_sd)
                 
                 if h_cl.GetMaximum() > 0: h_cl.Scale(1.0 / h_cl.GetMaximum())
                 if h_sd.GetMaximum() > 0: h_sd.Scale(1.0 / h_sd.GetMaximum())
@@ -440,7 +627,7 @@ class plot_Check:
         for ds in datasets:
             h = self.getScaledHist(ds.fileKey, ds.histNames.get("clusterSize"), 1.0, "", ds.isMerged) 
             if h:
-                self.setHistStyle(h, ds.color, 20, 0.2)
+                self.setHistStyle(h, ds.color, ds.markerStyle, 0.2)
                 if h.GetEntries() > 0: h.Scale(1.0 / h.GetEntries())
                 max_y = max(max_y, h.GetMaximum())
                 hists.append((h, ds.name))
@@ -463,7 +650,7 @@ class plot_Check:
     def plotComparison(self, c, l, datasets: List[DataConfig], suffix: str,
                        histKey: str, histLegendSuffix: str,
                        outName: str, plotTitle: str,
-                       rebin: int, xMin: float, xMax: float,
+                       xMin: float, xMax: float,
                        doLandauFit: bool = False):
         c.Clear(); l.Clear()
         hists = []
@@ -476,8 +663,10 @@ class plot_Check:
 
             h = self.getScaledHist(ds.fileKey, histName, ds.scale, "", ds.isMerged)
             if h:
-                self.setHistStyle(h, ds.color, 20)
-                if rebin > 1 and ds.doRebin: h.Rebin(rebin)
+                self.setHistStyle(h, ds.color, ds.markerStyle)
+                rebin_val = ds.rebinValues.get(histKey, ds.rebinValues.get("default", 1))
+                if rebin_val > 1 and ds.doRebin:
+                    h.Rebin(rebin_val)
                 if h.GetMaximum() > 0: h.Scale(1.0 / h.GetMaximum())
                 max_y = max(max_y, h.GetMaximum())
 
@@ -527,8 +716,11 @@ class plot_Check:
                 targetName = f"{baseName}{cs}"
                 h = self.getScaledHist(ds.fileKey, targetName, ds.scale, "", ds.isMerged)
                 if h:
-                    self.setHistStyle(h, ds.color, 24)
-                    if ds.doRebin: h.Rebin(10)
+                    self.setHistStyle(h, ds.color, ds.markerStyle)
+
+                    rebin_val = ds.rebinValues.get("seedChargeBySize", 1)
+                    if rebin_val > 1 and ds.doRebin:
+                        h.Rebin(rebin_val)
                     if h.GetMaximum() > 0: h.Scale(1.0 / h.GetMaximum())
                     max_y = max(max_y, h.GetMaximum())
                     hists.append((h, ds.name))

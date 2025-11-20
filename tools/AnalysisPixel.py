@@ -195,7 +195,8 @@ class AnalysisPixelModule:
         pitch_y = self.detector_model.pixel_size[1]
         inpixel_bins_x = 50
         inpixel_bins_y = 50
-        max_cluster_charge_ke = self.config.get("max_cluster_charge_ke", 20.0)
+        max_cluster_charge = self.config.get("max_cluster_charge", 20000)
+        charge_bin = int(max_cluster_charge / 20)
         self.histograms["inPixel_cluster_size"] = ROOT.TProfile2D("inPixel_cluster_size", ";x/pitch [um];y/pitch [um];cluster size", inpixel_bins_x, -pitch_x / 2, pitch_x / 2, inpixel_bins_y, -pitch_y / 2, pitch_y / 2)
         self.histograms["inPixel_cluster_charge"] = ROOT.TProfile2D("inPixel_cluster_charge", ";x/pitch [um];y/pitch [um];cluster charge [ke]", inpixel_bins_x, -pitch_x / 2, pitch_x / 2, inpixel_bins_y, -pitch_y / 2, pitch_y / 2)
         self.histograms["inPixel_seed_charge"] = ROOT.TProfile2D("inPixel_seed_charge", ";x/pitch [um];y/pitch [um];seed charge [ke]", inpixel_bins_x, -pitch_x / 2, pitch_x / 2, inpixel_bins_y, -pitch_y / 2, pitch_y / 2)
@@ -205,18 +206,18 @@ class AnalysisPixelModule:
         self.histograms["inPixel_residual_xy2"] = ROOT.TProfile2D("inPixel_residual_xy2", ";x/pitch [um];y/pitch [um];x + y / 2 [um]", inpixel_bins_x, -pitch_x / 2, pitch_x / 2, inpixel_bins_y, -pitch_y / 2, pitch_y / 2)
         self.histograms["inPixel_residual"] = ROOT.TProfile2D("inPixel_residual", ";x/pitch [um];y/pitch [um];residual [um]", inpixel_bins_x, -1000, 1000, inpixel_bins_y, -1000, 1000)
         #self.histograms["test"] = ROOT.TH2D("test", "test", 1000, -50, 50, 1000, -50, 50)
-        self.histograms["cluster_charge"] = ROOT.TH1D("cluster_charge", ";charge [ke];counts", 1000, 0, max_cluster_charge_ke)
+        self.histograms["cluster_charge"] = ROOT.TH1D("cluster_charge", ";charge [ke];counts", charge_bin, 0, max_cluster_charge)
         self.histograms["cluster_size"] = ROOT.TH1D("cluster_size", ";cluster size;counts", 20, 0.5, 20.5)
-        self.histograms["seed_charge"] = ROOT.TH1D("seed_charge", ";charge [ke];counts", 1000, 0, max_cluster_charge_ke)
+        self.histograms["seed_charge"] = ROOT.TH1D("seed_charge", ";charge [ke];counts", charge_bin, 0, max_cluster_charge)
         self.histograms["residual_x"] = ROOT.TH1D("residual_x", ";residual x [um];counts", 10000, -40, 40)
         self.histograms["residual_y"] = ROOT.TH1D("residual_y", ";residual y [um];counts", 10000, -40, 40)
         self.histograms["residual_r"] = ROOT.TH1D("residual_r", ";residual r [um];counts", 10000, 0, 40)
-        self.histograms["cluster_neighbor_charge_sum"] = ROOT.TH1D("cluster_neighbor_charge_sum", ";charge [ke];counts", 200, 0, 0.2)
-        self.histograms["cluster_neighbor_charge"] = ROOT.TH1D("cluster_neighbor_charge", ";charge [ke];counts", 200, 0, 0.2)
-        self.histograms["seedCharge_vs_clusterSize"] = ROOT.TH2D("seedCharge_vs_clusterSize", ";charge [ke];cluster size", 1000, 0, max_cluster_charge_ke, 20, 0.5, 20.5)
-        self.histograms["neighborChargeSum_vs_clusterSize"] = ROOT.TH2D("neighborChargeSum_vs_clusterSize", ";charge [ke];cluster size", 200, 0, 0.2, 20, 0.5, 20.5)
-        self.histograms["clusterCharge_vs_clusterSize"] = ROOT.TH2D("clusterCharge_vs_clusterSize", ";charge [ke];cluster size", 1000, 0, max_cluster_charge_ke, 20, 0.5, 20.5)
-        self.histograms["seedCharge_vs_neighborChargeSum"] = ROOT.TH2D("seedCharge_vs_neighborChargeSum", ";seed charge [ke];neighbor charge [ke]", 1000, 0, max_cluster_charge_ke, 1000, 0, 20)
+        self.histograms["cluster_neighbor_charge_sum"] = ROOT.TH1D("cluster_neighbor_charge_sum", ";charge [ke];counts", charge_bin, 0, max_cluster_charge)
+        self.histograms["cluster_neighbor_charge"] = ROOT.TH1D("cluster_neighbor_charge", ";charge [ke];counts", charge_bin, 0, max_cluster_charge)
+        self.histograms["seedCharge_vs_clusterSize"] = ROOT.TH2D("seedCharge_vs_clusterSize", ";charge [ke];cluster size", charge_bin, 0, max_cluster_charge, 20, 0.5, 20.5)
+        self.histograms["neighborChargeSum_vs_clusterSize"] = ROOT.TH2D("neighborChargeSum_vs_clusterSize", ";charge [ke];cluster size", charge_bin, 0, max_cluster_charge, 20, 0.5, 20.5)
+        self.histograms["clusterCharge_vs_clusterSize"] = ROOT.TH2D("clusterCharge_vs_clusterSize", ";charge [ke];cluster size", charge_bin, 0, max_cluster_charge, 20, 0.5, 20.5)
+        self.histograms["seedCharge_vs_neighborChargeSum"] = ROOT.TH2D("seedCharge_vs_neighborChargeSum", ";seed charge [ke];neighbor charge [ke]", charge_bin, 0, max_cluster_charge, 1000, 0, 20)
 
         n_counters = len(self.counter_names)
         self.histograms["counters"] = ROOT.TH1D("counters", "Event Summary;category;counts", n_counters, 0, n_counters)
@@ -226,7 +227,7 @@ class AnalysisPixelModule:
         for i in range(1, self.max_cluster_size_hist + 1):
             hist_name_seed = f"seed_charge_size_{i}"
             hist_title_seed = f"Cluster Seed Charge {i};charge [ke];counts"
-            self.histograms[hist_name_seed] = ROOT.TH1D(hist_name_seed, hist_title_seed, 1000, 0, max_cluster_charge_ke)
+            self.histograms[hist_name_seed] = ROOT.TH1D(hist_name_seed, hist_title_seed, charge_bin, 0, max_cluster_charge)
             
             self.histograms[f"residual_x_size_{i}"] = ROOT.TH1D(f"residual_x_size_{i}", f"Residual X (Size {i});residual x [um];counts", 10000, -40, 40)
             self.histograms[f"residual_y_size_{i}"] = ROOT.TH1D(f"residual_y_size_{i}", f"Residual Y (Size {i});residual y [um];counts", 10000, -40, 40)
@@ -234,7 +235,7 @@ class AnalysisPixelModule:
 
         suffix_plus = f"{self.max_cluster_size_hist + 1}_plus"
         hist_name_seed_large = f"seed_charge_size_{suffix_plus}"
-        self.histograms[hist_name_seed_large] = ROOT.TH1D(hist_name_seed_large, f"Seed Charge for Cluster Size > {self.max_cluster_size_hist};charge [ke];counts", 1000, 0, max_cluster_charge_ke)
+        self.histograms[hist_name_seed_large] = ROOT.TH1D(hist_name_seed_large, f"Seed Charge for Cluster Size > {self.max_cluster_size_hist};charge [ke];counts", charge_bin, 0, max_cluster_charge)
 
         # NEW: Residuals overflow
         self.histograms[f"residual_x_size_{suffix_plus}"] = ROOT.TH1D(f"residual_x_size_{suffix_plus}", f"Residual X (Size > {self.max_cluster_size_hist});residual x [um];counts", 10000, -40, 40)
@@ -253,7 +254,7 @@ class AnalysisPixelModule:
         self.histograms["cluster_charge_vs_drift_time"] = ROOT.TH2D(
             "cluster_charge_vs_drift_time",
             ";Cluster Charge [ke];90% electron drift time [ns];Counts",
-            100, 0, max_cluster_charge_ke,
+            charge_bin, 0, max_cluster_charge,
             1000, 0, 0.2
         )
         self.histograms["cluster_size_vs_drift_time"] = ROOT.TH2D(
@@ -648,7 +649,7 @@ class AnalysisPixelModule:
                 in_pixel_pos = particle_pos - pixel_center
 
                 non_seed_hits = [hit for hit in clus.pixel_hits if hit is not clus.seed_pixel_hit]
-                sum_non_seed_charge_ke = sum(hit.signal for hit in non_seed_hits) / 1000
+                sum_non_seed_charge = sum(hit.signal for hit in non_seed_hits)
 
                 #print(in_pixel_pos)
 
@@ -697,9 +698,9 @@ class AnalysisPixelModule:
                 # print(f"  Histogram Range Y:    ({-pitch_y / 2:.3f} to {pitch_y / 2:.3f})")
                 # print(f"------------------------------------")
 
-                buffer["cluster_charge"].append(clus.charge / 1000.0)
+                buffer["cluster_charge"].append(clus.charge)
                 buffer["cluster_size"].append(clus.size)
-                buffer["seed_charge"].append(clus.seed_pixel_hit.signal / 1000.0)
+                buffer["seed_charge"].append(clus.seed_pixel_hit.signal)
                 buffer["residual_x"].append(residual_vec[0])
                 buffer["residual_y"].append(residual_vec[1])
                 buffer["residual_r"].append(residual_r)
@@ -708,18 +709,18 @@ class AnalysisPixelModule:
                 buffer["inPixel_residual_x"].append((in_pixel_pos[0], in_pixel_pos[1], abs(residual_vec[0])))
                 buffer["inPixel_residual_y"].append((in_pixel_pos[0], in_pixel_pos[1], abs(residual_vec[1])))
                 buffer["inPixel_residual_xy2"].append((in_pixel_pos[0], in_pixel_pos[1], (abs(residual_vec[0]) + abs(residual_vec[1])) / 2))
-                buffer["inPixel_seed_charge"].append((in_pixel_pos[0], in_pixel_pos[1], clus.seed_pixel_hit.signal / 1000.0))
-                buffer["inPixel_cluster_charge"].append((in_pixel_pos[0], in_pixel_pos[1], clus.charge / 1000.0))
-                buffer["cluster_neighbor_charge_sum"].append(sum_non_seed_charge_ke)
-                buffer["seedCharge_vs_clusterSize"].append((clus.seed_pixel_hit.signal / 1000.0, clus.size))
-                buffer["neighborChargeSum_vs_clusterSize"].append((sum_non_seed_charge_ke / 1000.0, clus.size))
-                buffer["clusterCharge_vs_clusterSize"].append((clus.charge / 1000.0, clus.size))
-                buffer["seedCharge_vs_neighborChargeSum"].append((clus.seed_pixel_hit.signal / 1000, sum_non_seed_charge_ke))
+                buffer["inPixel_seed_charge"].append((in_pixel_pos[0], in_pixel_pos[1], clus.seed_pixel_hit.signal))
+                buffer["inPixel_cluster_charge"].append((in_pixel_pos[0], in_pixel_pos[1], clus.charge))
+                buffer["cluster_neighbor_charge_sum"].append(sum_non_seed_charge)
+                buffer["seedCharge_vs_clusterSize"].append((clus.seed_pixel_hit.signal, clus.size))
+                buffer["neighborChargeSum_vs_clusterSize"].append((sum_non_seed_charge, clus.size))
+                buffer["clusterCharge_vs_clusterSize"].append((clus.charge, clus.size))
+                buffer["seedCharge_vs_neighborChargeSum"].append((clus.seed_pixel_hit.signal, sum_non_seed_charge))
                 for hit in non_seed_hits:
-                    buffer["cluster_neighbor_charge"].append(hit.signal / 1000.0)
+                    buffer["cluster_neighbor_charge"].append(hit.signal)
 
                 size = clus.size
-                seed_charge_ke = clus.seed_pixel_hit.signal / 1000.0
+                seed_charge_ke = clus.seed_pixel_hit.signal
 
                 if size <= self.max_cluster_size_hist:
                     # Size 1 to 10
@@ -930,7 +931,7 @@ if __name__ == '__main__':
         "model_name": args.model,
         "granularity_x": 50,
         "granularity_y": 50, 
-        "max_cluster_charge_ke": 20.0, # 60keに変更
+        "max_cluster_charge": 20000, # 60keに変更
         "one_bit": args.one_bit,     # ベースコードから追加
         "fill_3d": args.fill3D,    # 追加機能コードから追加
     }
