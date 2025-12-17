@@ -110,7 +110,7 @@ void plot_BeamTest::run_plots(const std::vector<PlotConfig>& configs) {
                     configs,
                     reso_graphs,
                     //{2, 10.5},
-                    {0, 11},
+                    {2, 8.1},
                     reso_x_range);
     //for(auto g : reso_graphs) delete g;
 
@@ -130,7 +130,7 @@ void plot_BeamTest::run_plots(const std::vector<PlotConfig>& configs) {
                     "plot/Combined_ClusterSize.pdf",
                     configs,
                     clsize_graphs,
-                    {1, 6.1},
+                    {0.9, 4.1},
                     clsize_x_range);
     //for(auto g : clsize_graphs) delete g;
 
@@ -192,26 +192,67 @@ void plot_BeamTest::draw_overlay_histograms(
             return;
         }
 
+        std::string input_file_path;
         double seed_val = std::stod(config.seed_thd);
         double neighbor_val = std::stod(neighbor_thd_for_all);
         std::string seed_thd_for_file = (neighbor_val > seed_val) ? std::to_string(neighbor_val) : config.seed_thd;
-        if(config.source == DataSource::SingleChipSim || config.source == DataSource::SingleChipDrift) {
-            seed_thd_for_file = "0";
+
+        if (!config.base_file_name.empty()) {
+            // JSONで指定がある場合
+            if (config.base_file_name.find("%s") != std::string::npos) {
+                // neighbor_thd_for_all を引数としてフォーマット
+                input_file_path = Form(config.base_file_name.c_str(), seed_thd_for_file.c_str(), neighbor_thd_for_all.c_str());
+            } else {
+                input_file_path = config.base_file_name;
+            }
+        } else {
+            // 既存ロジック
+            if(config.source == DataSource::SingleChipSim || config.source == DataSource::SingleChipDrift) {
+                seed_thd_for_file = "0";
+            }
+
+            input_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se",
+                                   DATA_DIR_PATH_.c_str(),
+                                   NAME_.c_str(),
+                                   NAME_.c_str(),
+                                   config.pixel_pitch.c_str(),
+                                   config.chip_type.c_str(),
+                                   config.voltage.c_str(),
+                                   seed_thd_for_file.c_str(),
+                                   neighbor_thd_for_all.c_str());
         }
 
-        std::string input_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se",
-                                           DATA_DIR_PATH_.c_str(),
-                                           NAME_.c_str(),
-                                           NAME_.c_str(),
-                                           config.pixel_pitch.c_str(),
-                                           config.chip_type.c_str(),
-                                           config.voltage.c_str(),
-                                           seed_thd_for_file.c_str(),
-                                           neighbor_thd_for_all.c_str());
+        // double seed_val = std::stod(config.seed_thd);
+        // double neighbor_val = std::stod(neighbor_thd_for_all);
+        // std::string seed_thd_for_file = (neighbor_val > seed_val) ? std::to_string(neighbor_val) : config.seed_thd;
+        // if(config.source == DataSource::SingleChipSim || config.source == DataSource::SingleChipDrift) {
+        //     seed_thd_for_file = "0";
+        // }
 
-        std::string hist_name = Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str());
-        if(config.source == DataSource::SingleChipSim) {
-            hist_name = "cluster_charge";
+        // std::string input_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se",
+        //                                    DATA_DIR_PATH_.c_str(),
+        //                                    NAME_.c_str(),
+        //                                    NAME_.c_str(),
+        //                                    config.pixel_pitch.c_str(),
+        //                                    config.chip_type.c_str(),
+        //                                    config.voltage.c_str(),
+        //                                    seed_thd_for_file.c_str(),
+        //                                    neighbor_thd_for_all.c_str());
+
+        // std::string hist_name = Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str());
+        // if(config.source == DataSource::SingleChipSim) {
+        //     hist_name = "cluster_charge";
+        // }
+
+        std::string hist_name;
+        if (!config.hist_path.empty()) {
+            hist_name = config.hist_path;
+        } else {
+            // 既存ロジック
+            hist_name = Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str());
+            if(config.source == DataSource::SingleChipSim) {
+                hist_name = "cluster_charge";
+            }
         }
 
         TH1D* h_clcharge = get_merged_object<TH1D>(input_file_path, hist_name);
@@ -286,9 +327,9 @@ TGraphErrors* plot_BeamTest::create_graph_data(
             seed_thd_for_file = thd;
         }
 
-        if(config.source == DataSource::SingleChipSim) {
-            seed_thd_for_file = "0";
-        }
+        // if(config.source == DataSource::SingleChipSim) {
+        //     seed_thd_for_file = "0";
+        // }
 
         // std::string input_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
         //                                    DATA_DIR_PATH_.c_str(),
@@ -317,22 +358,63 @@ TGraphErrors* plot_BeamTest::create_graph_data(
         //     continue;
         // }
 
-        std::string base_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se",
-                                           DATA_DIR_PATH_.c_str(),
-                                           NAME_.c_str(),
-                                           NAME_.c_str(),
-                                           config.pixel_pitch.c_str(),
-                                           config.chip_type.c_str(),
-                                           config.voltage.c_str(),
-                                           seed_thd_for_file.c_str(),
-                                           thd.c_str());
+        // std::string base_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se",
+        //                                    DATA_DIR_PATH_.c_str(),
+        //                                    NAME_.c_str(),
+        //                                    NAME_.c_str(),
+        //                                    config.pixel_pitch.c_str(),
+        //                                    config.chip_type.c_str(),
+        //                                    config.voltage.c_str(),
+        //                                    seed_thd_for_file.c_str(),
+        //                                    thd.c_str());
 
-        std::string hist_name_residual = Form("AnalysisCE65/%s/local_residuals/residualsX", DUT_NAME_.c_str());
-        std::string hist_name_clsize = Form("AnalysisCE65/%s/cluster/clusterSize", DUT_NAME_.c_str());
+        // std::string hist_name_residual = Form("AnalysisCE65/%s/local_residuals/residualsX", DUT_NAME_.c_str());
+        // std::string hist_name_clsize = Form("AnalysisCE65/%s/cluster/clusterSize", DUT_NAME_.c_str());
 
-        if(config.source == DataSource::SingleChipSim) {
-            hist_name_residual = "residual_x";
-            hist_name_clsize = "cluster_size";
+        // if(config.source == DataSource::SingleChipSim) {
+        //     hist_name_residual = "residual_x";
+        //     hist_name_clsize = "cluster_size";
+        // }
+
+        std::string base_file_path;
+
+        if(!config.base_file_name.empty()) {
+            if(config.base_file_name.find("%s") != std::string::npos) {
+                base_file_path = Form(config.base_file_name.c_str(), seed_thd_for_file.c_str(), thd.c_str());
+            } else {
+                base_file_path = config.base_file_name;
+            }
+        } else {
+            if(config.source == DataSource::SingleChipSim || config.source == DataSource::SingleChipDrift) {
+                seed_thd_for_file = "0";
+            }
+            
+            base_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se",
+                                   DATA_DIR_PATH_.c_str(),
+                                   NAME_.c_str(),
+                                   NAME_.c_str(),
+                                   config.pixel_pitch.c_str(),
+                                   config.chip_type.c_str(),
+                                   config.voltage.c_str(),
+                                   seed_thd_for_file.c_str(),
+                                   thd.c_str());
+        }
+
+        std::string hist_name_residual;
+        std::string hist_name_clsize;
+
+        if(!config.hist_path_residual.empty()) {
+            hist_name_residual = config.hist_path_residual;
+        } else {
+            hist_name_residual = Form("AnalysisCE65/%s/local_residuals/residualsX", DUT_NAME_.c_str());
+            if(config.source == DataSource::SingleChipSim) hist_name_residual = "residual_x";
+        }
+        if (!config.hist_path_clsize.empty()) {
+            hist_name_clsize = config.hist_path_clsize;
+        } else {
+            // デフォルト
+            hist_name_clsize = Form("AnalysisCE65/%s/cluster/clusterSize", DUT_NAME_.c_str());
+            if(config.source == DataSource::SingleChipSim) hist_name_clsize = "cluster_size";
         }
 
         TH1D* h_residual = get_merged_object<TH1D>(base_file_path, hist_name_residual);
@@ -688,6 +770,10 @@ void plot_BeamTest::check_residual_fits(
                                                  seed_thd_for_file.c_str(),
                                                  thd.c_str());
             
+            // if(config.source == DataSource::SingleChipSim) {
+
+            // }
+            
             std::string hist_name = Form("AnalysisCE65/%s/local_residuals/residualsX", DUT_NAME_.c_str());
             if(config.source == DataSource::SingleChipSim) {
                 hist_name = "residual_x";
@@ -793,6 +879,10 @@ std::vector<PlotConfig> plot_BeamTest::load_jsonConfigs(const nlohmann::json& j)
             std::string color_string = item.at("color").get<std::string>();
             conf.color = string_to_ROOTColor(color_string);
             conf.adc_to_electron_factor = item.value("adc_to_electron_factor", 0.0);
+            conf.base_file_name = item.value("base_file_name", "");
+            conf.hist_path = item.value("hist_path", "");
+            conf.hist_path_residual = item.value("hist_path_residual", "");
+            conf.hist_path_clsize = item.value("hist_path_clsize", "");
             configs.push_back(conf);
         }
     } catch(nlohmann::json::exception& e) {

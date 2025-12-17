@@ -1,0 +1,1038 @@
+{
+  "exp_gap": {
+    "name": "Exp GAP",
+    "fileKey": "/home/towa/backup_data/hist/sps_check/sps202404_15_gap_10V_SeedThd1000e_NeighborThd200e",
+    "scale": 0.238,
+    "color": "kBlack",
+    "colorAlt": "kGray+1",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": true,
+    "doRebin": true,
+    "rebinType": "charge_rebin_exp_defaults",
+    "histNames": {
+      "clusterCharge": "AnalysisCE65/CE65_6/cluster/clusterCharge",
+      "seedCharge": "AnalysisCE65/CE65_6/cluster/clusterSeedCharge",
+      "neighborChargeSum": "AnalysisCE65/CE65_6/cluster/clusterNeighborsChargeSum",
+      "clusterSize": "AnalysisCE65/CE65_6/cluster/clusterSize",
+      "seedChargeBySize": "AnalysisCE65/CE65_6/cluster/clusterSeedCharge_size"
+    }
+  },
+  "exp_std": {
+    "name": "Exp STD",
+    "fileKey": "/home/towa/backup_data/hist/sps_check/sps202404_15_std_10V_SeedThd1000e_NeighborThd200e",
+    "scale": 0.24,
+    "color": "kBlack",
+    "colorAlt": "kGray+1",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": true,
+    "doRebin": true,
+    "rebinType": "exp_defaults",
+    "histNames": {
+      "clusterCharge": "AnalysisCE65/CE65_6/cluster/clusterCharge",
+      "seedCharge": "AnalysisCE65/CE65_6/cluster/clusterSeedCharge",
+      "neighborChargeSum": "AnalysisCE65/CE65_6/cluster/clusterNeighborsChargeSum",
+      "clusterSize": "AnalysisCE65/CE65_6/cluster/clusterSize",
+      "seedChargeBySize": "AnalysisCE65/CE65_6/cluster/clusterSeedCharge_size"
+    }
+  },
+  "exp_gap_nt600": {
+    "name": "Exp GAP (nt600)",
+    "fileKey": "/home/towa/backup_data/hist/sps202404/sps202404_15_gap_10V_SeedThd1000e_NeighborThd600e",
+    "scale": 0.238,
+    "color": "kBlack",
+    "colorAlt": "kGray+1",
+    "markerStyle": 22,
+    "markerStyleAlt": 26,
+    "isMerged": true,
+    "doRebin": true,
+    "rebinType": "exp_defaults",
+    "histNames": {
+      "clusterCharge": "AnalysisCE65/CE65_6/cluster/clusterCharge",
+      "seedCharge": "AnalysisCE65/CE65_6/cluster/clusterSeedCharge",
+      "neighborChargeSum": "AnalysisCE65/CE65_6/cluster/clusterNeighborsChargeSum",
+      "clusterSize": "AnalysisCE65/CE65_6/cluster/clusterSize",
+      "seedChargeBySize": "AnalysisCE65/CE65_6/cluster/clusterSeedCharge_size"
+    }
+  },
+  "exp_std_nt600": {
+    "name": "Exp STD nt600",
+    "fileKey": "/home/towa/backup_data/hist/sps202404/sps202404_15_std_10V_SeedThd1000e_NeighborThd600e",
+    "scale": 0.24,
+    "color": "kBlack",
+    "colorAlt": "kGray+1",
+    "markerStyle": 22,
+    "markerStyleAlt": 26,
+    "isMerged": true,
+    "doRebin": true,
+    "rebinType": "exp_defaults",
+    "histNames": {
+      "clusterCharge": "AnalysisCE65/CE65_6/cluster/clusterCharge",
+      "seedCharge": "AnalysisCE65/CE65_6/cluster/clusterSeedCharge",
+      "neighborChargeSum": "AnalysisCE65/CE65_6/cluster/clusterNeighborsChargeSum",
+      "clusterSize": "AnalysisCE65/CE65_6/cluster/clusterSize",
+      "seedChargeBySize": "AnalysisCE65/CE65_6/cluster/clusterSeedCharge_size"
+    }
+  },
+  "sim_gap_mandic_et2": {
+    "name": "Sim GAP (mandic et2)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_mandic.root",
+    "scale": 1,
+    "color": "kAzure+7",
+    "colorAlt": "kAzure",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_mandic_et2": {
+    "name": "Sim STD (mandic et2)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_mandic.root",
+    "scale": 1,
+    "color": "kAzure+7",
+    "colorAlt": "kAzure",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_ljubljana_et2": {
+    "name": "Sim GAP (ljubljana et2)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_ljubljana.root",
+    "scale": 1,
+    "color": "kGreen+2",
+    "colorAlt": "kGreen-4",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_ljubljana_et2": {
+    "name": "Sim STD (ljubljana et2)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_ljubljana.root",
+    "scale": 1,
+    "color": "kGreen+2",
+    "colorAlt": "kGreen-4",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_dortmund_et2": {
+    "name": "Sim GAP (dortmund et2)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_dortmund.root",
+    "scale": 1,
+    "color": "kMagenta+1",
+    "colorAlt": "kMagenta-6",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_dortmund_et2": {
+    "name": "Sim STD (dortmund et2)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_dortmund.root",
+    "scale": 1,
+    "color": "kMagenta+1",
+    "colorAlt": "kMagenta-6",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_cmstracker_et2": {
+    "name": "Sim GAP (cmstracker et2)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_cmstracker.root",
+    "scale": 1,
+    "color": "kRed+1",
+    "colorAlt": "kRed-4",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_cmstracker_et2": {
+    "name": "Sim STD (cmstracker et2)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_cmstracker.root",
+    "scale": 1,
+    "color": "kRed+1",
+    "colorAlt": "kRed-4",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_masetti_et2": {
+    "name": "Sim GAP (w/oRC nt48e)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_withoutRC.root",
+    "scale": 1,
+    "color": "kRed+1",
+    "colorAlt": "kRed-4",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_masetti_et2": {
+    "name": "Sim STD (w/oRC nt48e)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n0e_303k_st240e_nt48e_pip_120GeV_masetti_et2_withoutRC.root",
+    "scale": 1,
+    "color": "kRed+1",
+    "colorAlt": "kRed-4",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_masetti_et2_nt120": {
+    "name": "Sim GAP (w/oRC nt120e)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_303k_st240e_nt120e_pip_120GeV_masetti_et2_withoutRC.root",
+    "scale": 1,
+    "color": "kGreen+2",
+    "colorAlt": "kGreen-4",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_masetti_et2_nt120": {
+    "name": "Sim STD (w/oRC nt120e)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n0e_303k_st240e_nt120e_pip_120GeV_masetti_et2_withoutRC.root",
+    "scale": 1,
+    "color": "kGreen+2",
+    "colorAlt": "kGreen-4",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_masetti_et2_nt144": {
+    "name": "Sim GAP (w/oRC nt144e)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n0e_303k_st240e_nt144e_pip_120GeV_masetti_et2_withoutRC.root",
+    "scale": 1,
+    "color": "kBlue+2",
+    "colorAlt": "kBlue-2",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_masetti_et2_nt144": {
+    "name": "Sim STD (w/oRC nt144e)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n0e_303k_st240e_nt144e_pip_120GeV_masetti_et2_withoutRC.root",
+    "scale": 1,
+    "color": "kBlue+2",
+    "colorAlt": "kBlue-2",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_masetti_et2_nt48_n90e": {
+    "name": "Sim GAP (w/oRC nt48e n90e)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_withoutRC.root",
+    "scale": 1,
+    "color": "kMagenta+1",
+    "colorAlt": "kMagenta-6",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_masetti_et2_nt48_n90e": {
+    "name": "Sim STD (w/oRC nt48e n90e)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_withoutRC.root",
+    "scale": 1,
+    "color": "kMagenta+1",
+    "colorAlt": "kMagenta-6",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_masetti_et2_nt144_n90e": {
+    "name": "Sim GAP (w/oRC nt144e n90e)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_withoutRC.root",
+    "scale": 1,
+    "color": "kBlue+2",
+    "colorAlt": "kBlue-2",
+    "markerStyle": 22,
+    "markerStyleAlt": 26,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_masetti_et2_nt144_n90e": {
+    "name": "Sim(masetti|w/oRC)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_withoutRC.root",
+    "scale": 1,
+    "color": "kBlue+2",
+    "colorAlt": "kBlue-2",
+    "markerStyle": 22,
+    "markerStyleAlt": 26,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_masetti_et2_nt144_n90e_woall": {
+    "name": "Sim(masetti|w/oRC|w/oTP)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_withoutRC_withoutTP.root",
+    "scale": 1,
+    "color": "kMagenta+1",
+    "colorAlt": "kMagenta-6",
+    "markerStyle": 22,
+    "markerStyleAlt": 26,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_masetti_et2_nt144_n90e_woall": {
+    "name": "Sim(masetti|w/oRC|w/oTP)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_withoutRC_withoutTP.root",
+    "scale": 1,
+    "color": "kMagenta+1",
+    "colorAlt": "kMagenta-6",
+    "markerStyle": 22,
+    "markerStyleAlt": 26,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_masetti_et2_nt48_n90e_woall": {
+    "name": "Sim(masetti|w/oRC|w/oTP)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_withoutRC_withoutTP.root",
+    "scale": 1,
+    "color": "kMagenta+1",
+    "colorAlt": "kMagenta-6",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_masetti_et2_nt48_n90e_woall": {
+    "name": "Sim(masetti|w/oRC|w/oTP)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_withoutRC_withoutTP.root",
+    "scale": 1,
+    "color": "kMagenta+1",
+    "colorAlt": "kMagenta-6",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_masetti_et2_nt48_n90e_srhauger_withoutTP": {
+    "name": "Sim(masetti|srh_auger|w/oTP)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_srhauger_withoutTP.root",
+    "scale": 1,
+    "color": "kBlue+2",
+    "colorAlt": "kBlue-2",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_masetti_et2_nt48_n90e_srhauger_withoutTP": {
+    "name": "Sim(masetti|srh_auger|w/oTP)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_srhauger_withoutTP.root",
+    "scale": 1,
+    "color": "kBlue+2",
+    "colorAlt": "kBlue-2",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_masetti_et2_nt48_n90e_srh_withoutTP": {
+    "name": "Sim(masetti|srh|w/oTP)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_srh_withoutTP.root",
+    "scale": 1,
+    "color": "kMagenta+1",
+    "colorAlt": "kMagenta-6",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_masetti_et2_nt48_n90e_srh_withoutTP": {
+    "name": "Sim(masetti|srh|w/oTP)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_srh_withoutTP.root",
+    "scale": 1,
+    "color": "kMagenta+1",
+    "colorAlt": "kMagenta-6",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_masetti_et2_nt48_n90e_auger_withoutTP": {
+    "name": "Sim(masetti|auger|w/oTP)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_auger_withoutTP.root",
+    "scale": 1,
+    "color": "kGreen+2",
+    "colorAlt": "kGreen-4",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_masetti_et2_nt48_n90e_auger_withoutTP": {
+    "name": "Sim(masetti|auger|w/oTP)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_auger_withoutTP.root",
+    "scale": 1,
+    "color": "kGreen+2",
+    "colorAlt": "kGreen-4",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_masetti_et2_nt48_n90e_withoutRC_mandic": {
+    "name": "Sim(masetti|w/oRC|mandic)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_withoutRC_mandic.root",
+    "scale": 1,
+    "color": "kGreen+2",
+    "colorAlt": "kGreen-4",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_masetti_et2_nt48_n90e_withoutRC_mandic": {
+    "name": "Sim(masetti|w/oRC|mandic)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_auger_withoutTP.root",
+    "scale": 1,
+    "color": "kGreen+2",
+    "colorAlt": "kGreen-4",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_masetti_et2_nt48_n90e_withoutRC_ljubljana": {
+    "name": "Sim(masetti|w/oRC|ljubljana)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_withoutRC_ljubljana.root",
+    "scale": 1,
+    "color": "kRed+1",
+    "colorAlt": "kRed-4",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_masetti_et2_nt48_n90e_withoutRC_ljubljana": {
+    "name": "Sim(masetti|w/oRC|ljubljana)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_withoutRC_ljubljana.root",
+    "scale": 1,
+    "color": "kRed+1",
+    "colorAlt": "kRed-4",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_masetti_et2_nt48_n90e_withoutRC_cmstracker": {
+    "name": "Sim(masetti|w/oRC|cmstracker)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_withoutRC_cmstracker.root",
+    "scale": 1,
+    "color": "kMagenta+1",
+    "colorAlt": "kMagenta-6",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_masetti_et2_nt48_n90e_withoutRC_cmstracker": {
+    "name": "Sim(masetti|w/oRC|cmstracker)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_withoutRC_cmstracker.root",
+    "scale": 1,
+    "color": "kMagenta+1",
+    "colorAlt": "kMagenta-6",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_masetti_et2_nt48_n90e_withoutRC_dortmund": {
+    "name": "Sim(masetti|w/oRC|dortmund)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_withoutRC_dortmund.root",
+    "scale": 1,
+    "color": "kAzure+7",
+    "colorAlt": "kAzure",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_masetti_et2_nt48_n90e_withoutRC_dortmund": {
+    "name": "Sim(masetti|w/oRC|dortmund)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_withoutRC_dortmund.root",
+    "scale": 1,
+    "color": "kAzure+7",
+    "colorAlt": "kAzure",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_masetti_et2_nt48_n90e_srh_mandic": {
+    "name": "Sim(masetti|srh|mandic)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_srh_mandic.root",
+    "scale": 1,
+    "color": "kGreen+2",
+    "colorAlt": "kGreen-4",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_masetti_et2_nt48_n90e_srh_mandic": {
+    "name": "Sim(masetti|srh|mandic)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_srh_mandic.root",
+    "scale": 1,
+    "color": "kGreen+2",
+    "colorAlt": "kGreen-4",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_masetti_et2_nt48_n90e_srh_ljubljana": {
+    "name": "Sim(masetti|srh|ljubljana)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_srh_ljubljana.root",
+    "scale": 1,
+    "color": "kRed+1",
+    "colorAlt": "kRed-4",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_masetti_et2_nt48_n90e_srh_ljubljana": {
+    "name": "Sim(masetti|srh|ljubljana)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_srh_ljubljana.root",
+    "scale": 1,
+    "color": "kRed+1",
+    "colorAlt": "kRed-4",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_masetti_et2_nt48_n90e_srh_cmstracker": {
+    "name": "Sim(masetti|srh|cmstracker)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_srh_cmstracker.root",
+    "scale": 1,
+    "color": "kMagenta+1",
+    "colorAlt": "kMagenta-6",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_masetti_et2_nt48_n90e_srh_cmstracker": {
+    "name": "Sim(masetti|srh|cmstracker)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_srh_cmstracker.root",
+    "scale": 1,
+    "color": "kMagenta+1",
+    "colorAlt": "kMagenta-6",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_masetti_et2_nt48_n90e_srh_dortmund": {
+    "name": "Sim(masetti|srh|dortmund)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_srh_dortmund.root",
+    "scale": 1,
+    "color": "kAzure+7",
+    "colorAlt": "kAzure",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_masetti_et2_nt48_n90e_srh_dortmund": {
+    "name": "Sim(masetti|srh|dortmund)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_srh_dortmund.root",
+    "scale": 1,
+    "color": "kAzure+7",
+    "colorAlt": "kAzure",
+    "markerStyle": 20,
+    "markerStyleAlt": 24,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_canali_et2_nt48_n90e_srh_dortmund": {
+    "name": "Sim(canali|srh|dortmund)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_canali_et2_srh_dortmund.root",
+    "scale": 1,
+    "color": "kGreen+2",
+    "colorAlt": "kGreen",
+    "markerStyle": 22,
+    "markerStyleAlt": 26,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_canali_et2_nt48_n90e_srh_dortmund": {
+    "name": "Sim(canali|srh|dortmund)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_canali_et2_srh_dortmund.root",
+    "scale": 1,
+    "color": "kGreen+2",
+    "colorAlt": "kGreen",
+    "markerStyle": 22,
+    "markerStyleAlt": 26,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_gap_jacoboni_et2_nt48_n90e_srh_dortmund": {
+    "name": "Sim(jacoboni|srh|dortmund)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_jacoboni_et2_srh_dortmund.root",
+    "scale": 1,
+    "color": "kRed+2",
+    "colorAlt": "kRed-2",
+    "markerStyle": 23,
+    "markerStyleAlt": 27,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  },
+  "sim_std_jacoboni_et2_nt48_n90e_srh_dortmund": {
+    "name": "Sim(jacoboni|srh|dortmund)",
+    "fileKey": "/home/towa/backup_data/hist/sim_modeling/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_jacoboni_et2_srh_dortmund.root",
+    "scale": 1,
+    "color": "kRed+2",
+    "colorAlt": "kRed-2",
+    "markerStyle": 23,
+    "markerStyleAlt": 27,
+    "isMerged": false,
+    "doRebin": true,
+    "rebinType": "charge_rebin_sim_defaults",
+    "histNames": {
+      "clusterCharge": "cluster_charge",
+      "seedCharge": "seed_charge",
+      "neighborChargeSum": "cluster_neighbor_charge_sum",
+      "clusterSize": "cluster_size",
+      "seedChargeBySize": "seed_charge_size_",
+      "driftTime": "drift_time_spectrum"
+    }
+  }
+}

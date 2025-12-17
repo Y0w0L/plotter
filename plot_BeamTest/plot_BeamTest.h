@@ -62,6 +62,11 @@ struct PlotConfig {
     double marker_size = 1.2;
     int line_style = 1;
     double adc_to_electron_factor = 0.0;
+
+    std::string base_file_name;
+    std::string hist_path;
+    std::string hist_path_residual;
+    std::string hist_path_clsize;
 };
 
 struct ChipParameters {

@@ -197,6 +197,8 @@ class AnalysisPixelModule:
         inpixel_bins_y = 50
         max_cluster_charge = self.config.get("max_cluster_charge", 20000)
         charge_bin = int(max_cluster_charge / 20)
+        self.histograms["inPixel_neighbor_charge_sum"] = ROOT.TProfile2D("inPixel_neighbor_charge_sum", ";x/pitch [um];y/pitch [um];neighbor charge sum [ke]", inpixel_bins_x, -pitch_x / 2, pitch_x / 2, inpixel_bins_y, -pitch_y / 2, pitch_y / 2)
+        self.histograms["inPixel_efficiency"] = ROOT.TProfile2D("inPixel_efficiency", ";x/pitch [um];y/pitch [um];efficiency", inpixel_bins_x, -pitch_x / 2, inpixel_bins_y, -pitch_y / 2, pitch_y / 2)
         self.histograms["inPixel_cluster_size"] = ROOT.TProfile2D("inPixel_cluster_size", ";x/pitch [um];y/pitch [um];cluster size", inpixel_bins_x, -pitch_x / 2, pitch_x / 2, inpixel_bins_y, -pitch_y / 2, pitch_y / 2)
         self.histograms["inPixel_cluster_charge"] = ROOT.TProfile2D("inPixel_cluster_charge", ";x/pitch [um];y/pitch [um];cluster charge [ke]", inpixel_bins_x, -pitch_x / 2, pitch_x / 2, inpixel_bins_y, -pitch_y / 2, pitch_y / 2)
         self.histograms["inPixel_seed_charge"] = ROOT.TProfile2D("inPixel_seed_charge", ";x/pitch [um];y/pitch [um];seed charge [ke]", inpixel_bins_x, -pitch_x / 2, pitch_x / 2, inpixel_bins_y, -pitch_y / 2, pitch_y / 2)
@@ -218,6 +220,33 @@ class AnalysisPixelModule:
         self.histograms["neighborChargeSum_vs_clusterSize"] = ROOT.TH2D("neighborChargeSum_vs_clusterSize", ";charge [ke];cluster size", charge_bin, 0, max_cluster_charge, 20, 0.5, 20.5)
         self.histograms["clusterCharge_vs_clusterSize"] = ROOT.TH2D("clusterCharge_vs_clusterSize", ";charge [ke];cluster size", charge_bin, 0, max_cluster_charge, 20, 0.5, 20.5)
         self.histograms["seedCharge_vs_neighborChargeSum"] = ROOT.TH2D("seedCharge_vs_neighborChargeSum", ";seed charge [ke];neighbor charge [ke]", charge_bin, 0, max_cluster_charge, 1000, 0, 20)
+        
+        self.histograms["clusterSize_vs_clusterCharge"] = ROOT.TH2D(
+            "clusterSize_vs_clusterCharge",
+            "Cluster Size vs Cluster Charge;Cluster Charge [e];Cluster Size [pixels]",
+            100, 0, max_cluster_charge,  # X軸: 電荷 (0 ~ 20000e)
+            20, 0.5, 20.5                # Y軸: サイズ (1 ~ 20)
+        )
+
+        self.histograms["prof_clusterSize_vs_clusterCharge"] = ROOT.TProfile(
+            "prof_clusterSize_vs_clusterCharge",
+            "Average Cluster Size vs Cluster Charge;Cluster Charge [e];Average Cluster Size [pixels]",
+            100, 0, max_cluster_charge
+        )
+
+        self.histograms["inPixel_seed_ratio"] = ROOT.TProfile2D(
+            "inPixel_seed_ratio", 
+            ";x/pitch [um];y/pitch [um];Seed Charge Ratio (Q_seed / Q_clus)", 
+            inpixel_bins_x, -pitch_x / 2, pitch_x / 2, 
+            inpixel_bins_y, -pitch_y / 2, pitch_y / 2
+        )
+        
+        self.histograms["inPixel_multi_hit_prob"] = ROOT.TProfile2D(
+            "inPixel_multi_hit_prob", 
+            ";x/pitch [um];y/pitch [um];Multi-Pixel Hit Probability", 
+            inpixel_bins_x, -pitch_x / 2, pitch_x / 2, 
+            inpixel_bins_y, -pitch_y / 2, pitch_y / 2
+        )
 
         n_counters = len(self.counter_names)
         self.histograms["counters"] = ROOT.TH1D("counters", "Event Summary;category;counts", n_counters, 0, n_counters)
@@ -263,6 +292,9 @@ class AnalysisPixelModule:
             20, 0.5, 20.5,
             1000, 0, 0.2
         )
+
+        self.histograms["drift_time_spectrum"] = ROOT.TH1D("drift_time_spectrum", "All Electron Drift Time;Drift Time [ns];Counts", 2000, 0, 0.15)
+        self.histograms["drift_time_vs_depth"] = ROOT.TH2D("drift_time_vs_depth", "Drift Time vs Creation Depth;Creation Z [um];drift time [ns]", 100, -30, 30, 2000, 0, 0.15)
 
         if self.fill_3d:
             half_pitch_x = self.detector_model.pixel_size[0] / 2.0
@@ -335,78 +367,6 @@ class AnalysisPixelModule:
 
     def _fill_histograms_from_buffer(self, buffer: Dict[str, list]):
         """バッファに溜まったデータからヒストグラムを更新する"""
-        # for val in buffer["cluster_charge"]:
-        #     self.histograms["cluster_charge"].Fill(val)
-        # for val in buffer["cluster_size"]:
-        #     self.histograms["cluster_size"].Fill(val)
-        # for val in buffer["seed_charge"]:
-        #     self.histograms["seed_charge"].Fill(val)
-        # for val in buffer["residual_x"]:
-        #     self.histograms["residual_x"].Fill(val)
-        # for val in buffer["residual_y"]:
-        #     self.histograms["residual_y"].Fill(val)
-        # for val in buffer["residual_r"]:
-        #     self.histograms["residual_r"].Fill(val)
-
-        # for x, y, val in buffer["inPixel_cluster_size"]:
-        #     self.histograms["inPixel_cluster_size"].Fill(x, y, val)
-        # for x, y, val in buffer["inPixel_residual_r"]:
-        #     self.histograms["inPixel_residual_r"].Fill(x, y, val)
-        # for x, y, val in buffer["inPixel_residual_x"]:
-        #     self.histograms["inPixel_residual_x"].Fill(x, y, val)
-        # for x, y, val in buffer["inPixel_residual_y"]:
-        #     self.histograms["inPixel_residual_y"].Fill(x, y, val)
-        # for x, y, val in buffer["inPixel_residual_xy2"]:
-        #     self.histograms["inPixel_residual_xy2"].Fill(x, y, val)
-        # for x, y, val in buffer["inPixel_seed_charge"]:
-        #     self.histograms["inPixel_seed_charge"].Fill(x, y, val)
-        # for x, y, val in buffer["inPixel_cluster_charge"]:
-        #     self.histograms["inPixel_cluster_charge"].Fill(x, y, val)
-
-        # for val in buffer["cluster_neighbor_charge_sum"]:
-        #     self.histograms["cluster_neighbor_charge_sum"].Fill(val)
-        # for val in buffer["cluster_neighbor_charge"]:
-        #     self.histograms["cluster_neighbor_charge"].Fill(val)
-
-        # for x_val, y_val in buffer["seedCharge_vs_clusterSize"]:
-        #     self.histograms["seedCharge_vs_clusterSize"].Fill(x_val, y_val)
-        # for x_val, y_val in buffer["neighborChargeSum_vs_clusterSize"]:
-        #     self.histograms["neighborChargeSum_vs_clusterSize"].Fill(x_val, y_val)
-        # for x_val, y_val in buffer["clusterCharge_vs_clusterSize"]:
-        #     self.histograms["clusterCharge_vs_clusterSize"].Fill(x_val, y_val)
-
-        # for x_val, y_val in buffer["seedCharge_vs_neighborChargeSum"]:
-        #     self.histograms["seedCharge_vs_neighborChargeSum"].Fill(x_val, y_val)
-
-        # for i in range(1, self.max_cluster_size_hist + 1):
-        #     # Seed charge
-        #     hist_name_seed = f"seed_charge_size_{i}"
-        #     if hist_name_seed in buffer:
-        #         for val in buffer[hist_name_seed]:
-        #             self.histograms[hist_name_seed].Fill(val)
-            
-        #     # NEW: Residuals
-        #     for axis in ["x", "y", "r"]:
-        #         hist_name_res = f"residual_{axis}_size_{i}"
-        #         if hist_name_res in buffer:
-        #             for val in buffer[hist_name_res]:
-        #                 self.histograms[hist_name_res].Fill(val)
-
-        # # Overflow bins filling
-        # suffix_plus = f"{self.max_cluster_size_hist + 1}_plus"
-        
-        # hist_name_seed_large = f"seed_charge_size_{suffix_plus}"
-        # if hist_name_seed_large in buffer:
-        #     for val in buffer[hist_name_seed_large]:
-        #         self.histograms[hist_name_seed_large].Fill(val)
-
-        # # NEW: Residuals overflow filling
-        # for axis in ["x", "y", "r"]:
-        #     hist_name_res_large = f"residual_{axis}_size_{suffix_plus}"
-        #     if hist_name_res_large in buffer:
-        #         for val in buffer[hist_name_res_large]:
-        #             self.histograms[hist_name_res_large].Fill(val)
-            
         # for key in buffer:
         #     buffer[key].clear()
         for key, histo in self.histograms.items():
@@ -444,15 +404,6 @@ class AnalysisPixelModule:
         N_PIXELS_Y = 24
         MARGIN = 2
 
-        # counters = {
-        #     "Total Events": self.n_entries,
-        #     "Skipped: No pixel hits": 0,
-        #     "Skipped: Multiple primary particles": 0,
-        #     "Clusters Checked": 0,
-        #     "Skipped: Cluster has no primary particle": 0,
-        #     "Skipped: Residual > 40 um": 0,
-        #     "Clusters Accepted": 0,
-        # }
         self.counters = {name: 0 for name in self.counter_names}
         self.counters["Total Events"] = self.n_entries
 
@@ -460,327 +411,282 @@ class AnalysisPixelModule:
         pitch_y = self.detector_model.pixel_size[1]
         offset_x = pitch_x / 2
         offset_y = pitch_y / 2
-        offset_vec = np.array([pitch_x / 2, pitch_y / 2, 0])
-
-        BATCH_SIZE =1000
+        
+        BATCH_SIZE = 1000
         buffer = {hist_name: [] for hist_name in self.histograms}
 
+        # 高速化のために変数をキャッシュ
         h_drift_time_vs_dist = self.histograms.get("drift_time_vs_distance")
         h_drift_time_map_xyz = self.histograms.get("drift_time_map_xyz") if self.fill_3d else None
         h_drift_time_seed = self.histograms.get("drift_time_seed")
         h_drift_time_neighbor = self.histograms.get("drift_time_neighbor")
+        h_drift_time_spectrum = self.histograms.get("drift_time_spectrum")
+        h_drift_time_vs_depth = self.histograms.get("drift_time_vs_depth")
 
         tqdm_iterator = tqdm(
             range(self.start_entry, self.end_entry),
-            # descを少し短くして、ワーカーIDが見やすいように変更
             desc=f"Worker {self.worker_id} (Events {self.start_entry}-{self.end_entry})", 
-            position=self.worker_id,  # ★ これが重要: 0, 1, 2... の行を割り当てる
-            leave=False               # ★ 完了したらバーを消去 (Trueだとバーが残り続ける)
+            position=self.worker_id,
+            leave=False
         )
 
-        #for i in tqdm(range(self.n_entries)):
-        #for i in range(self.n_entries):
-        #for i_global in tqdm(range(self.start_entry, self.end_entry), desc=f"Worker (Events {self.start_entry} - {self.end_entry})"):
         for i_global in tqdm_iterator:
-            #self.pixel_tree.GetEntry(i)
             self.pixel_tree.GetEntry(i_global)
 
-            i_local = i_global - self.start_entry
-            
-            # --- 1. データデコード ---
-            
-            # PyROOTはC++のstd::vectorを返す。これは直接ループ処理できる。
+            # --- 1. MCParticle データデコード (位置を最初に特定するため移動) ---
             mcp_objects = getattr(self.mcp_tree, branch_name)
-            
             mc_particles: Dict[int, MCParticle] = {}
-            # まずPythonのMCParticleオブジェクトを全作成
+            
             for mcp_obj in mcp_objects:
                 pid = mcp_obj.GetUniqueID()
                 parent_ptr = mcp_obj.getParent()
                 parent_id = parent_ptr.GetUniqueID() if parent_ptr else 0
-                
                 ref_point = mcp_obj.getLocalReferencePoint()
                 mc_particles[pid] = MCParticle(
                     particle_id=pid,
-                    parent=parent_id, # まずはIDを入れておく
+                    parent=parent_id,
                     local_reference_point=np.array([ref_point.X()*1000, ref_point.Y()*1000, ref_point.Z()*1000])
                 )
 
-            # 親への参照を解決
             for mcp in mc_particles.values():
                 parent_id = mcp.parent
                 if parent_id != 0 and parent_id in mc_particles:
                     mcp.parent = mc_particles[parent_id]
                 else:
                     mcp.parent = None
+
+            # --- 2. Primary Particle チェックとROI判定 ---
+            primary_particles = self.get_primary_particles(mc_particles)
             
-            # PixelHitオブジェクトを取得
+            if len(primary_particles) != 1:
+                self.counters["Skipped: Multiple primary particles"] += 1
+                continue
+            
+            # Primary粒子の位置を特定
+            target_particle = primary_particles[0]
+            particle_pos = target_particle.local_reference_point + np.array([offset_x, offset_y, 0])
+            
+            # MC粒子がROI内にあるか確認 (Efficiencyの分母)
+            ix_mc, iy_mc = self.detector_model.get_pixel_index(particle_pos)
+            
+            is_in_roi = (MARGIN <= ix_mc < N_PIXELS_X - MARGIN and MARGIN <= iy_mc < N_PIXELS_Y - MARGIN)
+            
+            pixel_center_mc = self.detector_model.get_pixel_center(ix_mc, iy_mc)
+            in_pixel_pos_mc = particle_pos - pixel_center_mc
+
+            # --- 3. PixelHit 処理とクラスタリング ---
             pixel_objects = getattr(self.pixel_tree, branch_name)
-            if len(pixel_objects) == 0:
-                self.counters["Skipped: No pixel hits"] += 1
-                continue
             
-            pixel_hits = []
-            if len(pixel_objects) == 0:
+            # Efficiency計算用のフラグ
+            is_reconstructed_successfully = False
+            best_cluster = None
+            residual_vec = None
+            residual_r = None
+
+            # ヒットがある場合のみクラスタリング処理を行う
+            if len(pixel_objects) > 0:
+                pixel_hits = []
+                for hit_obj in pixel_objects:
+                    hit_mc_particles = []
+                    for linked_mcp_ptr in hit_obj.getMCParticles():
+                        linked_pid = linked_mcp_ptr.GetUniqueID()
+                        if linked_pid in mc_particles:
+                            hit_mc_particles.append(mc_particles[linked_pid])
+                    
+                    pixel_hits.append(PixelHit(
+                        signal=hit_obj.getSignal(),
+                        pixel_index_x=hit_obj.getPixel().getIndex().X(),
+                        pixel_index_y=hit_obj.getPixel().getIndex().Y(),
+                        mc_particles=hit_mc_particles
+                    ))
+
+                clusters = self.do_clustering(pixel_hits)
+
+                if clusters:
+                    best_cluster = max(clusters, key=lambda c: c.seed_pixel_hit.signal)
+                    self.counters["Clusters Checked"] += 1
+                    
+                    # クラスタがPrimary粒子と紐付いているか確認
+                    cluster_particles_ids = {p.particle_id for p in best_cluster.get_mc_particles()}
+                    if target_particle.particle_id in cluster_particles_ids:
+                        
+                        # 残差計算
+                        cluster_pos = best_cluster.get_position(self.detector_model, one_bit=self.one_bit_processing)
+                        residual_vec = particle_pos - cluster_pos
+                        residual_r = np.linalg.norm(residual_vec[:2])
+
+                        cut_um = 40
+                        if residual_r <= cut_um:
+                            is_reconstructed_successfully = True
+
+            # --- 4. Efficiency Plot の Fill ---
+            # ROI内に入射したイベントであれば、検出できた(1)か否(0)かを記録
+            if is_in_roi:
+                eff_val = 1.0 if is_reconstructed_successfully else 0.0
+                buffer["inPixel_efficiency"].append((in_pixel_pos_mc[0], in_pixel_pos_mc[1], eff_val))
+
+            # --- 5. 検出失敗ならここで終了 (Efficiency 0 のケース) ---
+            if not is_reconstructed_successfully:
+                if len(pixel_objects) == 0:
+                    self.counters["Skipped: No pixel hits"] += 1
+                elif best_cluster is None:
+                    # ヒットはあるがクラスタにならなかった（閾値など）
+                    pass 
+                elif residual_vec is None:
+                    # クラスタはあるがPrimaryと紐付かなかった
+                    self.counters["Skipped: Cluster has no primary particle"] += 1
+                else:
+                    # 残差カット落ち
+                    self.counters["Skipped: Residual > 40 um"] += 1
                 continue
 
-            for hit_obj in pixel_objects:
-                # このヒットに関連するMCParticleをPython辞書から見つける
-                hit_mc_particles = []
-                for linked_mcp_ptr in hit_obj.getMCParticles():
-                    linked_pid = linked_mcp_ptr.GetUniqueID()
-                    if linked_pid in mc_particles:
-                        hit_mc_particles.append(mc_particles[linked_pid])
-                
-                pixel_hits.append(PixelHit(
-                    signal=hit_obj.getSignal(),
-                    pixel_index_x=hit_obj.getPixel().getIndex().X(),
-                    pixel_index_y=hit_obj.getPixel().getIndex().Y(),
-                    mc_particles=hit_mc_particles
-                ))
+            # --- 6. 以下、検出成功 (Efficiency 1) イベントの詳細解析 ---
+            # ここから先は `best_cluster` が有効で、かつResidualカットも通過していることが保証される
+            
+            # Seed PixelがEDGEにある場合は除く（従来の解析ロジックを踏襲）
+            # 注意: EfficiencyMapはMC位置基準でROIを切ったが、詳細プロットはSeed位置基準で切るのが通例
+            seed_x = best_cluster.seed_pixel_hit.pixel_index_x
+            seed_y = best_cluster.seed_pixel_hit.pixel_index_y
 
+            if not (MARGIN <= seed_x < N_PIXELS_X - MARGIN and MARGIN <= seed_y < N_PIXELS_Y - MARGIN):
+                self.counters["Skipped: Hit at EDGE events"] += 1
+                continue
+
+            self.counters["Clusters Accepted"] += 1
+            clus = best_cluster # 変数名を合わせる
+
+            # Propagated Charge の処理 (Drift Time用)
             propagated_objects = getattr(self.propagated_tree, branch_name, [])
-            charge_map: Dict[int, List[PropagatedCharge]] = {} # MCParticle ID -> PropagatedChargeリスト
-            
+            charge_map: Dict[int, List[PropagatedCharge]] = {}
             for prop_obj in propagated_objects:
                 mc_particle_ptr = prop_obj.getMCParticle()
                 if not mc_particle_ptr: continue
-                
                 parent_mcp = mc_particles.get(mc_particle_ptr.GetUniqueID())
                 if not parent_mcp: continue
                 
-                # CarrierTypeを文字列に変換
                 carrier_type_enum = prop_obj.getType()
-                if carrier_type_enum == 255: # ROOT.allpix.CarrierType.ELECTRONは-1 (C++のenumがPythonでは 255 (unsigned char) として見えることがある)
-                    charge_type = 'electron'
-                elif carrier_type_enum == 1: # ROOT.allpix.CarrierType.HOLE は 1
-                    charge_type = 'hole'
-                else:
-                    # 想定外の値（デバッグ用）
-                    # print(f"Unknown carrier type: {carrier_type_enum}")
-                    continue
+                if carrier_type_enum == 255: charge_type = 'electron'
+                elif carrier_type_enum == 1: charge_type = 'hole'
+                else: continue
 
                 pos = prop_obj.getLocalPosition()
                 creation_pos_um = np.array([pos.X() * 1000, pos.Y() * 1000, pos.Z() * 1000])
-
+                
                 prop_charge = PropagatedCharge(
                     charge_type=charge_type,
-                    global_time=prop_obj.getGlobalTime(), # [ps]
+                    global_time=prop_obj.getGlobalTime(),
                     mc_particle=parent_mcp,
                     local_creation_pos=creation_pos_um
                 )
                 charge_map.setdefault(parent_mcp.particle_id, []).append(prop_charge)
 
-            # --- 2. 解析ロジック (ここからは以前のコードとほぼ同じ) ---
-            primary_particles = self.get_primary_particles(mc_particles)
-            if len(primary_particles) > 1:
-                self.counters["Skipped: Multiple primary particles"] += 1
-                continue
-                # best_cluster = max(clusters, key=lambda c: c.seed_pixel_hit.signal)
-                # clusters = [best_cluster]
 
-            clusters = self.do_clustering(pixel_hits)
-
-            if not clusters:
-                continue
-
-            best_cluster = max(clusters, key=lambda c: c.seed_pixel_hit.signal)
-            clusters = [best_cluster]
-
-            for clus in clusters:
-                self.counters["Clusters Checked"] += 1
-                # self.histograms["cluster_charge"].Fill(clus.charge / 1000.0)
-                # self.histograms["cluster_size"].Fill(clus.size)
-                # self.histograms["seed_charge"].Fill(clus.seed_pixel_hit.signal / 1000.0)
-
-                seed_x = clus.seed_pixel_hit.pixel_index_x
-                seed_y = clus.seed_pixel_hit.pixel_index_y
-
-                if not (MARGIN <= seed_x < N_PIXELS_X - MARGIN and MARGIN <= seed_y < N_PIXELS_Y - MARGIN):
-                    self.counters["Skipped: Hit at EDGE events"] += 1
-                    continue
-                
-                #cluster_mc_particles = clus.get_mc_particles()
-                #intersection = [p for p in primary_particles if p in cluster_mc_particles]
-                cluster_particles_ids = {p.particle_id for p in clus.get_mc_particles()}
-                #cluster_particles_set = set(clus.get_mc_particles())
-                intersection = [p for p in primary_particles if p.particle_id in cluster_particles_ids]
-                
-                if not intersection:
-                    self.counters["Skipped: Cluster has no primary particle"] += 1
-                    continue
-
-                particle = intersection[0]
-                particle_pos = particle.local_reference_point + np.array([offset_x, offset_y, 0])
-                cluster_pos = clus.get_position(self.detector_model, one_bit=self.one_bit_processing)
-
-                # ix, iy = self.detector_model.get_pixel_index(particle_pos)
-                # pixel_center = self.detector_model.get_pixel_center(ix, iy)
-                # in_pixel_pos = particle_pos - pixel_center
-                
-                residual_vec = particle_pos - cluster_pos
-                residual_r = np.linalg.norm(residual_vec[:2])
-
-                # print("----------- MCParticle Hit Position -----------")
-                # print(particle_pos)
-                # print("----------- Clustering Hit Position -----------")
-                # print(cluster_pos)
-                # print("----------- Residual Value -----------")
-                # print(residual_vec)
-                # print()
-                # print("==================================================")
-
-                cut_um = 40
-                if self.one_bit_processing:
-                    cut_um = 40
-
-                if residual_r > cut_um:
-                    self.counters["Skipped: Residual > 40 um"] += 1
-                    continue
-
-                self.counters["Clusters Accepted"] += 1
-
-                # self.histograms["cluster_charge"].Fill(clus.charge / 1000.0)
-                # self.histograms["cluster_size"].Fill(clus.size)
-                # self.histograms["seed_charge"].Fill(clus.seed_pixel_hit.signal / 1000.0)
-
-                ix, iy = self.detector_model.get_pixel_index(particle_pos)
-                pixel_center = self.detector_model.get_pixel_center(ix, iy)
-                in_pixel_pos = particle_pos - pixel_center
-
-                non_seed_hits = [hit for hit in clus.pixel_hits if hit is not clus.seed_pixel_hit]
-                sum_non_seed_charge = sum(hit.signal for hit in non_seed_hits)
-
-                #print(in_pixel_pos)
-
-                # ix_reco, iy_reco = self.detector_model.get_pixel_index(cluster_pos)
-
-                # reference_pixel_center = self.detector_model.get_pixel_center(
-                #     ix_reco,
-                #     iy_reco
-                # )
-
-                # relative_pos = particle_pos - reference_pixel_center
-
-                # in_pixel_pos_x = (relative_pos[0] + pitch_x / 2) % pitch_x - pitch_x / 2
-                # in_pixel_pos_y = (relative_pos[1] + pitch_y / 2) % pitch_y - pitch_y / 2
-
-                # self.histograms["cluster_charge"].Fill(clus.charge / 1000.0)
-                # self.histograms["cluster_size"].Fill(clus.size)
-                # self.histograms["seed_charge"].Fill(clus.seed_pixel_hit.signal / 1000.0)
-                # self.histograms["residual_x"].Fill(residual_vec[0])
-                # self.histograms["residual_y"].Fill(residual_vec[1])
-                # self.histograms["residual_r"].Fill(residual_r)
-                # self.histograms["inPixel_cluster_size"].Fill(in_pixel_pos[0], in_pixel_pos[1], clus.size)
-                # self.histograms["inPixel_residual_r"].Fill(in_pixel_pos[0], in_pixel_pos[1], residual_r)
-                # self.histograms["inPixel_residual_x"].Fill(in_pixel_pos[0], in_pixel_pos[1], abs(residual_vec[0]))
-                # self.histograms["inPixel_residual_y"].Fill(in_pixel_pos[0], in_pixel_pos[1], abs(residual_vec[1]))
-                # self.histograms["inPixel_residual_xy2"].Fill(in_pixel_pos[0], in_pixel_pos[1], (abs(residual_vec[0]) + abs(residual_vec[1])) / 2)
-                # self.histograms["inPixel_seed_charge"].Fill(in_pixel_pos[0], in_pixel_pos[1], clus.seed_pixel_hit.signal / 1000.0)
-                # self.histograms["inPixel_cluster_charge"].Fill(in_pixel_pos[0], in_pixel_pos[1], clus.charge / 1000.0)
-                #self.histograms["test"].Fill(in_pixel_pos[0], in_pixel_pos[1])
-
-                # pitch_x = self.detector_model.pixel_size[0]
-                # pitch_y = self.detector_model.pixel_size[1]
-
-                # print(f"\n--- DEBUG (Event {i}, Cluster Accepted) ---")
-                # print(f"  Particle Pos (x, y):  ({particle_pos[0]:.3f}, {particle_pos[1]:.3f})")
-                
-                # ix, iy = self.detector_model.get_pixel_index(particle_pos)
-                # print(f"  Pixel Index (ix, iy): ({ix}, {iy})")
-                
-                # pixel_center = self.detector_model.get_pixel_center(ix, iy)
-                # print(f"  Pixel Center (x, y):  ({pixel_center[0]:.3f}, {pixel_center[1]:.3f})")
-
-                # in_pixel_pos = particle_pos - pixel_center
-                # print(f"  => InPixel Pos (x, y): ({in_pixel_pos[0]:.3f}, {in_pixel_pos[1]:.3f})")
-                # print(f"  Histogram Range X:    ({-pitch_x / 2:.3f} to {pitch_x / 2:.3f})")
-                # print(f"  Histogram Range Y:    ({-pitch_y / 2:.3f} to {pitch_y / 2:.3f})")
-                # print(f"------------------------------------")
-
-                buffer["cluster_charge"].append(clus.charge)
-                buffer["cluster_size"].append(clus.size)
-                buffer["seed_charge"].append(clus.seed_pixel_hit.signal)
-                buffer["residual_x"].append(residual_vec[0])
-                buffer["residual_y"].append(residual_vec[1])
-                buffer["residual_r"].append(residual_r)
-                buffer["inPixel_cluster_size"].append((in_pixel_pos[0], in_pixel_pos[1], clus.size))
-                buffer["inPixel_residual_r"].append((in_pixel_pos[0], in_pixel_pos[1], residual_r))
-                buffer["inPixel_residual_x"].append((in_pixel_pos[0], in_pixel_pos[1], abs(residual_vec[0])))
-                buffer["inPixel_residual_y"].append((in_pixel_pos[0], in_pixel_pos[1], abs(residual_vec[1])))
-                buffer["inPixel_residual_xy2"].append((in_pixel_pos[0], in_pixel_pos[1], (abs(residual_vec[0]) + abs(residual_vec[1])) / 2))
-                buffer["inPixel_seed_charge"].append((in_pixel_pos[0], in_pixel_pos[1], clus.seed_pixel_hit.signal))
-                buffer["inPixel_cluster_charge"].append((in_pixel_pos[0], in_pixel_pos[1], clus.charge))
-                buffer["cluster_neighbor_charge_sum"].append(sum_non_seed_charge)
-                buffer["seedCharge_vs_clusterSize"].append((clus.seed_pixel_hit.signal, clus.size))
-                buffer["neighborChargeSum_vs_clusterSize"].append((sum_non_seed_charge, clus.size))
-                buffer["clusterCharge_vs_clusterSize"].append((clus.charge, clus.size))
-                buffer["seedCharge_vs_neighborChargeSum"].append((clus.seed_pixel_hit.signal, sum_non_seed_charge))
-                for hit in non_seed_hits:
-                    buffer["cluster_neighbor_charge"].append(hit.signal)
-
-                size = clus.size
-                seed_charge_ke = clus.seed_pixel_hit.signal
-
-                if size <= self.max_cluster_size_hist:
-                    # Size 1 to 10
-                    buffer[f"seed_charge_size_{size}"].append(seed_charge_ke)
-                    buffer[f"residual_x_size_{size}"].append(residual_vec[0])
-                    buffer[f"residual_y_size_{size}"].append(residual_vec[1])
-                    buffer[f"residual_r_size_{size}"].append(residual_r)
-                else:
-                    # Size > 10 (Overflow)
-                    suffix_plus = f"{self.max_cluster_size_hist + 1}_plus"
-                    buffer[f"seed_charge_size_{suffix_plus}"].append(seed_charge_ke)
-                    buffer[f"residual_x_size_{suffix_plus}"].append(residual_vec[0])
-                    buffer[f"residual_y_size_{suffix_plus}"].append(residual_vec[1])
-                    buffer[f"residual_r_size_{suffix_plus}"].append(residual_r)
-                
-                electron_drift_times_ps = []
-                
-                for hit in clus.pixel_hits:
-                    # このピクセルの中心位置
-                    pixel_center_pos = self.detector_model.get_pixel_center(
-                        hit.pixel_index_x, hit.pixel_index_y
-                    )
-                    
-                    for mcp in hit.mc_particles:
-                        # このMCParticleに関連するPropagatedChargeを取得
-                        propagated_charges = charge_map.get(mcp.particle_id, [])
-                        
-                        for pc in propagated_charges:
-                            if pc.charge_type == 'electron':
-                                drift_time_ns = pc.global_time * 1e-3 # ps -> ns
-                                electron_drift_times_ps.append(pc.global_time) # 90パーセンタイル計算用
-                                
-                                creation_pos = pc.local_creation_pos
-                                # 電荷生成位置とピクセル中心との距離
-                                distance_um = np.linalg.norm(creation_pos - pixel_center_pos)
-                                
-                                if h_drift_time_vs_dist: # 高速化のためバッファを介さず直接Fill
-                                    h_drift_time_vs_dist.Fill(distance_um, drift_time_ns)
-
-                                # 3Dマップ充填
-                                if h_drift_time_map_xyz: # self.fill_3dがTrueの場合
-                                    relative_pos = creation_pos - pixel_center_pos
-                                    h_drift_time_map_xyz.Fill(
-                                        relative_pos[0], # In-pixel X
-                                        relative_pos[1], # In-pixel Y
-                                        relative_pos[2], # Depth Z
-                                        drift_time_ns
-                                    )
-                                
-                                # Seed vs Neighbor
-                                if hit is clus.seed_pixel_hit:
-                                    if h_drift_time_seed: h_drift_time_seed.Fill(drift_time_ns)
-                                else:
-                                    if h_drift_time_neighbor: h_drift_time_neighbor.Fill(drift_time_ns)
-
-                # --------------------------------------------------------
-
-            if (i + 1) % BATCH_SIZE == 0:
-                self._fill_histograms_from_buffer(buffer)
+            # In-Pixel Positionの再計算 (Seed基準: プロットの一貫性のため)
+            ix, iy = self.detector_model.get_pixel_index(particle_pos)
+            pixel_center = self.detector_model.get_pixel_center(ix, iy)
+            in_pixel_pos = particle_pos - pixel_center
             
+            non_seed_hits = [hit for hit in clus.pixel_hits if hit is not clus.seed_pixel_hit]
+            sum_non_seed_charge = sum(hit.signal for hit in non_seed_hits)
+
+            # ヒストグラムへのFill
+            buffer["cluster_charge"].append(clus.charge)
+            buffer["cluster_size"].append(clus.size)
+            buffer["seed_charge"].append(clus.seed_pixel_hit.signal)
+            buffer["residual_x"].append(residual_vec[0])
+            buffer["residual_y"].append(residual_vec[1])
+            buffer["residual_r"].append(residual_r)
+            buffer["inPixel_cluster_size"].append((in_pixel_pos[0], in_pixel_pos[1], clus.size))
+            buffer["inPixel_residual_r"].append((in_pixel_pos[0], in_pixel_pos[1], residual_r))
+            buffer["inPixel_residual_x"].append((in_pixel_pos[0], in_pixel_pos[1], abs(residual_vec[0])))
+            buffer["inPixel_residual_y"].append((in_pixel_pos[0], in_pixel_pos[1], abs(residual_vec[1])))
+            buffer["inPixel_residual_xy2"].append((in_pixel_pos[0], in_pixel_pos[1], (abs(residual_vec[0]) + abs(residual_vec[1])) / 2))
+            buffer["inPixel_seed_charge"].append((in_pixel_pos[0], in_pixel_pos[1], clus.seed_pixel_hit.signal))
+            buffer["inPixel_cluster_charge"].append((in_pixel_pos[0], in_pixel_pos[1], clus.charge))
+            buffer["inPixel_neighbor_charge_sum"].append((in_pixel_pos[0], in_pixel_pos[1], sum_non_seed_charge))
+            buffer["clusterSize_vs_clusterCharge"].append((clus.charge, clus.size))
+            buffer["prof_clusterSize_vs_clusterCharge"].append((clus.charge, clus.size))
+           
+            # 1. Seed Charge Ratio (0.0 ~ 1.0)
+            if clus.charge > 0:
+                ratio = clus.seed_pixel_hit.signal / clus.charge
+                buffer["inPixel_seed_ratio"].append((in_pixel_pos[0], in_pixel_pos[1], ratio))
+
+            # 2. Multi-Pixel Hit Probability (0 or 1)
+            # サイズが1より大きければ 1.0 (True), そうでなければ 0.0 (False)
+            is_multi = 1.0 if clus.size > 1 else 0.0
+            buffer["inPixel_multi_hit_prob"].append((in_pixel_pos[0], in_pixel_pos[1], is_multi))
+
+
+            if sum_non_seed_charge > 0:
+                buffer["cluster_neighbor_charge_sum"].append(sum_non_seed_charge)
+                buffer["neighborChargeSum_vs_clusterSize"].append((sum_non_seed_charge, clus.size))
+                buffer["seedCharge_vs_neighborChargeSum"].append((clus.seed_pixel_hit.signal, sum_non_seed_charge))
+
+            buffer["seedCharge_vs_clusterSize"].append((clus.seed_pixel_hit.signal, clus.size))
+            buffer["clusterCharge_vs_clusterSize"].append((clus.charge, clus.size))
+
+            for hit in non_seed_hits:
+                buffer["cluster_neighbor_charge"].append(hit.signal)
+
+            size = clus.size
+            seed_charge_ke = clus.seed_pixel_hit.signal
+
+            if size <= self.max_cluster_size_hist:
+                buffer[f"seed_charge_size_{size}"].append(seed_charge_ke)
+                buffer[f"residual_x_size_{size}"].append(residual_vec[0])
+                buffer[f"residual_y_size_{size}"].append(residual_vec[1])
+                buffer[f"residual_r_size_{size}"].append(residual_r)
+            else:
+                suffix_plus = f"{self.max_cluster_size_hist + 1}_plus"
+                buffer[f"seed_charge_size_{suffix_plus}"].append(seed_charge_ke)
+                buffer[f"residual_x_size_{suffix_plus}"].append(residual_vec[0])
+                buffer[f"residual_y_size_{suffix_plus}"].append(residual_vec[1])
+                buffer[f"residual_r_size_{suffix_plus}"].append(residual_r)
+            
+            # --- Drift Time Analysis ---
+            electron_drift_times_ps = []
+            
+            for hit in clus.pixel_hits:
+                pixel_center_pos = self.detector_model.get_pixel_center(hit.pixel_index_x, hit.pixel_index_y)
+                
+                for mcp in hit.mc_particles:
+                    propagated_charges = charge_map.get(mcp.particle_id, [])
+                    
+                    for pc in propagated_charges:
+                        if pc.charge_type == 'electron':
+                            drift_time_ns = pc.global_time * 1e-3
+                            electron_drift_times_ps.append(pc.global_time)
+                            
+                            creation_pos = pc.local_creation_pos
+                            distance_um = np.linalg.norm(creation_pos - pixel_center_pos)
+                            
+                            if h_drift_time_vs_dist: h_drift_time_vs_dist.Fill(distance_um, drift_time_ns)
+                            if h_drift_time_spectrum: h_drift_time_spectrum.Fill(drift_time_ns)
+                            if h_drift_time_vs_depth: h_drift_time_vs_depth.Fill(creation_pos[2], drift_time_ns)
+
+                            if h_drift_time_map_xyz:
+                                relative_pos = creation_pos - pixel_center_pos
+                                h_drift_time_map_xyz.Fill(relative_pos[0], relative_pos[1], relative_pos[2], drift_time_ns)
+                            
+                            if hit is clus.seed_pixel_hit:
+                                if h_drift_time_seed: h_drift_time_seed.Fill(drift_time_ns)
+                            else:
+                                if h_drift_time_neighbor: h_drift_time_neighbor.Fill(drift_time_ns)
+
+            if electron_drift_times_ps:
+                electron_drift_times_ps.sort()
+                idx_90 = int(len(electron_drift_times_ps) * 0.9)
+                time_90p_ns = electron_drift_times_ps[idx_90] * 1e-3
+
+                buffer["electron_driftTime_90p"].append(time_90p_ns)
+                buffer["inPixel_electron_driftTime_90p"].append((in_pixel_pos[0], in_pixel_pos[1], time_90p_ns))
+                buffer["cluster_charge_vs_drift_time"].append((clus.charge, time_90p_ns))
+                buffer["cluster_size_vs_drift_time"].append((clus.size, time_90p_ns))
+
+            if (i_global + 1) % BATCH_SIZE == 0:
+                self._fill_histograms_from_buffer(buffer)
+        
         if any(buffer.values()):
             self._fill_histograms_from_buffer(buffer)
 
@@ -848,7 +754,8 @@ class AnalysisPixelModule:
             # --- 分類ルール3: DriftTime ---
             if (name.startswith("drift_time_") or 
                 name.startswith("electron_driftTime_") or 
-                name.endswith("_vs_drift_time")):
+                name.endswith("_vs_drift_time") or
+                name.endswith("_vs_depth")):
                 dir_drifttime.cd()
                 histo.Write()
                 continue
