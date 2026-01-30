@@ -1,0 +1,24 @@
+[
+  {
+    "keys": [
+      "exp_p15_gap_10v_st1000_nt600_charge",
+      "sim_p15_gap_10v"
+    ],
+    "suffix": "ClusterCharge"
+  },
+  {
+    "keys": [
+      "exp_p15_gap_10v_st1000_nt600_charge",
+      "sim_p15_gap_10v"
+    ],
+    "suffix": "ClusterSeedCharge"
+  },
+  {
+    "keys": [
+      "exp_p15_gap_10v_st1000_nt600_charge",
+      "sim_p15_gap_10v"
+    ],
+    "suffix": "ClusterSize"
+  }
+
+]

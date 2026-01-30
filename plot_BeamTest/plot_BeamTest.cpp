@@ -104,13 +104,29 @@ void plot_BeamTest::run_plots(const std::vector<PlotConfig>& configs) {
         reso_x_range = {0, 2510};
     }
 
+    std::string target_thd = "200";
+
+    // Cluster Charge の重ね書き
+    draw_overlay_histograms(
+        "Cluster Charge Comparison", 
+        Form("plot/Overlay_ClusterCharge_Thd%s.pdf", target_thd.c_str()), 
+        configs, target_thd, {0, 6000}, "clusterCharge"
+    );
+
+    // Seed Charge の重ね書き
+    draw_overlay_histograms(
+        "Seed Charge Comparison", 
+        Form("plot/Overlay_SeedCharge_Thd%s.pdf", target_thd.c_str()), 
+        configs, target_thd, {0, 4000}, "seedCharge"
+    );
+
     draw_multigraph("Resolution Comparison",
                     (x_axis_label + ";RMS [um]").c_str(),
                     "plot/Combined_resolution.pdf",
                     configs,
                     reso_graphs,
                     //{2, 10.5},
-                    {2, 8.1},
+                    {2.7, 8.1},
                     reso_x_range);
     //for(auto g : reso_graphs) delete g;
 
@@ -130,7 +146,7 @@ void plot_BeamTest::run_plots(const std::vector<PlotConfig>& configs) {
                     "plot/Combined_ClusterSize.pdf",
                     configs,
                     clsize_graphs,
-                    {0.9, 4.1},
+                    {0.9, 4.55},
                     clsize_x_range);
     //for(auto g : clsize_graphs) delete g;
 
@@ -154,7 +170,8 @@ void plot_BeamTest::draw_overlay_histograms(
     const std::string& output_filename,
     const std::vector<PlotConfig>& configs,
     const std::string& neighbor_thd_for_all,
-    const std::pair<double, double>& x_range
+    const std::pair<double, double>& x_range,
+    const std::string& target_quantity
 ) {
     canvas_->Clear();
     canvas_->SetTopMargin(0.062);
@@ -182,11 +199,11 @@ void plot_BeamTest::draw_overlay_histograms(
         }else if(config.source == DataSource::SingleChipSim) {
             NAME_ = "ce65sim202505";
             DUT_NAME_ = "CE65";
-            BEAM_INFO_ = "3 GeV/c electrons";
+            BEAM_INFO_ = "120 GeV/c pions";
         } else if(config.source == DataSource::SingleChipDrift) {
             NAME_ = "ce65driftTime";
             DUT_NAME_ = "CE65";
-            BEAM_INFO_ = "3 GeV/c electrons";
+            BEAM_INFO_ = "120 GeV/c pions";
         } else {
             LOG_ERROR.source("plot_BeamTest::run_inPixelPathAnalysis") << "No Datasource!";
             return;
@@ -244,15 +261,24 @@ void plot_BeamTest::draw_overlay_histograms(
         //     hist_name = "cluster_charge";
         // }
 
+        // std::string hist_name;
+        // if (!config.hist_path.empty()) {
+        //     hist_name = config.hist_path;
+        // } else {
+        //     // 既存ロジック
+        //     hist_name = Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str());
+        //     if(config.source == DataSource::SingleChipSim) {
+        //         hist_name = "cluster_charge";
+        //     }
+        // }
         std::string hist_name;
-        if (!config.hist_path.empty()) {
-            hist_name = config.hist_path;
+        if (target_quantity == "seedCharge") {
+            hist_name = Form("AnalysisCE65/%s/cluster/clusterSeedCharge", DUT_NAME_.c_str());
+            if(config.source == DataSource::SingleChipSim) hist_name = "seed_charge";
         } else {
-            // 既存ロジック
-            hist_name = Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str());
-            if(config.source == DataSource::SingleChipSim) {
-                hist_name = "cluster_charge";
-            }
+            // デフォルトは clusterCharge
+            hist_name = !config.hist_path.empty() ? config.hist_path : Form("AnalysisCE65/%s/cluster/clusterCharge", DUT_NAME_.c_str());
+            if(config.source == DataSource::SingleChipSim) hist_name = "cluster_charge";
         }
 
         TH1D* h_clcharge = get_merged_object<TH1D>(input_file_path, hist_name);
@@ -1026,6 +1052,125 @@ void plot_BeamTest::createAndSaveInPixelPlot(
     canvas_->SaveAs(Form("%s/%s/%s_ce65_%s.pdf", base_path.c_str(), config.name.c_str(), config.name.c_str(), chip_variation_name.c_str()));
 }
 
+// void plot_BeamTest::run_inPixelAnalysis(
+//     const std::vector<PlotConfig>& configs,
+//     const std::vector<InPixelPlotConfig>& plot_types
+// ) {
+//     LOG_STATUS.source("plot_BeamTest::run_inPixelAnalysis") << "Start run for in-pixel analysis using JSON config.";
+
+//     if(plot_types.empty()) {
+//         LOG_ERROR.source("plot_BeamTest::run_inPixelAnalysis") << "No in-pixel plot types were difined in the JSON.";
+//         return;
+//     }
+
+//     std::map<std::string, TFile*> output_files;
+//     std::map<std::string, std::map<std::string, TDirectory*>> output_dirs;
+//     gStyle->SetPalette(kViridis);
+
+//     for(const auto& config : configs) {
+//         if(config.source == DataSource::KEK202412) {
+//             NAME_ = "kek202412";
+//             DUT_NAME_ = "CE65_3";
+//             BEAM_INFO_ = "e^{-} 3GeV/c @KEK PF-AR (Dec. 2024)";
+//         } else if(config.source == DataSource::SPS202404) {
+//             NAME_ = "sps202404";
+//             DUT_NAME_ = "CE65_6";
+//             BEAM_INFO_ = "hadron 120GeV/c @CERN SPS (Apr. 2024)";
+//         } else {
+//             LOG_WARNING.source("plot_BeamTest::run_inPixelAnalysis") << "Unknown data source enum value encountered.";
+//             continue;
+//         }
+
+//         if(output_files.find(NAME_) == output_files.end()) {
+//             std::string output_filename = "plot/experimentData_inPixel_" + NAME_ + ".root";
+//             output_files[NAME_] = TFile::Open(output_filename.c_str(), "RECREATE");
+//             for(const auto& pt : plot_types) {
+//                 output_dirs[NAME_][pt.name] = output_files[NAME_]->mkdir(pt.name.c_str());
+//             }
+//         }
+
+//         std::string data_dir_path = DATA_DIR_PATH_ + NAME_ + "/";
+//         std::string plot_save_path = "plot/inPixel/" + NAME_;
+
+//         for(const auto& neighbor_thd : config.scan_values) {
+//             double seed_val = std::stod(config.seed_thd);
+//             double neighbor_val = std::stod(neighbor_thd);
+//             std::string seed_thd_for_file = (neighbor_val > seed_val) ? neighbor_thd : config.seed_thd;
+
+//             ChipParameters current_params = {config.pixel_pitch, config.chip_type, config.voltage, seed_thd_for_file, neighbor_thd};
+
+//             // std::string file_path = Form("%s%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
+//             //                              data_dir_path.c_str(),
+//             //                              NAME_.c_str(),
+//             //                              config.pixel_pitch.c_str(),
+//             //                              config.chip_type.c_str(),
+//             //                              config.voltage.c_str(),
+//             //                              seed_thd_for_file.c_str(),
+//             //                              neighbor_thd.c_str());
+
+//             // TFile* inputROOTFile = TFile::Open(file_path.c_str());
+//             // if(!inputROOTFile || inputROOTFile->IsZombie()) {
+//             //     LOG_ERROR.source("plot_BeamTest::run_inPixelAnalysis") << "Failed to open file: " << file_path;
+//             //     if(inputROOTFile) delete inputROOTFile;
+//             //     continue;
+//             // }
+
+//             std::string base_file_path = Form("%s%s_%s_%s_%sV_SeedThd%se_NeighborThd%se",
+//                                                  data_dir_path.c_str(),
+//                                                  NAME_.c_str(),
+//                                                  config.pixel_pitch.c_str(),
+//                                                  config.chip_type.c_str(),
+//                                                  config.voltage.c_str(),
+//                                                  seed_thd_for_file.c_str(),
+//                                                  neighbor_thd.c_str());
+
+//             std::string chip_variation_name = Form("%s_%s_%sV_SeedThd%se_NeighborThd%se",
+//                                                    config.pixel_pitch.c_str(),
+//                                                    config.chip_type.c_str(),
+//                                                    config.voltage.c_str(),
+//                                                    seed_thd_for_file.c_str(),
+//                                                    neighbor_thd.c_str());
+                                
+//             for(auto plot_config : plot_types) {
+//                 plot_config.hist_path = Form(plot_config.hist_path.c_str(), DUT_NAME_.c_str());
+
+//                 // TProfile2D* prof = (TProfile2D*)inputROOTFile->Get(plot_config.hist_path.c_str());
+//                 // if(!prof) {
+//                 //     LOG_WARNING.source("plot_BeamTest::run_inPixelAnalysis") << "Histogram not found: " << plot_config.hist_path << "in file " << file_path;
+//                 //     continue;
+//                 // }
+
+//                 // //TH2D* hist = prof->Projection2D();
+//                 // TH2D* hist = plot_ExperimentData::convert_toTH2D(prof);
+//                 // hist->SetDirectory(0);
+
+//                 TProfile2D* prof = get_merged_object<TProfile2D>(base_file_path, plot_config.hist_path);
+//                 if(!prof) {
+//                     LOG_WARNING.source("plot_BeamTest::run_inPixelAnalysis") << "Merged TProfile2D not found: " << plot_config.hist_path << " for base " << base_file_path;
+//                     continue;
+//                 }
+
+//                 TH2D* hist = plot_ExperimentData::convert_toTH2D(prof);
+//                 hist->SetDirectory(0);
+//                 delete prof;
+
+
+//                 createAndSaveInPixelPlot(hist,
+//                                          plot_config,
+//                                          current_params,
+//                                          BEAM_INFO_,
+//                                          output_dirs[NAME_][plot_config.name],
+//                                          plot_save_path,
+//                                          chip_variation_name);
+
+//                 delete hist;
+//             }
+//             // inputROOTFile->Close();
+//             // delete inputROOTFile;
+//         }
+//     }
+// }
+
 void plot_BeamTest::run_inPixelAnalysis(
     const std::vector<PlotConfig>& configs,
     const std::vector<InPixelPlotConfig>& plot_types
@@ -1033,7 +1178,7 @@ void plot_BeamTest::run_inPixelAnalysis(
     LOG_STATUS.source("plot_BeamTest::run_inPixelAnalysis") << "Start run for in-pixel analysis using JSON config.";
 
     if(plot_types.empty()) {
-        LOG_ERROR.source("plot_BeamTest::run_inPixelAnalysis") << "No in-pixel plot types were difined in the JSON.";
+        LOG_ERROR.source("plot_BeamTest::run_inPixelAnalysis") << "No in-pixel plot types were defined in the JSON.";
         return;
     }
 
@@ -1073,30 +1218,24 @@ void plot_BeamTest::run_inPixelAnalysis(
 
             ChipParameters current_params = {config.pixel_pitch, config.chip_type, config.voltage, seed_thd_for_file, neighbor_thd};
 
-            // std::string file_path = Form("%s%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
-            //                              data_dir_path.c_str(),
-            //                              NAME_.c_str(),
-            //                              config.pixel_pitch.c_str(),
-            //                              config.chip_type.c_str(),
-            //                              config.voltage.c_str(),
-            //                              seed_thd_for_file.c_str(),
-            //                              neighbor_thd.c_str());
-
-            // TFile* inputROOTFile = TFile::Open(file_path.c_str());
-            // if(!inputROOTFile || inputROOTFile->IsZombie()) {
-            //     LOG_ERROR.source("plot_BeamTest::run_inPixelAnalysis") << "Failed to open file: " << file_path;
-            //     if(inputROOTFile) delete inputROOTFile;
-            //     continue;
-            // }
-
-            std::string base_file_path = Form("%s%s_%s_%s_%sV_SeedThd%se_NeighborThd%se",
-                                                 data_dir_path.c_str(),
-                                                 NAME_.c_str(),
-                                                 config.pixel_pitch.c_str(),
-                                                 config.chip_type.c_str(),
-                                                 config.voltage.c_str(),
-                                                 seed_thd_for_file.c_str(),
-                                                 neighbor_thd.c_str());
+            // Use base_file_name from JSON if available
+            std::string base_file_path;
+            if (!config.base_file_name.empty()) {
+                if (config.base_file_name.find("%s") != std::string::npos) {
+                    base_file_path = Form(config.base_file_name.c_str(), seed_thd_for_file.c_str(), neighbor_thd.c_str());
+                } else {
+                    base_file_path = config.base_file_name;
+                }
+            } else {
+                base_file_path = Form("%s%s_%s_%s_%sV_SeedThd%se_NeighborThd%se",
+                                      data_dir_path.c_str(),
+                                      NAME_.c_str(),
+                                      config.pixel_pitch.c_str(),
+                                      config.chip_type.c_str(),
+                                      config.voltage.c_str(),
+                                      seed_thd_for_file.c_str(),
+                                      neighbor_thd.c_str());
+            }
 
             std::string chip_variation_name = Form("%s_%s_%sV_SeedThd%se_NeighborThd%se",
                                                    config.pixel_pitch.c_str(),
@@ -1104,19 +1243,9 @@ void plot_BeamTest::run_inPixelAnalysis(
                                                    config.voltage.c_str(),
                                                    seed_thd_for_file.c_str(),
                                                    neighbor_thd.c_str());
-                                
+                                        
             for(auto plot_config : plot_types) {
                 plot_config.hist_path = Form(plot_config.hist_path.c_str(), DUT_NAME_.c_str());
-
-                // TProfile2D* prof = (TProfile2D*)inputROOTFile->Get(plot_config.hist_path.c_str());
-                // if(!prof) {
-                //     LOG_WARNING.source("plot_BeamTest::run_inPixelAnalysis") << "Histogram not found: " << plot_config.hist_path << "in file " << file_path;
-                //     continue;
-                // }
-
-                // //TH2D* hist = prof->Projection2D();
-                // TH2D* hist = plot_ExperimentData::convert_toTH2D(prof);
-                // hist->SetDirectory(0);
 
                 TProfile2D* prof = get_merged_object<TProfile2D>(base_file_path, plot_config.hist_path);
                 if(!prof) {
@@ -1128,7 +1257,6 @@ void plot_BeamTest::run_inPixelAnalysis(
                 hist->SetDirectory(0);
                 delete prof;
 
-
                 createAndSaveInPixelPlot(hist,
                                          plot_config,
                                          current_params,
@@ -1139,8 +1267,6 @@ void plot_BeamTest::run_inPixelAnalysis(
 
                 delete hist;
             }
-            // inputROOTFile->Close();
-            // delete inputROOTFile;
         }
     }
 }
@@ -1377,6 +1503,389 @@ double plot_BeamTest::evaluate_expr(
 // }
 
 // ///////////////////////// not upgraded version
+// void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& configs, const std::vector<InPixelPlotConfig>& plot_types) {
+//     LOG_STATUS.source("plot_BeamTest::run_inPixelPathAnalysis") << "Starting in-pixel path analysis.";
+//     TCanvas* canvas_inpixel_ = new TCanvas("canvas_inpixel_", "canvas_inpixel_", 2400, 800);
+
+//     for(const auto& config : configs) {
+//         if(config.source == DataSource::KEK202412) {
+//             NAME_ = "kek202412";
+//             DUT_NAME_ = "CE65_3";
+//             BEAM_INFO_ = "@KEK PF-AR Dec. 2024, 3 GeV/c electrons";
+//         }else if(config.source == DataSource::SPS202404) {
+//             NAME_ = "sps202404";
+//             DUT_NAME_ = "CE65_6";
+//             BEAM_INFO_ = "@CERN SPS Apr. 2024, 120 GeV/c hadrons";
+//         }else if(config.source == DataSource::SingleChipSim) {
+//             NAME_ = "ce65sim202505";
+//             DUT_NAME_ = "CE65";
+//             BEAM_INFO_ = "3 GeV/c electrons";
+//         } else if(config.source == DataSource::SingleChipDrift) {
+//             NAME_ = "ce65driftTime";
+//             DUT_NAME_ = "CE65";
+//             BEAM_INFO_ = "3 GeV/c electrons";
+//         } else {
+//             LOG_ERROR.source("plot_BeamTest::run_inPixelPathAnalysis") << "No Datasource!";
+//             return;
+//         }
+
+//         LOG_STATUS.source("plot_BeamTest::run_inPixelPathAnalysis") << "Analysis is starting for " << NAME_;
+
+//         if(config.scan_values.empty()) {
+//             LOG_ERROR.source("plot_BeamTest::run_inPixelPathAnalysis") << "No scan_values found in config.";
+//             return;
+//         }
+//         //const std::string& neighbor_thd = config.scan_values[0];
+//         for(const auto& neighbor_thd : config.scan_values) {
+//             double seed_val = std::stod(config.seed_thd);
+//             double neighbor_val = std::stod(neighbor_thd);
+//             std::string seed_thd_for_file = (neighbor_val > seed_val) ? neighbor_thd : config.seed_thd;
+
+//             // std::string file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
+//             //                             DATA_DIR_PATH_.c_str(),
+//             //                             NAME_.c_str(),
+//             //                             NAME_.c_str(),
+//             //                             config.pixel_pitch.c_str(),
+//             //                             config.chip_type.c_str(),
+//             //                             config.voltage.c_str(),
+//             //                             seed_thd_for_file.c_str(),
+//             //                             neighbor_thd.c_str());
+                                
+//             // TFile* inputROOTFile = TFile::Open(file_path.c_str());
+//             // if(!inputROOTFile || inputROOTFile->IsZombie()) {
+//             //     LOG_ERROR.source("plot_BeamTest::run_inPixelPathAnalysis") << "Failed to open file: " << file_path;
+//             //     if(inputROOTFile) delete inputROOTFile;
+//             //     return;
+//             // }
+
+//             if(config.source == DataSource::SingleChipSim || config.source == DataSource::SingleChipDrift) {
+//                 seed_thd_for_file = "0";
+//             }
+
+//             std::string base_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se",
+//                                               DATA_DIR_PATH_.c_str(),
+//                                               NAME_.c_str(),
+//                                               NAME_.c_str(),
+//                                               config.pixel_pitch.c_str(),
+//                                               config.chip_type.c_str(),
+//                                               config.voltage.c_str(),
+//                                               seed_thd_for_file.c_str(),
+//                                               neighbor_thd.c_str());
+            
+//             // if(config.source == DataSource::SingleChipSim) {
+//             //     base_file_path = Form("%s%s/n/ce65_p%s_%s_Thd%se_e3GeV_masetti",
+//             //                           DATA_DIR_PATH_.c_str(),
+//             //                           NAME_.c_str(),
+//             //                           config.voltage.c_str(),
+//             //                           config.pixel_pitch.c_str(),
+//             //                           config.chip_type.c_str(),
+//             //                           neighbor_thd.c_str());
+//             // }
+
+//             for(const auto plot_type : plot_types) {
+//                 LOG_INFO.source("plot_BeamTest::run_inPixelPathAnalysis") << "Run for " << plot_type.name;
+
+//                 std::string hist_path = Form(plot_type.hist_path.c_str(), DUT_NAME_.c_str());
+                
+//                 // TProfile2D* prof = (TProfile2D*)inputROOTFile->Get(hist_path.c_str());
+//                 // if(!prof) {
+//                 //     LOG_ERROR.source("plot_BeamTest::run_inPixelPathAnalysis") << "Histogram not found: " << hist_path << " in " << file_path;
+//                 //     inputROOTFile->Close();
+//                 //     delete inputROOTFile;
+//                 //     return;
+//                 // }
+
+//                 TProfile2D* prof = get_merged_object<TProfile2D>(base_file_path, hist_path);
+//                 if(!prof) {
+//                     LOG_WARNING.source("plot_BeamTest::run_inPixelAnalysis") << "Merged TProfile2D not found: " << hist_path << " for base " << base_file_path;
+//                     continue;
+//                 }
+
+//                 TH2D* h_inpixel = plot_ExperimentData::convert_toTH2D(prof);
+//                 h_inpixel->Scale(plot_type.scale_factor);
+//                 h_inpixel->SetDirectory(0);
+//                 delete prof;
+
+//                 canvas_inpixel_->Clear();
+
+//                 // TH2D* h_inpixel = plot_ExperimentData::convert_toTH2D(prof);
+//                 // h_inpixel->Scale(plot_type.scale_factor);
+//                 // h_inpixel->SetDirectory(0);
+//                 // inputROOTFile->Close();
+//                 // delete inputROOTFile;
+
+//                 // TCanvas* canvas_inpixel_ = new TCanvas("canvas_inpixel_", "canvas_inpixel_", 1600, 700);
+
+//                 TPad* pad_2d = new TPad("pad_map", "pad_map", 0.05, 0.0, 0.45, 1.0);
+//                 pad_2d->SetMargin(0.10, 0.25, 0.12, 0.1);
+//                 pad_2d->Draw();
+
+//                 TPad* pad_1d = new TPad("pad_1d", "pad_1d", 0.45, 0.0, 0.95, 1.0);
+//                 pad_1d->SetMargin(0.15, 0.2, 0.12, 0.1);
+//                 pad_1d->SetGridy();
+//                 pad_1d->Draw();
+
+//                 pad_2d->cd();
+//                 gStyle->SetPalette(kViridis);
+//                 h_inpixel->SetStats(0);
+//                 //h_inpixel->SetTitle(";In-pixel track intercept x [um];In-pixel track intercept y [um];#sqrt{#Delta x^{2} + #Delta y^{2}} (um)");
+//                 h_inpixel->SetTitle(Form(";In-pixel track intercept x [um];In-pixel track intercept y [um];%s", plot_type.z_axis_title.c_str()));
+//                 //h_inpixel->GetZaxis()->SetTitleOffset(1.2);
+//                 //h_inpixel->GetYaxis()->SetLimits(3.5,9.5);
+//                 h_inpixel->GetZaxis()->SetRangeUser(plot_type.z_min, plot_type.z_max);
+//                 h_inpixel->GetXaxis()->SetTitleSize(0.06);
+//                 h_inpixel->GetXaxis()->SetLabelSize(0.04);
+//                 h_inpixel->GetXaxis()->SetTitleOffset(0.7);
+//                 h_inpixel->GetYaxis()->SetTitleSize(0.06);
+//                 h_inpixel->GetYaxis()->SetLabelSize(0.04);
+//                 h_inpixel->GetYaxis()->SetTitleOffset(0.6);
+//                 h_inpixel->GetXaxis()->SetTitleSize(0.06);
+//                 h_inpixel->GetXaxis()->SetLabelSize(0.04);
+//                 h_inpixel->GetXaxis()->SetTitleOffset(0.7);
+//                 h_inpixel->GetZaxis()->SetTitleSize(0.06);
+//                 h_inpixel->GetZaxis()->SetLabelSize(0.04);
+//                 h_inpixel->GetZaxis()->SetTitleOffset(0.95);
+//                 h_inpixel->GetXaxis()->SetTitleFont(42);
+//                 h_inpixel->GetYaxis()->SetTitleFont(42);
+//                 h_inpixel->GetZaxis()->SetTitleFont(42);
+//                 h_inpixel->GetXaxis()->SetLabelFont(42);
+//                 h_inpixel->GetYaxis()->SetLabelFont(42);
+//                 h_inpixel->GetZaxis()->SetLabelFont(42);
+//                 h_inpixel->Draw("COLZ");
+
+//                 gPad->Update();
+                
+//                 TPaletteAxis *palette = (TPaletteAxis*)h_inpixel->GetListOfFunctions()->FindObject("palette");
+//                 if(palette) {
+//                     double plot_right_edge = 1 - gPad->GetRightMargin();
+
+//                     double gap = 0.025;
+//                     double width = 0.04;
+
+//                     palette->SetX1NDC(plot_right_edge + gap);
+//                     palette->SetX2NDC(plot_right_edge + gap + width);
+
+//                     gPad->Modified();
+//                     gPad->Update();
+//                 }
+
+//                 TLegend* box1 = new TLegend(0.12, 0.14, 0.60, 0.21);
+//                 box1->SetFillColorAlpha(kWhite, 0.4);
+//                 //box1->SetFillStyle(3001);
+//                 box1->SetLineWidth(0);
+//                 box1->Draw();
+
+//                 TLatex info_latex;
+//                 info_latex.SetTextFont(42);
+//                 info_latex.SetTextSize(0.03);
+//                 info_latex.DrawLatexNDC(0.13, 0.18, BEAM_INFO_.c_str());
+//                 info_latex.DrawLatexNDC(0.13, 0.15, Form("Plotted on %s", TIME_.c_str()));
+
+//                 double pitch = std::stod(config.pixel_pitch);
+//                 double half_pitch = pitch / 2.0;
+
+//                 //double inset = 0.00000001;
+//                 double bin_width_x = h_inpixel->GetXaxis()->GetBinWidth(1);
+//                 double bin_width_y = h_inpixel->GetYaxis()->GetBinWidth(1);
+
+//                 double inset_x = 0.1 * bin_width_x;
+//                 double inset_y = 0.1 * bin_width_y;
+
+//                 double pA[2] = {0., 0.};
+//                 double pB[2] = {0., half_pitch - inset_y};
+//                 double pC[2] = {half_pitch - inset_x, half_pitch - inset_y};
+//                 double pD[2] = {half_pitch - inset_x, 0.};
+
+//                 // TLine* line_AB = new TLine(pA[0], pA[1], pB[0], pB[1]);
+//                 // TLine* line_BC = new TLine(pB[0], pB[1], pC[0], pC[1]);
+//                 // TLine* line_AD = new TLine(pA[0], pA[1], pD[0], pD[1]);
+//                 // TLine* line_AC = new TLine(pA[0], pA[1], pC[0], pC[1]);
+//                 double arrowSize = 0.015;
+                
+//                 TArrow* line_AB = new TArrow(pA[0], pA[1], pB[0], pB[1], arrowSize, ">");
+//                 TArrow* line_BC = new TArrow(pB[0], pB[1], pC[0], pC[1], arrowSize, ">");
+//                 TArrow* line_CA = new TArrow(pC[0], pC[1], pA[0], pA[1], arrowSize, ">");
+//                 TArrow* line_AD = new TArrow(pA[0], pA[1], pD[0], pD[1], arrowSize, ">");
+
+//                 TMarker* markerA = new TMarker(pA[0], pA[1], 24);
+//                 TMarker* markerB = new TMarker(pB[0], pB[1], 24);
+//                 TMarker* markerC = new TMarker(pC[0], pC[1], 24);
+//                 TMarker* markerD = new TMarker(pD[0], pD[1], 24);
+
+//                 std::vector<TMarker*> markers = {markerA, markerB, markerC, markerD};
+
+//                 //std::vector<TLine*> lines = {line_AB, line_BC, line_AD, line_AC};
+//                 std::vector<TArrow*> lines = {line_AB, line_BC, line_CA, line_AD};
+//                 std::vector<Color_t> colors = {kOrange+7, kPink-3, kRed+1, kViolet-2};
+
+//                 for(size_t i=0; i<markers.size(); ++i) {
+//                     markers[i]->SetMarkerSize(3.5);
+//                     markers[i]->SetMarkerColor(colors[i]);
+//                     markers[i]->Draw("same");
+//                 }
+
+//                 for(size_t i=0; i<lines.size(); ++i) {
+//                     lines[i]->SetLineColorAlpha(colors[i], 0.8);
+//                     lines[i]->SetLineWidth(3);
+//                     lines[i]->SetLineStyle(1);
+//                     lines[i]->Draw();
+//                 }
+
+//                 TLatex label_latex;
+//                 label_latex.SetTextSize(0.06);
+//                 label_latex.SetTextColor(kBlack);
+//                 label_latex.SetTextAlign(22);
+//                 label_latex.DrawLatex(pA[0], pA[1] - 1.0, "A");
+//                 label_latex.DrawLatex(pB[0], pB[1] + 1.0, "B");
+//                 label_latex.DrawLatex(pC[0], pC[1] + 1.0, "C");
+//                 label_latex.DrawLatex(pD[0], pD[1] - 1.0, "D");
+
+//                 auto extract_data_along_path = 
+//                     [&](TH2D* hist, double x1, double y1, double x2, double y2, double dist_offset) ->TGraphErrors* {
+//                     std::vector<double> dist, val, err_dist, err_val;
+
+//                     TAxis* xAxis = hist->GetXaxis();
+//                     TAxis* yAxis = hist->GetYaxis();
+
+//                     int n_steps = 100;
+//                     for(int i=0; i<=n_steps; ++i) {
+//                         double t = (double)i / n_steps;
+//                         double current_x = x1 + t * (x2 - x1);
+//                         double current_y = y1 + t * (y2 - y1);
+
+//                         int bin = hist->FindBin(current_x, current_y);
+
+//                         if(i > 0 && hist->FindBin(x1 + (double)(i-1)/n_steps * (x2-x1), y1 + (double)(i-1)/n_steps * (y2-y1)) == bin) {
+//                             continue;
+//                         }
+
+//                         double current_dist = dist_offset + std::sqrt(pow(current_x - x1, 2) + pow(current_y - y1, 2));
+
+//                         dist.push_back(current_dist);
+//                         val.push_back(hist->GetBinContent(bin));
+//                         err_dist.push_back(0);
+//                         err_val.push_back(hist->GetBinError(bin));
+//                     }
+
+//                     if(dist.empty()) return new TGraphErrors();
+//                     return new TGraphErrors(dist.size(), dist.data(), val.data(), err_dist.data(), err_val.data());
+//                 };
+
+//                 double dist_AB = std::sqrt(pow(pB[0] - pA[0], 2) + pow(pB[1] - pA[1], 2));
+//                 double dist_BC = std::sqrt(pow(pB[0] - pC[0], 2) + pow(pB[1] - pC[1], 2));
+//                 double dist_AC = std::sqrt(pow(pA[0] - pC[0], 2) + pow(pA[1] - pC[1], 2));
+//                 double dist_AD = std::sqrt(pow(pA[0] - pD[0], 2) + pow(pA[1] - pD[1], 2));
+//                 // A-B-C-A-D
+//                 TGraphErrors* g_path_AB = extract_data_along_path(h_inpixel, pA[0], pA[1], pB[0], pB[1], 0.0);
+//                 TGraphErrors* g_path_BC = extract_data_along_path(h_inpixel, pB[0], pB[1], pC[0], pC[1], dist_AB);
+//                 TGraphErrors* g_path_CA = extract_data_along_path(h_inpixel, pC[0], pC[1], pA[0], pA[1], dist_AB + dist_BC);
+//                 TGraphErrors* g_path_AD = extract_data_along_path(h_inpixel, pA[0], pA[1], pD[0], pD[1], dist_AB + dist_AC + dist_BC);
+
+//                 pad_1d->cd();
+//                 TMultiGraph* mg_path = new TMultiGraph();
+//                 //mg_path->SetTitle(Form(";Distance along the path [um];#sqrt{#Delta x^{2} + #Delta y^{2}} [um]"));
+//                 mg_path->SetTitle(Form(";Distance along the path [um];%s", plot_type.z_axis_title.c_str()));
+                
+//                 std::vector<double> x_coords = {
+//                     0.0, // A
+//                     dist_AB, // B
+//                     dist_AB + dist_BC, // C
+//                     dist_AB + dist_BC + dist_AC, // A (return)
+//                     dist_AB + dist_BC + dist_AC + dist_AD // D
+//                 };
+
+//                 std::vector<std::string> point_labels = {"A", "B", "C", "A", "D"};
+//                 TLine v_line;
+//                 v_line.SetLineStyle(2);
+//                 v_line.SetLineColor(kGray+2);
+//                 v_line.SetLineWidth(1);
+
+//                 TLatex label;
+//                 label.SetTextSize(0.04);
+//                 label.SetTextAlign(23);
+
+//                 // for(size_t i=0; i<x_coords.size(); i++) {
+//                 //     v_line.DrawLine(x_coords[i], y_min_range, x_coords[i], y_max_range);
+//                 //     label.DrawLatex(x_coords[i], y_max_range, point_labels[i].c_str());
+//                 // }
+
+//                 std::vector<TGraphErrors*> graphs = {g_path_AB, g_path_BC, g_path_CA, g_path_AD};
+//                 std::vector<std::string> labels = {"A #rightarrow B", "B #rightarrow C", "C #rightarrow A", "A #rightarrow D"};
+
+//                 for(size_t i=0; i<graphs.size(); ++i) {
+//                     graphs[i]->SetLineColor(colors[i]);
+//                     graphs[i]->SetLineWidth(2);
+
+//                     TGraphErrors* g_err_band = (TGraphErrors*)graphs[i]->Clone();
+//                     g_err_band->SetFillColorAlpha(colors[i], 0.35);
+//                     g_err_band->SetFillStyle(1001); // Solid fill
+//                     mg_path->Add(g_err_band, "3");
+
+//                     mg_path->Add(graphs[i], "L");
+//                 }
+
+//                 mg_path->Draw("A");
+//                 // mg_path->GetYaxis()->SetRangeUser(0, 9);
+//                 // mg_path->GetXaxis()->SetTitleOffset(1.1);
+//                 // mg_path->GetYaxis()->SetTitleOffset(1.3);
+//                 //mg_path->GetYaxis()->SetLimits(y_min_range, y_max_range);
+//                 mg_path->GetYaxis()->SetRangeUser(plot_type.z_min, plot_type.z_max);
+//                 mg_path->GetXaxis()->SetTitleSize(0.06);
+//                 mg_path->GetXaxis()->SetLabelSize(0.04);
+//                 mg_path->GetXaxis()->SetTitleOffset(0.7);
+//                 mg_path->GetYaxis()->SetTitleSize(0.06);
+//                 mg_path->GetYaxis()->SetLabelSize(0.04);
+//                 mg_path->GetYaxis()->SetTitleOffset(0.8);
+//                 mg_path->GetXaxis()->SetTitleFont(42);
+//                 mg_path->GetYaxis()->SetTitleFont(42);
+//                 mg_path->GetXaxis()->SetLabelFont(42);
+//                 mg_path->GetYaxis()->SetLabelFont(42);
+
+//                 TLegend* legend_mg = new TLegend(0.8, 0.3, 1.0, 0.6);
+//                 legend_mg->SetFillStyle(0);
+//                 legend_mg->SetTextSize(0.04);
+//                 legend_mg->SetBorderSize(0);
+//                 for(size_t i=0; i<labels.size(); ++i) {
+//                     legend_mg->AddEntry(graphs[i], labels[i].c_str(), "lf");
+//                 }
+//                 legend_mg->Draw();
+
+//                 // double y_line_min = mg_path->GetYaxis()->GetXmin();
+//                 // double y_line_max = mg_path->GetYaxis()->GetXmax();
+//                 for(size_t i=0; i<x_coords.size(); i++) {
+//                     v_line.DrawLine(x_coords[i], plot_type.z_min, x_coords[i], plot_type.z_max);
+//                     label.DrawLatex(x_coords[i], plot_type.z_max*1.05, point_labels[i].c_str());
+//                 }
+
+//                 ChipParameters params = {config.pixel_pitch, config.chip_type, config.voltage, seed_thd_for_file, neighbor_thd};
+//                 drawChipInfo(params, 0.81, 0.88);
+
+//                 std::string safe_legend = config.legend_label;
+//                 std::replace(safe_legend.begin(), safe_legend.end(), ' ', '_');
+//                 std::replace(safe_legend.begin(), safe_legend.end(), ',', '_'); 
+
+//                 std::string output_filename = Form("plot/inPixel/%s/%s/%s_%s_inPixelPath_%s_%s_%sV_Seed%s_Neighbor%s.pdf",
+//                                                 NAME_.c_str(),
+//                                                 plot_type.name.c_str(),
+//                                                 NAME_.c_str(),
+//                                                 plot_type.name.c_str(),
+//                                                 config.pixel_pitch.c_str(),
+//                                                 config.chip_type.c_str(),
+//                                                 config.voltage.c_str(),
+//                                                 seed_thd_for_file.c_str(),
+//                                                 neighbor_thd.c_str());
+
+//                 TString dir_path = gSystem->DirName(output_filename.c_str());
+//                 gSystem->mkdir(dir_path, kTRUE);
+//                 canvas_inpixel_->SaveAs(output_filename.c_str());
+//             }
+
+//             // inputROOTFile->Close();
+//             // delete inputROOTFile;
+//         }
+//     }
+// }
+
 void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& configs, const std::vector<InPixelPlotConfig>& plot_types) {
     LOG_STATUS.source("plot_BeamTest::run_inPixelPathAnalysis") << "Starting in-pixel path analysis.";
     TCanvas* canvas_inpixel_ = new TCanvas("canvas_inpixel_", "canvas_inpixel_", 2400, 800);
@@ -1391,13 +1900,13 @@ void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& confi
             DUT_NAME_ = "CE65_6";
             BEAM_INFO_ = "@CERN SPS Apr. 2024, 120 GeV/c hadrons";
         }else if(config.source == DataSource::SingleChipSim) {
-            NAME_ = "ce65sim202505";
+            NAME_ = "ce65inPixel2601";
             DUT_NAME_ = "CE65";
-            BEAM_INFO_ = "3 GeV/c electrons";
+            BEAM_INFO_ = "120 GeV/c pions";
         } else if(config.source == DataSource::SingleChipDrift) {
             NAME_ = "ce65driftTime";
             DUT_NAME_ = "CE65";
-            BEAM_INFO_ = "3 GeV/c electrons";
+            BEAM_INFO_ = "120 GeV/c pions";
         } else {
             LOG_ERROR.source("plot_BeamTest::run_inPixelPathAnalysis") << "No Datasource!";
             return;
@@ -1409,66 +1918,41 @@ void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& confi
             LOG_ERROR.source("plot_BeamTest::run_inPixelPathAnalysis") << "No scan_values found in config.";
             return;
         }
-        //const std::string& neighbor_thd = config.scan_values[0];
+
         for(const auto& neighbor_thd : config.scan_values) {
             double seed_val = std::stod(config.seed_thd);
             double neighbor_val = std::stod(neighbor_thd);
             std::string seed_thd_for_file = (neighbor_val > seed_val) ? neighbor_thd : config.seed_thd;
 
-            // std::string file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se.root",
-            //                             DATA_DIR_PATH_.c_str(),
-            //                             NAME_.c_str(),
-            //                             NAME_.c_str(),
-            //                             config.pixel_pitch.c_str(),
-            //                             config.chip_type.c_str(),
-            //                             config.voltage.c_str(),
-            //                             seed_thd_for_file.c_str(),
-            //                             neighbor_thd.c_str());
-                                
-            // TFile* inputROOTFile = TFile::Open(file_path.c_str());
-            // if(!inputROOTFile || inputROOTFile->IsZombie()) {
-            //     LOG_ERROR.source("plot_BeamTest::run_inPixelPathAnalysis") << "Failed to open file: " << file_path;
-            //     if(inputROOTFile) delete inputROOTFile;
-            //     return;
-            // }
-
             if(config.source == DataSource::SingleChipSim || config.source == DataSource::SingleChipDrift) {
-                seed_thd_for_file = "0";
+                //seed_thd_for_file = "0";
             }
 
-            std::string base_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se",
-                                              DATA_DIR_PATH_.c_str(),
-                                              NAME_.c_str(),
-                                              NAME_.c_str(),
-                                              config.pixel_pitch.c_str(),
-                                              config.chip_type.c_str(),
-                                              config.voltage.c_str(),
-                                              seed_thd_for_file.c_str(),
-                                              neighbor_thd.c_str());
+            // Use base_file_name from JSON if available
+            std::string base_file_path;
+            if (!config.base_file_name.empty()) {
+                if (config.base_file_name.find("%s") != std::string::npos) {
+                    base_file_path = Form(config.base_file_name.c_str(), seed_thd_for_file.c_str(), neighbor_thd.c_str());
+                } else {
+                    base_file_path = config.base_file_name;
+                }
+            } else {
+                base_file_path = Form("%s%s/%s_%s_%s_%sV_SeedThd%se_NeighborThd%se",
+                                      DATA_DIR_PATH_.c_str(),
+                                      NAME_.c_str(),
+                                      NAME_.c_str(),
+                                      config.pixel_pitch.c_str(),
+                                      config.chip_type.c_str(),
+                                      config.voltage.c_str(),
+                                      seed_thd_for_file.c_str(),
+                                      neighbor_thd.c_str());
+            }
             
-            // if(config.source == DataSource::SingleChipSim) {
-            //     base_file_path = Form("%s%s/n/ce65_p%s_%s_Thd%se_e3GeV_masetti",
-            //                           DATA_DIR_PATH_.c_str(),
-            //                           NAME_.c_str(),
-            //                           config.voltage.c_str(),
-            //                           config.pixel_pitch.c_str(),
-            //                           config.chip_type.c_str(),
-            //                           neighbor_thd.c_str());
-            // }
-
             for(const auto plot_type : plot_types) {
                 LOG_INFO.source("plot_BeamTest::run_inPixelPathAnalysis") << "Run for " << plot_type.name;
 
                 std::string hist_path = Form(plot_type.hist_path.c_str(), DUT_NAME_.c_str());
                 
-                // TProfile2D* prof = (TProfile2D*)inputROOTFile->Get(hist_path.c_str());
-                // if(!prof) {
-                //     LOG_ERROR.source("plot_BeamTest::run_inPixelPathAnalysis") << "Histogram not found: " << hist_path << " in " << file_path;
-                //     inputROOTFile->Close();
-                //     delete inputROOTFile;
-                //     return;
-                // }
-
                 TProfile2D* prof = get_merged_object<TProfile2D>(base_file_path, hist_path);
                 if(!prof) {
                     LOG_WARNING.source("plot_BeamTest::run_inPixelAnalysis") << "Merged TProfile2D not found: " << hist_path << " for base " << base_file_path;
@@ -1480,15 +1964,10 @@ void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& confi
                 h_inpixel->SetDirectory(0);
                 delete prof;
 
+                h_inpixel->Rebin2D(2, 2);
+                h_inpixel->Scale(1.0 / 4);
+
                 canvas_inpixel_->Clear();
-
-                // TH2D* h_inpixel = plot_ExperimentData::convert_toTH2D(prof);
-                // h_inpixel->Scale(plot_type.scale_factor);
-                // h_inpixel->SetDirectory(0);
-                // inputROOTFile->Close();
-                // delete inputROOTFile;
-
-                // TCanvas* canvas_inpixel_ = new TCanvas("canvas_inpixel_", "canvas_inpixel_", 1600, 700);
 
                 TPad* pad_2d = new TPad("pad_map", "pad_map", 0.05, 0.0, 0.45, 1.0);
                 pad_2d->SetMargin(0.10, 0.25, 0.12, 0.1);
@@ -1502,10 +1981,7 @@ void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& confi
                 pad_2d->cd();
                 gStyle->SetPalette(kViridis);
                 h_inpixel->SetStats(0);
-                //h_inpixel->SetTitle(";In-pixel track intercept x [um];In-pixel track intercept y [um];#sqrt{#Delta x^{2} + #Delta y^{2}} (um)");
                 h_inpixel->SetTitle(Form(";In-pixel track intercept x [um];In-pixel track intercept y [um];%s", plot_type.z_axis_title.c_str()));
-                //h_inpixel->GetZaxis()->SetTitleOffset(1.2);
-                //h_inpixel->GetYaxis()->SetLimits(3.5,9.5);
                 h_inpixel->GetZaxis()->SetRangeUser(plot_type.z_min, plot_type.z_max);
                 h_inpixel->GetXaxis()->SetTitleSize(0.06);
                 h_inpixel->GetXaxis()->SetLabelSize(0.04);
@@ -1513,18 +1989,9 @@ void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& confi
                 h_inpixel->GetYaxis()->SetTitleSize(0.06);
                 h_inpixel->GetYaxis()->SetLabelSize(0.04);
                 h_inpixel->GetYaxis()->SetTitleOffset(0.6);
-                h_inpixel->GetXaxis()->SetTitleSize(0.06);
-                h_inpixel->GetXaxis()->SetLabelSize(0.04);
-                h_inpixel->GetXaxis()->SetTitleOffset(0.7);
                 h_inpixel->GetZaxis()->SetTitleSize(0.06);
                 h_inpixel->GetZaxis()->SetLabelSize(0.04);
                 h_inpixel->GetZaxis()->SetTitleOffset(0.95);
-                h_inpixel->GetXaxis()->SetTitleFont(42);
-                h_inpixel->GetYaxis()->SetTitleFont(42);
-                h_inpixel->GetZaxis()->SetTitleFont(42);
-                h_inpixel->GetXaxis()->SetLabelFont(42);
-                h_inpixel->GetYaxis()->SetLabelFont(42);
-                h_inpixel->GetZaxis()->SetLabelFont(42);
                 h_inpixel->Draw("COLZ");
 
                 gPad->Update();
@@ -1532,20 +1999,16 @@ void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& confi
                 TPaletteAxis *palette = (TPaletteAxis*)h_inpixel->GetListOfFunctions()->FindObject("palette");
                 if(palette) {
                     double plot_right_edge = 1 - gPad->GetRightMargin();
-
                     double gap = 0.025;
                     double width = 0.04;
-
                     palette->SetX1NDC(plot_right_edge + gap);
                     palette->SetX2NDC(plot_right_edge + gap + width);
-
                     gPad->Modified();
                     gPad->Update();
                 }
 
                 TLegend* box1 = new TLegend(0.12, 0.14, 0.60, 0.21);
                 box1->SetFillColorAlpha(kWhite, 0.4);
-                //box1->SetFillStyle(3001);
                 box1->SetLineWidth(0);
                 box1->Draw();
 
@@ -1557,11 +2020,8 @@ void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& confi
 
                 double pitch = std::stod(config.pixel_pitch);
                 double half_pitch = pitch / 2.0;
-
-                //double inset = 0.00000001;
                 double bin_width_x = h_inpixel->GetXaxis()->GetBinWidth(1);
                 double bin_width_y = h_inpixel->GetYaxis()->GetBinWidth(1);
-
                 double inset_x = 0.1 * bin_width_x;
                 double inset_y = 0.1 * bin_width_y;
 
@@ -1570,12 +2030,7 @@ void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& confi
                 double pC[2] = {half_pitch - inset_x, half_pitch - inset_y};
                 double pD[2] = {half_pitch - inset_x, 0.};
 
-                // TLine* line_AB = new TLine(pA[0], pA[1], pB[0], pB[1]);
-                // TLine* line_BC = new TLine(pB[0], pB[1], pC[0], pC[1]);
-                // TLine* line_AD = new TLine(pA[0], pA[1], pD[0], pD[1]);
-                // TLine* line_AC = new TLine(pA[0], pA[1], pC[0], pC[1]);
                 double arrowSize = 0.015;
-                
                 TArrow* line_AB = new TArrow(pA[0], pA[1], pB[0], pB[1], arrowSize, ">");
                 TArrow* line_BC = new TArrow(pB[0], pB[1], pC[0], pC[1], arrowSize, ">");
                 TArrow* line_CA = new TArrow(pC[0], pC[1], pA[0], pA[1], arrowSize, ">");
@@ -1587,8 +2042,6 @@ void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& confi
                 TMarker* markerD = new TMarker(pD[0], pD[1], 24);
 
                 std::vector<TMarker*> markers = {markerA, markerB, markerC, markerD};
-
-                //std::vector<TLine*> lines = {line_AB, line_BC, line_AD, line_AC};
                 std::vector<TArrow*> lines = {line_AB, line_BC, line_CA, line_AD};
                 std::vector<Color_t> colors = {kOrange+7, kPink-3, kRed+1, kViolet-2};
 
@@ -1601,13 +2054,11 @@ void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& confi
                 for(size_t i=0; i<lines.size(); ++i) {
                     lines[i]->SetLineColorAlpha(colors[i], 0.8);
                     lines[i]->SetLineWidth(3);
-                    lines[i]->SetLineStyle(1);
                     lines[i]->Draw();
                 }
 
                 TLatex label_latex;
                 label_latex.SetTextSize(0.06);
-                label_latex.SetTextColor(kBlack);
                 label_latex.SetTextAlign(22);
                 label_latex.DrawLatex(pA[0], pA[1] - 1.0, "A");
                 label_latex.DrawLatex(pB[0], pB[1] + 1.0, "B");
@@ -1617,31 +2068,19 @@ void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& confi
                 auto extract_data_along_path = 
                     [&](TH2D* hist, double x1, double y1, double x2, double y2, double dist_offset) ->TGraphErrors* {
                     std::vector<double> dist, val, err_dist, err_val;
-
-                    TAxis* xAxis = hist->GetXaxis();
-                    TAxis* yAxis = hist->GetYaxis();
-
                     int n_steps = 100;
                     for(int i=0; i<=n_steps; ++i) {
                         double t = (double)i / n_steps;
                         double current_x = x1 + t * (x2 - x1);
                         double current_y = y1 + t * (y2 - y1);
-
                         int bin = hist->FindBin(current_x, current_y);
-
-                        if(i > 0 && hist->FindBin(x1 + (double)(i-1)/n_steps * (x2-x1), y1 + (double)(i-1)/n_steps * (y2-y1)) == bin) {
-                            continue;
-                        }
-
+                        if(i > 0 && hist->FindBin(x1 + (double)(i-1)/n_steps * (x2-x1), y1 + (double)(i-1)/n_steps * (y2-y1)) == bin) continue;
                         double current_dist = dist_offset + std::sqrt(pow(current_x - x1, 2) + pow(current_y - y1, 2));
-
                         dist.push_back(current_dist);
                         val.push_back(hist->GetBinContent(bin));
                         err_dist.push_back(0);
                         err_val.push_back(hist->GetBinError(bin));
                     }
-
-                    if(dist.empty()) return new TGraphErrors();
                     return new TGraphErrors(dist.size(), dist.data(), val.data(), err_dist.data(), err_val.data());
                 };
 
@@ -1649,7 +2088,7 @@ void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& confi
                 double dist_BC = std::sqrt(pow(pB[0] - pC[0], 2) + pow(pB[1] - pC[1], 2));
                 double dist_AC = std::sqrt(pow(pA[0] - pC[0], 2) + pow(pA[1] - pC[1], 2));
                 double dist_AD = std::sqrt(pow(pA[0] - pD[0], 2) + pow(pA[1] - pD[1], 2));
-                // A-B-C-A-D
+
                 TGraphErrors* g_path_AB = extract_data_along_path(h_inpixel, pA[0], pA[1], pB[0], pB[1], 0.0);
                 TGraphErrors* g_path_BC = extract_data_along_path(h_inpixel, pB[0], pB[1], pC[0], pC[1], dist_AB);
                 TGraphErrors* g_path_CA = extract_data_along_path(h_inpixel, pC[0], pC[1], pA[0], pA[1], dist_AB + dist_BC);
@@ -1657,75 +2096,41 @@ void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& confi
 
                 pad_1d->cd();
                 TMultiGraph* mg_path = new TMultiGraph();
-                //mg_path->SetTitle(Form(";Distance along the path [um];#sqrt{#Delta x^{2} + #Delta y^{2}} [um]"));
                 mg_path->SetTitle(Form(";Distance along the path [um];%s", plot_type.z_axis_title.c_str()));
                 
-                std::vector<double> x_coords = {
-                    0.0, // A
-                    dist_AB, // B
-                    dist_AB + dist_BC, // C
-                    dist_AB + dist_BC + dist_AC, // A (return)
-                    dist_AB + dist_BC + dist_AC + dist_AD // D
-                };
-
+                std::vector<double> x_coords = {0.0, dist_AB, dist_AB + dist_BC, dist_AB + dist_BC + dist_AC, dist_AB + dist_BC + dist_AC + dist_AD};
                 std::vector<std::string> point_labels = {"A", "B", "C", "A", "D"};
-                TLine v_line;
-                v_line.SetLineStyle(2);
-                v_line.SetLineColor(kGray+2);
-                v_line.SetLineWidth(1);
-
-                TLatex label;
-                label.SetTextSize(0.04);
-                label.SetTextAlign(23);
-
-                // for(size_t i=0; i<x_coords.size(); i++) {
-                //     v_line.DrawLine(x_coords[i], y_min_range, x_coords[i], y_max_range);
-                //     label.DrawLatex(x_coords[i], y_max_range, point_labels[i].c_str());
-                // }
-
+                
                 std::vector<TGraphErrors*> graphs = {g_path_AB, g_path_BC, g_path_CA, g_path_AD};
                 std::vector<std::string> labels = {"A #rightarrow B", "B #rightarrow C", "C #rightarrow A", "A #rightarrow D"};
 
                 for(size_t i=0; i<graphs.size(); ++i) {
                     graphs[i]->SetLineColor(colors[i]);
                     graphs[i]->SetLineWidth(2);
-
                     TGraphErrors* g_err_band = (TGraphErrors*)graphs[i]->Clone();
                     g_err_band->SetFillColorAlpha(colors[i], 0.35);
-                    g_err_band->SetFillStyle(1001); // Solid fill
+                    g_err_band->SetFillStyle(1001);
                     mg_path->Add(g_err_band, "3");
-
                     mg_path->Add(graphs[i], "L");
                 }
 
                 mg_path->Draw("A");
-                // mg_path->GetYaxis()->SetRangeUser(0, 9);
-                // mg_path->GetXaxis()->SetTitleOffset(1.1);
-                // mg_path->GetYaxis()->SetTitleOffset(1.3);
-                //mg_path->GetYaxis()->SetLimits(y_min_range, y_max_range);
                 mg_path->GetYaxis()->SetRangeUser(plot_type.z_min, plot_type.z_max);
                 mg_path->GetXaxis()->SetTitleSize(0.06);
-                mg_path->GetXaxis()->SetLabelSize(0.04);
-                mg_path->GetXaxis()->SetTitleOffset(0.7);
                 mg_path->GetYaxis()->SetTitleSize(0.06);
-                mg_path->GetYaxis()->SetLabelSize(0.04);
-                mg_path->GetYaxis()->SetTitleOffset(0.8);
-                mg_path->GetXaxis()->SetTitleFont(42);
-                mg_path->GetYaxis()->SetTitleFont(42);
-                mg_path->GetXaxis()->SetLabelFont(42);
-                mg_path->GetYaxis()->SetLabelFont(42);
 
                 TLegend* legend_mg = new TLegend(0.8, 0.3, 1.0, 0.6);
                 legend_mg->SetFillStyle(0);
-                legend_mg->SetTextSize(0.04);
                 legend_mg->SetBorderSize(0);
-                for(size_t i=0; i<labels.size(); ++i) {
-                    legend_mg->AddEntry(graphs[i], labels[i].c_str(), "lf");
-                }
+                for(size_t i=0; i<labels.size(); ++i) legend_mg->AddEntry(graphs[i], labels[i].c_str(), "lf");
                 legend_mg->Draw();
 
-                // double y_line_min = mg_path->GetYaxis()->GetXmin();
-                // double y_line_max = mg_path->GetYaxis()->GetXmax();
+                TLine v_line;
+                v_line.SetLineStyle(2);
+                v_line.SetLineColor(kGray+2);
+                TLatex label;
+                label.SetTextSize(0.04);
+                label.SetTextAlign(23);
                 for(size_t i=0; i<x_coords.size(); i++) {
                     v_line.DrawLine(x_coords[i], plot_type.z_min, x_coords[i], plot_type.z_max);
                     label.DrawLatex(x_coords[i], plot_type.z_max*1.05, point_labels[i].c_str());
@@ -1734,28 +2139,51 @@ void plot_BeamTest::run_inPixelPathAnalysis(const std::vector<PlotConfig>& confi
                 ChipParameters params = {config.pixel_pitch, config.chip_type, config.voltage, seed_thd_for_file, neighbor_thd};
                 drawChipInfo(params, 0.81, 0.88);
 
-                std::string safe_legend = config.legend_label;
-                std::replace(safe_legend.begin(), safe_legend.end(), ' ', '_');
-                std::replace(safe_legend.begin(), safe_legend.end(), ',', '_'); 
-
                 std::string output_filename = Form("plot/inPixel/%s/%s/%s_%s_inPixelPath_%s_%s_%sV_Seed%s_Neighbor%s.pdf",
-                                                NAME_.c_str(),
-                                                plot_type.name.c_str(),
-                                                NAME_.c_str(),
-                                                plot_type.name.c_str(),
-                                                config.pixel_pitch.c_str(),
-                                                config.chip_type.c_str(),
-                                                config.voltage.c_str(),
-                                                seed_thd_for_file.c_str(),
-                                                neighbor_thd.c_str());
+                                                NAME_.c_str(), plot_type.name.c_str(), NAME_.c_str(), plot_type.name.c_str(),
+                                                config.pixel_pitch.c_str(), config.chip_type.c_str(), config.voltage.c_str(),
+                                                seed_thd_for_file.c_str(), neighbor_thd.c_str());
 
                 TString dir_path = gSystem->DirName(output_filename.c_str());
                 gSystem->mkdir(dir_path, kTRUE);
                 canvas_inpixel_->SaveAs(output_filename.c_str());
-            }
 
-            // inputROOTFile->Close();
-            // delete inputROOTFile;
+                // Output file path
+                std::string root_output_name = Form("plot/inPixelPathAnalysis_%s.root", NAME_.c_str());
+                TFile* outFile = TFile::Open(root_output_name.c_str(), "UPDATE");
+
+                if (outFile && !outFile->IsZombie()) {
+                    // 1. Create or get Plot Type directory (e.g., cluster_size, residual)
+                    TDirectory* typeDir = outFile->mkdir(plot_type.name.c_str(), "", true);
+                    typeDir->cd();
+
+                    // 2. Create or get Threshold condition directory
+                    std::string sub_dir_name = Form("Seed%s_Neighbor%s", seed_thd_for_file.c_str(), neighbor_thd.c_str());
+                    TDirectory* condDir = typeDir->mkdir(sub_dir_name.c_str(), "", true);
+                    condDir->cd();
+
+                    // 3. Define a short name for the quantity to include in object names
+                    std::string q_name = plot_type.name;
+
+                    // 4. Save the 2D Map
+                    // Use kOverwrite to replace the existing object instead of creating a new cycle (;2, ;3, etc.)
+                    h_inpixel->Write(Form("map_2d_%s", q_name.c_str()), TObject::kOverwrite);
+
+                    // 5. Save the 1D Path Graphs with explicit path identifiers
+                    g_path_AB->Write(Form("path_A_to_B_%s", q_name.c_str()), TObject::kOverwrite);
+                    g_path_BC->Write(Form("path_B_to_C_%s", q_name.c_str()), TObject::kOverwrite);
+                    g_path_CA->Write(Form("path_C_to_A_%s", q_name.c_str()), TObject::kOverwrite);
+                    g_path_AD->Write(Form("path_A_to_D_%s", q_name.c_str()), TObject::kOverwrite);
+
+                    // 6. Save the MultiGraph
+                    mg_path->Write(Form("mg_combined_path_%s", q_name.c_str()), TObject::kOverwrite);
+
+                    outFile->Close();
+                    delete outFile;
+                } else {
+                    LOG_ERROR.source("plot_BeamTest::run_inPixelPathAnalysis") << "Could not open ROOT file for writing: " << root_output_name;
+                }
+            }
         }
     }
 }

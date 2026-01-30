@@ -162,7 +162,8 @@ private:
         const std::string& output_filename,
         const std::vector<PlotConfig>& configs,
         const std::string& neighbor_thd_for_all,
-        const std::pair<double, double>& x_range
+        const std::pair<double, double>& x_range,
+        const std::string& target_quantity
     );
 
     void drawBeamInfo(const std::string& beam_info, double x, double y);

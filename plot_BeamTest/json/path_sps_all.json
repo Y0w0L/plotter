@@ -1,0 +1,41 @@
+{
+  "inpixel_plot_types": [
+    {
+      "name": "cluster_size",
+      "hist_path": "AnalysisCE65/%s/npxvsxmym",
+      "title": "Mean Cluster Size",
+      "z_axis_title": "cluster size",
+      "z_min": 0.8,
+      "z_max": 10,
+      "scale_factor": 1.0
+    },
+    {
+      "name": "residual",
+      "hist_path": "AnalysisCE65/%s/rmsxyvsxmym",
+      "title": "Mean Residual (r_{exp} - r_{hit})",
+      "z_axis_title": "r_{exp} - r_{hit} [um]",
+      "z_min": 0,
+      "z_max": 14,
+      "scale_factor": 1000
+    }
+  ],
+  "comparison_configs": [
+    {
+    "source": "SingleChipSim",
+    "pixel_pitch": "15",
+    "chip_type": "std",
+    "voltage": "10",
+    "seed_thd": "240",
+    "scan_values": ["24", "48", "72", "96", "120", "144", "168", "192", "216", "240", "264", "288", "312", "336", "360", "420", "480"],
+    "legend_label": "SIM,15um,std,10V",
+    "color": "kAzure+2",
+    "marker_style": 22,
+    "marker_size": 1.4,
+    "line_style": 2,
+    "adc_to_electron_factor": 1.0,
+    "base_file_name": "/home/towa/alice3/hist/ce65simSPS2601/analysis_ce65_p15_std_10v_n90e_303k_st%se_nt%se_pip_120GeV_jacoboni_et2_srh_auger_ljubljana",
+    "hist_path_residual": "residual_x",
+    "hist_path_clsize": "cluster_size"
+  }
+  ]
+}

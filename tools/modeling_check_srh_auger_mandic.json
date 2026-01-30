@@ -215,9 +215,9 @@
       "map_clusterVSCSize": "AnalysisCE65/CE65_6/inPixel_clustervsCSize"
     }
   },
-  "sim_p15_std_10v_n90e_303K_st240_nt144_jacoboni_none_none": {
+  "sim_p15_std_10v_n90e_303K_st240_nt144_jacoboni_srh_auger_mandic": {
     "name": "Sim(Jacoboni|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kBlue",
     "colorAlt": "kBlue-7",
@@ -242,9 +242,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_gap_10v_n90e_303K_st240_nt144_jacoboni_none_none": {
+  "sim_p15_gap_10v_n90e_303K_st240_nt144_jacoboni_srh_auger_mandic": {
     "name": "Sim(Jacoboni|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kBlue",
     "colorAlt": "kBlue-7",
@@ -269,9 +269,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_std_10v_n90e_303K_st240_nt144_canali_none_none": {
+  "sim_p15_std_10v_n90e_303K_st240_nt144_canali_srh_auger_mandic": {
     "name": "Sim(Canali|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_canali_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_canali_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kAzure+1",
     "colorAlt": "kAzure+6",
@@ -296,9 +296,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_gap_10v_n90e_303K_st240_nt144_canali_none_none": {
+  "sim_p15_gap_10v_n90e_303K_st240_nt144_canali_srh_auger_mandic": {
     "name": "Sim(Canali|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_canali_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_canali_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kAzure+1",
     "colorAlt": "kAzure+6",
@@ -323,9 +323,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_std_10v_n90e_303K_st240_nt144_hamburg_none_none": {
+  "sim_p15_std_10v_n90e_303K_st240_nt144_hamburg_srh_auger_mandic": {
     "name": "Sim(Hamburg|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_hamburg_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_hamburg_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kOrange+1",
     "colorAlt": "kOrange-3",
@@ -350,9 +350,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_gap_10v_n90e_303K_st240_nt144_hamburg_none_none": {
+  "sim_p15_gap_10v_n90e_303K_st240_nt144_hamburg_srh_auger_mandic": {
     "name": "Sim(Hamburg|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_hamburg_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_hamburg_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kOrange+1",
     "colorAlt": "kOrange-3",
@@ -377,9 +377,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_std_10v_n90e_303K_st240_nt144_hamburgHF_none_none": {
+  "sim_p15_std_10v_n90e_303K_st240_nt144_hamburgHF_srh_auger_mandic": {
     "name": "Sim(HamburgHF|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_hamburgHF_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_hamburgHF_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kOrange+7",
     "colorAlt": "kOrange-9",
@@ -404,9 +404,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_gap_10v_n90e_303K_st240_nt144_hamburgHF_none_none": {
+  "sim_p15_gap_10v_n90e_303K_st240_nt144_hamburgHF_srh_auger_mandic": {
     "name": "Sim(HamburgHF|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_hamburgHF_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_hamburgHF_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kOrange+7",
     "colorAlt": "kOrange-9",
@@ -431,9 +431,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_std_10v_n90e_303K_st240_nt144_masetti_none_none": {
+  "sim_p15_std_10v_n90e_303K_st240_nt144_masetti_srh_auger_mandic": {
     "name": "Sim(Masetti|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kRed",
     "colorAlt": "kRed-4",
@@ -458,9 +458,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_gap_10v_n90e_303K_st240_nt144_masetti_none_none": {
+  "sim_p15_gap_10v_n90e_303K_st240_nt144_masetti_srh_auger_mandic": {
     "name": "Sim(Masetti|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kRed",
     "colorAlt": "kRed-4",
@@ -478,9 +478,9 @@
       "driftTime": "DriftTime/drift_time_spectrum"
     }
   },
-  "sim_p15_std_10v_n90e_303K_st240_nt144_arora_none_none": {
+  "sim_p15_std_10v_n90e_303K_st240_nt144_arora_srh_auger_mandic": {
     "name": "Sim(Arora|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_arora_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_arora_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kMagenta",
     "colorAlt": "kMagenta-9",
@@ -505,9 +505,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_gap_10v_n90e_303K_st240_nt144_arora_none_none": {
+  "sim_p15_gap_10v_n90e_303K_st240_nt144_arora_srh_auger_mandic": {
     "name": "Sim(Arora|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_arora_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_arora_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kMagenta",
     "colorAlt": "kMagenta-9",
@@ -532,9 +532,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_std_10v_n90e_303K_st240_nt144_Ecanali_none_none": {
+  "sim_p15_std_10v_n90e_303K_st240_nt144_Ecanali_srh_auger_mandic": {
     "name": "Sim(Ecanali|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kGreen+2",
     "colorAlt": "kGreen-6",
@@ -559,9 +559,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_gap_10v_n90e_303K_st240_nt144_Ecanali_none_none": {
+  "sim_p15_gap_10v_n90e_303K_st240_nt144_Ecanali_srh_auger_mandic": {
     "name": "Sim(Ecanali|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kGreen+2",
     "colorAlt": "kGreen-6",
@@ -586,9 +586,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_std_10v_n90e_303K_st240_nt144_quay_none_none": {
+  "sim_p15_std_10v_n90e_303K_st240_nt144_quay_srh_auger_mandic": {
     "name": "Sim(Quay|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_quay_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_quay_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kCyan+2",
     "colorAlt": "kCyan-7",
@@ -613,9 +613,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_gap_10v_n90e_303K_st240_nt144_quay_none_none": {
+  "sim_p15_gap_10v_n90e_303K_st240_nt144_quay_srh_auger_mandic": {
     "name": "Sim(Quay|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_quay_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_quay_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kCyan+2",
     "colorAlt": "kCyan-7",
@@ -640,9 +640,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_std_10v_n90e_303K_st240_nt144_jacoboni_none_none": {
+  "sim_p22p5_std_10v_n90e_303K_st240_nt144_jacoboni_srh_auger_mandic": {
     "name": "Sim(Jacoboni|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kBlue",
     "colorAlt": "kBlue-7",
@@ -667,9 +667,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_jacoboni_none_none": {
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_jacoboni_srh_auger_mandic": {
     "name": "Sim(Jacoboni|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kBlue",
     "colorAlt": "kBlue-7",
@@ -694,9 +694,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_std_10v_n90e_303K_st240_nt144_canali_none_none": {
+  "sim_p22p5_std_10v_n90e_303K_st240_nt144_canali_srh_auger_mandic": {
     "name": "Sim(Canali|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_canali_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_canali_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kAzure+1",
     "colorAlt": "kAzure+6",
@@ -721,9 +721,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_canali_none_none": {
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_canali_srh_auger_mandic": {
     "name": "Sim(Canali|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_canali_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_canali_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kAzure+1",
     "colorAlt": "kAzure+6",
@@ -748,9 +748,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_std_10v_n90e_303K_st240_nt144_hamburg_none_none": {
+  "sim_p22p5_std_10v_n90e_303K_st240_nt144_hamburg_srh_auger_mandic": {
     "name": "Sim(Hamburg|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_hamburg_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_hamburg_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kOrange+1",
     "colorAlt": "kOrange-3",
@@ -775,9 +775,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_hamburg_none_none": {
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_hamburg_srh_auger_mandic": {
     "name": "Sim(Hamburg|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_hamburg_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_hamburg_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kOrange+1",
     "colorAlt": "kOrange-3",
@@ -802,9 +802,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_std_10v_n90e_303K_st240_nt144_hamburgHF_none_none": {
+  "sim_p22p5_std_10v_n90e_303K_st240_nt144_hamburgHF_srh_auger_mandic": {
     "name": "Sim(HamburgHF|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_hamburgHF_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_hamburgHF_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kOrange+7",
     "colorAlt": "kOrange-9",
@@ -829,9 +829,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_hamburgHF_none_none": {
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_hamburgHF_srh_auger_mandic": {
     "name": "Sim(HamburgHF|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_hamburgHF_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_hamburgHF_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kOrange+7",
     "colorAlt": "kOrange-9",
@@ -856,9 +856,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_std_10v_n90e_303K_st240_nt144_masetti_none_none": {
+  "sim_p22p5_std_10v_n90e_303K_st240_nt144_masetti_srh_auger_mandic": {
     "name": "Sim(Masetti|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kRed",
     "colorAlt": "kRed-4",
@@ -883,9 +883,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_masetti_none_none": {
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_masetti_srh_auger_mandic": {
     "name": "Sim(Masetti|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kRed",
     "colorAlt": "kRed-4",
@@ -910,9 +910,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_std_10v_n90e_303K_st240_nt144_arora_none_none": {
+  "sim_p22p5_std_10v_n90e_303K_st240_nt144_arora_srh_auger_mandic": {
     "name": "Sim(Arora|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_arora_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_arora_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kMagenta",
     "colorAlt": "kMagenta-9",
@@ -937,9 +937,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_arora_none_none": {
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_arora_srh_auger_mandic": {
     "name": "Sim(Arora|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_arora_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_arora_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kMagenta",
     "colorAlt": "kMagenta-9",
@@ -964,9 +964,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_std_10v_n90e_303K_st240_nt144_Ecanali_none_none": {
+  "sim_p22p5_std_10v_n90e_303K_st240_nt144_Ecanali_srh_auger_mandic": {
     "name": "Sim(Ecanali|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kGreen+2",
     "colorAlt": "kGreen-6",
@@ -991,9 +991,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_Ecanali_none_none": {
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_Ecanali_srh_auger_mandic": {
     "name": "Sim(Ecanali|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kGreen+2",
     "colorAlt": "kGreen-6",
@@ -1018,9 +1018,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_std_10v_n90e_303K_st240_nt144_quay_none_none": {
+  "sim_p22p5_std_10v_n90e_303K_st240_nt144_quay_srh_auger_mandic": {
     "name": "Sim(Quay|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_quay_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_quay_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kCyan+2",
     "colorAlt": "kCyan-7",
@@ -1045,9 +1045,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_quay_none_none": {
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_quay_srh_auger_mandic": {
     "name": "Sim(Quay|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_quay_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_quay_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kCyan+2",
     "colorAlt": "kCyan-7",
@@ -1072,9 +1072,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_std_10v_n90e_303K_st240_nt48_jacoboni_none_none": {
+  "sim_p15_std_10v_n90e_303K_st240_nt48_jacoboni_srh_auger_mandic": {
     "name": "Sim(Jacoboni|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_jacoboni_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_jacoboni_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kBlue",
     "colorAlt": "kBlue-7",
@@ -1099,9 +1099,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_gap_10v_n90e_303K_st240_nt48_jacoboni_none_none": {
+  "sim_p15_gap_10v_n90e_303K_st240_nt48_jacoboni_srh_auger_mandic": {
     "name": "Sim(Jacoboni|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_jacoboni_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_jacoboni_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kBlue",
     "colorAlt": "kBlue-7",
@@ -1126,9 +1126,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_std_10v_n90e_303K_st240_nt48_canali_none_none": {
+  "sim_p15_std_10v_n90e_303K_st240_nt48_canali_srh_auger_mandic": {
     "name": "Sim(Canali|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_canali_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_canali_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kAzure+1",
     "colorAlt": "kAzure+6",
@@ -1153,9 +1153,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_gap_10v_n90e_303K_st240_nt48_canali_none_none": {
+  "sim_p15_gap_10v_n90e_303K_st240_nt48_canali_srh_auger_mandic": {
     "name": "Sim(Canali|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_canali_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_canali_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kAzure+1",
     "colorAlt": "kAzure+6",
@@ -1180,9 +1180,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_std_10v_n90e_303K_st240_nt48_hamburg_none_none": {
+  "sim_p15_std_10v_n90e_303K_st240_nt48_hamburg_srh_auger_mandic": {
     "name": "Sim(Hamburg|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_hamburg_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_hamburg_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kOrange+1",
     "colorAlt": "kOrange-3",
@@ -1207,9 +1207,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_gap_10v_n90e_303K_st240_nt48_hamburg_none_none": {
+  "sim_p15_gap_10v_n90e_303K_st240_nt48_hamburg_srh_auger_mandic": {
     "name": "Sim(Hamburg|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_hamburg_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_hamburg_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kOrange+1",
     "colorAlt": "kOrange-3",
@@ -1234,9 +1234,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_std_10v_n90e_303K_st240_nt48_hamburgHF_none_none": {
+  "sim_p15_std_10v_n90e_303K_st240_nt48_hamburgHF_srh_auger_mandic": {
     "name": "Sim(HamburgHF|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_hamburgHF_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_hamburgHF_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kOrange+7",
     "colorAlt": "kOrange-9",
@@ -1261,9 +1261,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_gap_10v_n90e_303K_st240_nt48_hamburgHF_none_none": {
+  "sim_p15_gap_10v_n90e_303K_st240_nt48_hamburgHF_srh_auger_mandic": {
     "name": "Sim(HamburgHF|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_hamburgHF_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_hamburgHF_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kOrange+7",
     "colorAlt": "kOrange-9",
@@ -1288,9 +1288,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_std_10v_n90e_303K_st240_nt48_masetti_none_none": {
+  "sim_p15_std_10v_n90e_303K_st240_nt48_masetti_srh_auger_mandic": {
     "name": "Sim(Masetti|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kRed",
     "colorAlt": "kRed-4",
@@ -1315,9 +1315,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_gap_10v_n90e_303K_st240_nt48_masetti_none_none": {
+  "sim_p15_gap_10v_n90e_303K_st240_nt48_masetti_srh_auger_mandic": {
     "name": "Sim(Masetti|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kRed",
     "colorAlt": "kRed-4",
@@ -1335,9 +1335,9 @@
       "driftTime": "DriftTime/drift_time_spectrum"
     }
   },
-  "sim_p15_std_10v_n90e_303K_st240_nt48_arora_none_none": {
+  "sim_p15_std_10v_n90e_303K_st240_nt48_arora_srh_auger_mandic": {
     "name": "Sim(Arora|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_arora_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_arora_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kMagenta",
     "colorAlt": "kMagenta-9",
@@ -1362,9 +1362,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_gap_10v_n90e_303K_st240_nt48_arora_none_none": {
+  "sim_p15_gap_10v_n90e_303K_st240_nt48_arora_srh_auger_mandic": {
     "name": "Sim(Arora|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_arora_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_arora_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kMagenta",
     "colorAlt": "kMagenta-9",
@@ -1389,9 +1389,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_std_10v_n90e_303K_st240_nt48_Ecanali_none_none": {
+  "sim_p15_std_10v_n90e_303K_st240_nt48_Ecanali_srh_auger_mandic": {
     "name": "Sim(Ecanali|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_Ecanali_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_Ecanali_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kGreen+2",
     "colorAlt": "kGreen-6",
@@ -1416,9 +1416,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_gap_10v_n90e_303K_st240_nt48_Ecanali_none_none": {
+  "sim_p15_gap_10v_n90e_303K_st240_nt48_Ecanali_srh_auger_mandic": {
     "name": "Sim(Ecanali|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_Ecanali_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_Ecanali_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kGreen+2",
     "colorAlt": "kGreen-6",
@@ -1443,9 +1443,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_std_10v_n90e_303K_st240_nt48_quay_none_none": {
+  "sim_p15_std_10v_n90e_303K_st240_nt48_quay_srh_auger_mandic": {
     "name": "Sim(Quay|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_quay_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_quay_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kCyan+2",
     "colorAlt": "kCyan-7",
@@ -1470,9 +1470,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p15_gap_10v_n90e_303K_st240_nt48_quay_none_none": {
+  "sim_p15_gap_10v_n90e_303K_st240_nt48_quay_srh_auger_mandic": {
     "name": "Sim(Quay|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_quay_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_quay_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kCyan+2",
     "colorAlt": "kCyan-7",
@@ -1497,9 +1497,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_std_10v_n90e_303K_st240_nt48_jacoboni_none_none": {
+  "sim_p22p5_std_10v_n90e_303K_st240_nt48_jacoboni_srh_auger_mandic": {
     "name": "Sim(Jacoboni|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_jacoboni_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_jacoboni_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kBlue",
     "colorAlt": "kBlue-7",
@@ -1524,9 +1524,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_gap_10v_n90e_303K_st240_nt48_jacoboni_none_none": {
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt48_jacoboni_srh_auger_mandic": {
     "name": "Sim(Jacoboni|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_jacoboni_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_jacoboni_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kBlue",
     "colorAlt": "kBlue-7",
@@ -1551,9 +1551,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_std_10v_n90e_303K_st240_nt48_canali_none_none": {
+  "sim_p22p5_std_10v_n90e_303K_st240_nt48_canali_srh_auger_mandic": {
     "name": "Sim(Canali|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_canali_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_canali_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kAzure+1",
     "colorAlt": "kAzure+6",
@@ -1578,9 +1578,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_gap_10v_n90e_303K_st240_nt48_canali_none_none": {
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt48_canali_srh_auger_mandic": {
     "name": "Sim(Canali|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_canali_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_canali_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kAzure+1",
     "colorAlt": "kAzure+6",
@@ -1605,9 +1605,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_std_10v_n90e_303K_st240_nt48_hamburg_none_none": {
+  "sim_p22p5_std_10v_n90e_303K_st240_nt48_hamburg_srh_auger_mandic": {
     "name": "Sim(Hamburg|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_hamburg_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_hamburg_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kOrange+1",
     "colorAlt": "kOrange-3",
@@ -1632,9 +1632,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_gap_10v_n90e_303K_st240_nt48_hamburg_none_none": {
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt48_hamburg_srh_auger_mandic": {
     "name": "Sim(Hamburg|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_hamburg_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_hamburg_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kOrange+1",
     "colorAlt": "kOrange-3",
@@ -1659,9 +1659,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_std_10v_n90e_303K_st240_nt48_hamburgHF_none_none": {
+  "sim_p22p5_std_10v_n90e_303K_st240_nt48_hamburgHF_srh_auger_mandic": {
     "name": "Sim(HamburgHF|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_hamburgHF_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_hamburgHF_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kOrange+7",
     "colorAlt": "kOrange-9",
@@ -1686,9 +1686,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_gap_10v_n90e_303K_st240_nt48_hamburgHF_none_none": {
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt48_hamburgHF_srh_auger_mandic": {
     "name": "Sim(HamburgHF|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_hamburgHF_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_hamburgHF_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kOrange+7",
     "colorAlt": "kOrange-9",
@@ -1713,9 +1713,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_std_10v_n90e_303K_st240_nt48_masetti_none_none": {
+  "sim_p22p5_std_10v_n90e_303K_st240_nt48_masetti_srh_auger_mandic": {
     "name": "Sim(Masetti|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kRed",
     "colorAlt": "kRed-4",
@@ -1740,9 +1740,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_gap_10v_n90e_303K_st240_nt48_masetti_none_none": {
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt48_masetti_srh_auger_mandic": {
     "name": "Sim(Masetti|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_masetti_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kRed",
     "colorAlt": "kRed-4",
@@ -1767,9 +1767,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_std_10v_n90e_303K_st240_nt48_arora_none_none": {
+  "sim_p22p5_std_10v_n90e_303K_st240_nt48_arora_srh_auger_mandic": {
     "name": "Sim(Arora|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_arora_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_arora_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kMagenta",
     "colorAlt": "kMagenta-9",
@@ -1794,9 +1794,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_gap_10v_n90e_303K_st240_nt48_arora_none_none": {
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt48_arora_srh_auger_mandic": {
     "name": "Sim(Arora|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_arora_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_arora_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kMagenta",
     "colorAlt": "kMagenta-9",
@@ -1821,9 +1821,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_std_10v_n90e_303K_st240_nt48_Ecanali_none_none": {
+  "sim_p22p5_std_10v_n90e_303K_st240_nt48_Ecanali_srh_auger_mandic": {
     "name": "Sim(Ecanali|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_Ecanali_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_Ecanali_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kGreen+2",
     "colorAlt": "kGreen-6",
@@ -1848,9 +1848,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_gap_10v_n90e_303K_st240_nt48_Ecanali_none_none": {
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt48_Ecanali_srh_auger_mandic": {
     "name": "Sim(Ecanali|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_Ecanali_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_Ecanali_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kGreen+2",
     "colorAlt": "kGreen-6",
@@ -1875,9 +1875,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_std_10v_n90e_303K_st240_nt48_quay_none_none": {
+  "sim_p22p5_std_10v_n90e_303K_st240_nt48_quay_srh_auger_mandic": {
     "name": "Sim(Quay|STD)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_quay_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt48e_pip_120GeV_quay_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kCyan+2",
     "colorAlt": "kCyan-7",
@@ -1902,9 +1902,9 @@
       "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize"
     }
   },
-  "sim_p22p5_gap_10v_n90e_303K_st240_nt48_quay_none_none": {
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt48_quay_srh_auger_mandic": {
     "name": "Sim(Quay|GAP)",
-    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_quay_et2_none_none.root",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt48e_pip_120GeV_quay_et2_srh_auger_mandic.root",
     "scale": 1,
     "color": "kCyan+2",
     "colorAlt": "kCyan-7",

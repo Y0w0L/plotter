@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
     //plot_ExperimentData.run_inPixel();
     //plot_ExperimentData.run_Analysis();
     //plot_ExperimentData.run_NoiseScan();
-    //plot_LabTest.run_LabTest();
+    plot_LabTest.run_LabTest();
 
     //
     // plot_BeamTest kek202412_plotter(DataSource::KEK202412);
@@ -52,12 +52,12 @@ int main(int argc, char* argv[]) {
     // plot_BeamTest sps202404_plotter(DataSource::SPS202404);
     // sps202404_plotter.run_sps_plots();
 
-    try {
-        plot_BeamTest.BeamTest_main(argc, argv);
-    } catch (const std::exception& e) {
-        LOG_ERROR.source("ce65.cpp/main") << "ERROR happens dourning processing. " << e.what() ;
-        return 1;
-    }
+    // try {
+    //     plot_BeamTest.BeamTest_main(argc, argv);
+    // } catch (const std::exception& e) {
+    //     LOG_ERROR.source("ce65.cpp/main") << "ERROR happens dourning processing. " << e.what() ;
+    //     return 1;
+    // }
 
     //plot_Check.run_plotCheck();
 

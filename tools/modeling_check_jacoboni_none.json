@@ -1,0 +1,227 @@
+"sim_p15_std_10v_n90e_303K_st240_nt144_jacoboni_srh_none": {
+    "name": "Sim(Jacoboni|STD|nt144|SRH)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_srh_none.root",
+    "scale": 1, "color": "kBlue", "colorAlt": "kBlue-7", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p15_std_10v_n90e_303K_st240_nt144_jacoboni_auger_none": {
+    "name": "Sim(Jacoboni|STD|nt144|Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_auger_none.root",
+    "scale": 1, "color": "kRed", "colorAlt": "kRed-4", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p15_std_10v_n90e_303K_st240_nt144_jacoboni_srh_auger_none": {
+    "name": "Sim(Jacoboni|STD|nt144|SRH+Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_srh_auger_none.root",
+    "scale": 1, "color": "kGreen+2", "colorAlt": "kGreen-6", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+
+  "sim_p15_gap_10v_n90e_303K_st240_nt144_jacoboni_srh_none": {
+    "name": "Sim(Jacoboni|GAP|nt144|SRH)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_srh_none.root",
+    "scale": 1, "color": "kBlue", "colorAlt": "kBlue-7", "markerStyle": 22, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p15_gap_10v_n90e_303K_st240_nt144_jacoboni_auger_none": {
+    "name": "Sim(Jacoboni|GAP|nt144|Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_auger_none.root",
+    "scale": 1, "color": "kRed", "colorAlt": "kRed-4", "markerStyle": 22, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p15_gap_10v_n90e_303K_st240_nt144_jacoboni_srh_auger_none": {
+    "name": "Sim(Jacoboni|GAP|nt144|SRH+Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_srh_auger_none.root",
+    "scale": 1, "color": "kGreen+2", "colorAlt": "kGreen-6", "markerStyle": 22, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+
+  "sim_p22p5_std_10v_n90e_303K_st240_nt144_jacoboni_srh_none": {
+    "name": "Sim(Jacoboni|STD|nt144|SRH)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_srh_none.root",
+    "scale": 1, "color": "kBlue", "colorAlt": "kBlue-7", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p22p5_std_10v_n90e_303K_st240_nt144_jacoboni_auger_none": {
+    "name": "Sim(Jacoboni|STD|nt144|Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_auger_none.root",
+    "scale": 1, "color": "kRed", "colorAlt": "kRed-4", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p22p5_std_10v_n90e_303K_st240_nt144_jacoboni_srh_auger_none": {
+    "name": "Sim(Jacoboni|STD|nt144|SRH+Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_srh_auger_none.root",
+    "scale": 1, "color": "kGreen+2", "colorAlt": "kGreen-6", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_jacoboni_srh_none": {
+    "name": "Sim(Jacoboni|GAP|nt144|SRH)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_srh_none.root",
+    "scale": 1, "color": "kBlue", "colorAlt": "kBlue-7", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_jacoboni_auger_none": {
+    "name": "Sim(Jacoboni|GAP|nt144|Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_auger_none.root",
+    "scale": 1, "color": "kRed", "colorAlt": "kRed-4", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_jacoboni_srh_auger_none": {
+    "name": "Sim(Jacoboni|GAP|nt144|SRH+Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_jacoboni_et2_srh_auger_none.root",
+    "scale": 1, "color": "kGreen+2", "colorAlt": "kGreen-6", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+
+  "sim_p15_std_10v_n90e_303K_st240_nt144_Ecanali_srh_none": {
+    "name": "Sim(Ecanali|STD|nt144|SRH)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_srh_none.root",
+    "scale": 1, "color": "kBlue", "colorAlt": "kBlue-7", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p15_std_10v_n90e_303K_st240_nt144_Ecanali_auger_none": {
+    "name": "Sim(Ecanali|STD|nt144|Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_auger_none.root",
+    "scale": 1, "color": "kRed", "colorAlt": "kRed-4", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p15_std_10v_n90e_303K_st240_nt144_Ecanali_srh_auger_none": {
+    "name": "Sim(Ecanali|STD|nt144|SRH+Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_srh_auger_none.root",
+    "scale": 1, "color": "kGreen+2", "colorAlt": "kGreen-6", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+
+  "sim_p15_gap_10v_n90e_303K_st240_nt144_Ecanali_srh_none": {
+    "name": "Sim(Ecanali|GAP|nt144|SRH)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_srh_none.root",
+    "scale": 1, "color": "kBlue", "colorAlt": "kBlue-7", "markerStyle": 22, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p15_gap_10v_n90e_303K_st240_nt144_Ecanali_auger_none": {
+    "name": "Sim(Ecanali|GAP|nt144|Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_auger_none.root",
+    "scale": 1, "color": "kRed", "colorAlt": "kRed-4", "markerStyle": 22, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p15_gap_10v_n90e_303K_st240_nt144_Ecanali_srh_auger_none": {
+    "name": "Sim(Ecanali|GAP|nt144|SRH+Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_srh_auger_none.root",
+    "scale": 1, "color": "kGreen+2", "colorAlt": "kGreen-6", "markerStyle": 22, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+
+  "sim_p22p5_std_10v_n90e_303K_st240_nt144_Ecanali_srh_none": {
+    "name": "Sim(Ecanali|STD|nt144|SRH)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_srh_none.root",
+    "scale": 1, "color": "kBlue", "colorAlt": "kBlue-7", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p22p5_std_10v_n90e_303K_st240_nt144_Ecanali_auger_none": {
+    "name": "Sim(Ecanali|STD|nt144|Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_auger_none.root",
+    "scale": 1, "color": "kRed", "colorAlt": "kRed-4", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p22p5_std_10v_n90e_303K_st240_nt144_Ecanali_srh_auger_none": {
+    "name": "Sim(Ecanali|STD|nt144|SRH+Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_srh_auger_none.root",
+    "scale": 1, "color": "kGreen+2", "colorAlt": "kGreen-6", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_Ecanali_srh_none": {
+    "name": "Sim(Ecanali|GAP|nt144|SRH)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_srh_none.root",
+    "scale": 1, "color": "kBlue", "colorAlt": "kBlue-7", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_Ecanali_auger_none": {
+    "name": "Sim(Ecanali|GAP|nt144|Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_auger_none.root",
+    "scale": 1, "color": "kRed", "colorAlt": "kRed-4", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_Ecanali_srh_auger_none": {
+    "name": "Sim(Ecanali|GAP|nt144|SRH+Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_Ecanali_et2_srh_auger_none.root",
+    "scale": 1, "color": "kGreen+2", "colorAlt": "kGreen-6", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+
+  "sim_p15_std_10v_n90e_303K_st240_nt144_masetti_srh_none": {
+    "name": "Sim(Masetti|STD|nt144|SRH)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_srh_none.root",
+    "scale": 1, "color": "kBlue", "colorAlt": "kBlue-7", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p15_std_10v_n90e_303K_st240_nt144_masetti_auger_none": {
+    "name": "Sim(Masetti|STD|nt144|Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_auger_none.root",
+    "scale": 1, "color": "kRed", "colorAlt": "kRed-4", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p15_std_10v_n90e_303K_st240_nt144_masetti_srh_auger_none": {
+    "name": "Sim(Masetti|STD|nt144|SRH+Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_srh_auger_none.root",
+    "scale": 1, "color": "kGreen+2", "colorAlt": "kGreen-6", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+
+  "sim_p15_gap_10v_n90e_303K_st240_nt144_masetti_srh_none": {
+    "name": "Sim(Masetti|GAP|nt144|SRH)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_srh_none.root",
+    "scale": 1, "color": "kBlue", "colorAlt": "kBlue-7", "markerStyle": 22, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p15_gap_10v_n90e_303K_st240_nt144_masetti_auger_none": {
+    "name": "Sim(Masetti|GAP|nt144|Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_auger_none.root",
+    "scale": 1, "color": "kRed", "colorAlt": "kRed-4", "markerStyle": 22, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p15_gap_10v_n90e_303K_st240_nt144_masetti_srh_auger_none": {
+    "name": "Sim(Masetti|GAP|nt144|SRH+Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p15_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_srh_auger_none.root",
+    "scale": 1, "color": "kGreen+2", "colorAlt": "kGreen-6", "markerStyle": 22, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+
+  "sim_p22p5_std_10v_n90e_303K_st240_nt144_masetti_srh_none": {
+    "name": "Sim(Masetti|STD|nt144|SRH)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_srh_none.root",
+    "scale": 1, "color": "kBlue", "colorAlt": "kBlue-7", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p22p5_std_10v_n90e_303K_st240_nt144_masetti_auger_none": {
+    "name": "Sim(Masetti|STD|nt144|Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_auger_none.root",
+    "scale": 1, "color": "kRed", "colorAlt": "kRed-4", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p22p5_std_10v_n90e_303K_st240_nt144_masetti_srh_auger_none": {
+    "name": "Sim(Masetti|STD|nt144|SRH+Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_std_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_srh_auger_none.root",
+    "scale": 1, "color": "kGreen+2", "colorAlt": "kGreen-6", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_masetti_srh_none": {
+    "name": "Sim(Masetti|GAP|nt144|SRH)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_srh_none.root",
+    "scale": 1, "color": "kBlue", "colorAlt": "kBlue-7", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_masetti_auger_none": {
+    "name": "Sim(Masetti|GAP|nt144|Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_auger_none.root",
+    "scale": 1, "color": "kRed", "colorAlt": "kRed-4", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  },
+  "sim_p22p5_gap_10v_n90e_303K_st240_nt144_masetti_srh_auger_none": {
+    "name": "Sim(Masetti|GAP|nt144|SRH+Auger)",
+    "fileKey": "/home/towa/alice3/hist/ce65model2512/analysis_ce65_p22p5_gap_10v_n90e_303k_st240e_nt144e_pip_120GeV_masetti_et2_srh_auger_none.root",
+    "scale": 1, "color": "kGreen+2", "colorAlt": "kGreen-6", "markerStyle": 20, "isMerged": false, "doRebin": true, "rebinType": "charge_rebin_sim_defaults",
+    "histNames": { "clusterCharge": "cluster_charge", "seedCharge": "seed_charge", "neighborChargeSum": "cluster_neighbor_charge_sum", "clusterSize": "cluster_size", "seedChargeBySize": "seed_charge_size_", "driftTime": "DriftTime/drift_time_spectrum", "map_seedCharge": "inPixel/inPixel_seed_charge", "map_clusterSize": "inPixel/inPixel_cluster_size", "map_neighborChargeSum": "inPixel/inPixel_neighbor_charge_sum", "map_seedVSneighborChargeSum": "inPixel/inPixel_seed_charge_vs_neighborChargeSum", "map_seedVSCSize": "inPixel/inPixel_seed_charge_vs_clusterSize", "map_neighborSumVSCSize": "inPixel/inPixel_neighborChargeSum_vs_clusterSize", "map_clusterVSCSize": "inPixel/inPixel_cluster_charge_vs_clusterSize" }
+  }

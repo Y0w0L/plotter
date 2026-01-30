@@ -1,18 +1,19 @@
 #include "plot_LabTest.h"
 
 plot_LabTest::plot_LabTest() {
-    FILENAME_STD_1V     = "/home/towa/its3/labtest/labtest_202408/data/STD_1V_Fe55/STD_1V_Fe55_merged_seedthr1000_nbhrthr300_1_3.root";
-    FILENAME_STD_4V     = "/home/towa/its3/labtest/labtest_202408/data/STD_4V_Fe55/STD_4V_Fe55_merged_seedthr1000_nbhrthr300_1_3.root";
-    FILENAME_STD_7V     = "/home/towa/its3/labtest/labtest_202408/data/STD_7V_Fe55/STD_7V_Fe55_merged_seedthr1000_nbhrthr300_1_4.root";
-    FILENAME_STD_10V    = "/home/towa/its3/labtest/labtest_202408/data/STD_10V_Fe55/STD_10V_Fe55_merged_seedthr1000_nbhrthr300_1_4.root";
-    FILENAME_BLK_1V     = "/home/towa/its3/labtest/labtest_202408/data/BLT_1V_Fe55/BLT_1V_Fe55_merged_seedthr1000_nbhrthr300_1_2.root";
-    FILENAME_BLK_4V     = "/home/towa/its3/labtest/labtest_202408/data/BLT_4V_Fe55/BLT_4V_Fe55_merged_seedthr1000_nbhrthr300_1_2.root";
-    FILENAME_BLK_7V     = "/home/towa/its3/labtest/labtest_202408/data/BLT_7V_Fe55/BLT_7V_Fe55_merged_seedthr1000_nbhrthr300_1_2.root";
-    FILENAME_BLK_10V    = "/home/towa/its3/labtest/labtest_202408/data/BLT_10V_Fe55/BLT_10V_Fe55_merged_seedthr1000_nbhrthr300_1_8.root";
-    FILENAME_GAP_1V     = "/home/towa/its3/labtest/labtest_202408/data/GAP_1V_Fe55/GAP_1V_Fe55_merged_seedthr1000_nbhrthr300_1_4.root";
-    FILENAME_GAP_4V     = "/home/towa/its3/labtest/labtest_202408/data/GAP_4V_Fe55/GAP_4V_Fe55_merged_seedthr1000_nbhrthr300_11_14.root";
-    FILENAME_GAP_7V     = "/home/towa/its3/labtest/labtest_202408/data/GAP_7V_Fe55/GAP_7V_Fe55_merged_seedthr1000_nbhrthr300_1_5.root";
-    FILENAME_GAP_10V    = "/home/towa/its3/labtest/labtest_202408/data/GAP_10V_Fe55/GAP_10V_Fe55_merged_seedthr1000_nbhrthr300_1_7.root";
+    //FILENAME_STD_1V     = "/media/quark_hu/HD-PGF-A/labtest_202408/data/STD_1V_Fe55/STD_1V_Fe55_merged_seedthr1000_nbhrthr300_1_3.root";
+    FILENAME_STD_1V     = "/media/quark_hu/HD-PGF-A/labtest_202408/data/STD_1V_Fe55/STD_1V_Fe55_merged_seedthr1000_nbhrthr300_1_1.root";
+    FILENAME_STD_4V     = "/media/quark_hu/HD-PGF-A/labtest_202408/data/STD_4V_Fe55/STD_4V_Fe55_merged_seedthr1000_nbhrthr300_1_3.root";
+    FILENAME_STD_7V     = "/media/quark_hu/HD-PGF-A/labtest_202408/data/STD_7V_Fe55/STD_7V_Fe55_merged_seedthr1000_nbhrthr300_1_4.root";
+    FILENAME_STD_10V    = "/media/quark_hu/HD-PGF-A/labtest_202408/data/STD_10V_Fe55/STD_10V_Fe55_merged_seedthr1000_nbhrthr300_1_4.root";
+    FILENAME_BLK_1V     = "/media/quark_hu/HD-PGF-A/labtest_202408/data/BLT_1V_Fe55/BLT_1V_Fe55_merged_seedthr1000_nbhrthr300_1_2.root";
+    FILENAME_BLK_4V     = "/media/quark_hu/HD-PGF-A/labtest_202408/data/BLT_4V_Fe55/BLT_4V_Fe55_merged_seedthr1000_nbhrthr300_1_2.root";
+    FILENAME_BLK_7V     = "/media/quark_hu/HD-PGF-A/labtest_202408/data/BLT_7V_Fe55/BLT_7V_Fe55_merged_seedthr1000_nbhrthr300_1_2.root";
+    FILENAME_BLK_10V    = "/media/quark_hu/HD-PGF-A/labtest_202408/data/BLT_10V_Fe55/BLT_10V_Fe55_merged_seedthr1000_nbhrthr300_1_8.root";
+    FILENAME_GAP_1V     = "/media/quark_hu/HD-PGF-A/labtest_202408/data/GAP_1V_Fe55/GAP_1V_Fe55_merged_seedthr1000_nbhrthr300_1_4.root";
+    FILENAME_GAP_4V     = "/media/quark_hu/HD-PGF-A/labtest_202408/data/GAP_4V_Fe55/GAP_4V_Fe55_merged_seedthr1000_nbhrthr300_11_14.root";
+    FILENAME_GAP_7V     = "/media/quark_hu/HD-PGF-A/labtest_202408/data/GAP_7V_Fe55/GAP_7V_Fe55_merged_seedthr1000_nbhrthr300_1_5.root";
+    FILENAME_GAP_10V    = "/media/quark_hu/HD-PGF-A/labtest_202408/data/GAP_10V_Fe55/GAP_10V_Fe55_merged_seedthr1000_nbhrthr300_1_7.root";
     FILENAMES_STD_ = {FILENAME_STD_1V, FILENAME_STD_4V, FILENAME_STD_7V, FILENAME_STD_10V};
     FILENAMES_BLK_ = {FILENAME_BLK_1V, FILENAME_BLK_4V, FILENAME_BLK_7V, FILENAME_BLK_10V};
     FILENAMES_GAP_ = {FILENAME_GAP_1V, FILENAME_GAP_4V, FILENAME_GAP_7V, FILENAME_GAP_10V};
